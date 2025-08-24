@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import styles from './page.module.css'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 
 export default function Home() {
   const [user, setUser] = useState<any>(null)
@@ -12,28 +13,44 @@ export default function Home() {
   const [authError, setAuthError] = useState('')
   const [loading, setLoading] = useState(false)
   const [mode, setMode] = useState<'signIn' | 'signUp'>('signIn')
+  const router = useRouter()
 
   useEffect(() => {
     const getUser = async () => {
       const { data } = await supabase.auth.getUser()
-      setUser(data.user)
+      if (data.user) {
+        setUser(data.user)
+        router.push('/dashboard') // ✅ redirect if already signed in
+      }
     }
     getUser()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      const currentUser = session?.user ?? null
+      setUser(currentUser)
+      if (currentUser) {
+        router.push('/dashboard') // ✅ redirect when auth state changes
+      }
     })
 
     return () => subscription.unsubscribe()
-  }, [])
+  }, [router])
 
   const signInWithGoogle = async () => {
-    await supabase.auth.signInWithOAuth({ provider: 'google' })
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/dashboard`, // ✅ after Google OAuth
+      },
+    })
   }
 
   const signOut = async () => {
     await supabase.auth.signOut()
     setUser(null)
+    router.push('/') // ✅ back to home after sign-out
   }
 
   const handleEmailLogin = async (e: React.FormEvent) => {
@@ -43,6 +60,8 @@ export default function Home() {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
       setAuthError(error.message)
+    } else {
+      router.push('/dashboard') // ✅ redirect on successful login
     }
     setLoading(false)
   }
@@ -54,6 +73,8 @@ export default function Home() {
     const { error } = await supabase.auth.signUp({ email, password })
     if (error) {
       setAuthError(error.message)
+    } else {
+      router.push('/dashboard') // ✅ redirect on successful signup
     }
     setLoading(false)
   }
