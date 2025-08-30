@@ -1,9 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabaseClient'
 import styles from './dashboard.module.css'
+import Link from 'next/link'
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null)
@@ -29,11 +30,21 @@ export default function Dashboard() {
   return (
     <div className={styles.page}>
       <h1 className={styles.header}>Welcome to your Dashboard</h1>
+
       <div className={styles.card}>
         {user && <p className={styles.userEmail}>Logged in as: {user.email}</p>}
-        <button className={styles.signOutButton} onClick={signOut}>
-          Sign Out
-        </button>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
+          <Link href="/deck/new">
+            <button className={styles.signOutButton}>➕ Create New Deck</button>
+          </Link>
+
+          <Link href="/deck/list">
+            <button className={styles.signOutButton}>📚 View My Decks</button>
+          </Link>
+
+          <button onClick={signOut} className={styles.signOutButton}>🚪 Sign Out</button>
+        </div>
       </div>
     </div>
   )
