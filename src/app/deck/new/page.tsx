@@ -4,18 +4,24 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import styles from '@/styles/layout.module.css'
+import CardAutocompleteInput from '@/components/CardAutocompleteInput'
+
+type CardEntry = {
+  id: string
+  name: string
+}
 
 export default function NewDeckPage() {
   const router = useRouter()
 
   const [deckName, setDeckName] = useState('')
-  const [cards, setCards] = useState(Array(20).fill(''))
+  const [cards, setCards] = useState<CardEntry[]>(Array(20).fill({ id: '', name: '' }))
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleCardChange = (index: number, value: string) => {
+  const handleCardSlotChange = (index: number, newCard: CardEntry) => {
     const newCards = [...cards]
-    newCards[index] = value
+    newCards[index] = newCard
     setCards(newCards)
   }
 
@@ -23,19 +29,18 @@ export default function NewDeckPage() {
     setError('')
     setLoading(true)
 
-    // Validation
     if (!deckName.trim()) {
       setError('Deck name is required.')
       setLoading(false)
       return
     }
-    if (cards.some(card => !card.trim())) {
-      setError('All 20 card slots must be filled.')
+
+    if (cards.some(card => !card.id)) {
+      setError('All 20 card slots must be filled with valid card selections.')
       setLoading(false)
       return
     }
 
-    // Get user
     const { data: userData, error: userError } = await supabase.auth.getUser()
     const user = userData?.user
     if (!user || userError) {
@@ -44,7 +49,6 @@ export default function NewDeckPage() {
       return
     }
 
-    // Insert into decks
     const { data: deckData, error: deckError } = await supabase
       .from('decks')
       .insert({
@@ -60,10 +64,9 @@ export default function NewDeckPage() {
       return
     }
 
-    // Prepare deck_cards rows
-    const deckCards = cards.map((name, index) => ({
+    const deckCards = cards.map((card, index) => ({
       deck_id: deckData.id,
-      card_name: name.trim(),
+      card_id: card.id,
       card_index: index,
     }))
 
@@ -77,7 +80,6 @@ export default function NewDeckPage() {
       return
     }
 
-    // Success: Redirect to dashboard or deck list
     router.push('/dashboard')
   }
 
@@ -96,13 +98,11 @@ export default function NewDeckPage() {
         />
 
         {cards.map((card, index) => (
-          <input
+          <CardAutocompleteInput
             key={index}
-            type="text"
-            placeholder={`Card ${index + 1}`}
+            index={index}
             value={card}
-            onChange={e => handleCardChange(index, e.target.value)}
-            className={styles.input}
+            onChange={(newCard) => handleCardSlotChange(index, newCard)}
           />
         ))}
 

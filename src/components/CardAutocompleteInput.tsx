@@ -1,0 +1,79 @@
+// src/components/CardAutocompleteInput.tsx
+'use client'
+
+import { useEffect, useState } from 'react'
+import styles from '@/styles/layout.module.css'
+
+type Card = {
+  id: string
+  name: string
+}
+
+type Props = {
+  value: Card
+  onChange: (card: Card) => void
+  index: number
+}
+
+export default function CardAutocompleteInput({ value, onChange, index }: Props) {
+  const [input, setInput] = useState(value.name)
+  const [suggestions, setSuggestions] = useState<Card[]>([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
+
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (input.trim().length < 2) {
+        setSuggestions([])
+        return
+      }
+
+      const { data, error } = await fetch(`/api/cardsuggestions?query=${input}`).then(res =>
+        res.json()
+      )
+
+      if (!error && data) {
+        setSuggestions(data)
+        setShowSuggestions(true)
+      }
+    }
+
+    const debounce = setTimeout(fetchSuggestions, 200)
+    return () => clearTimeout(debounce)
+  }, [input])
+
+  const handleSelect = (card: Card) => {
+    onChange(card)
+    setInput(card.name)
+    setShowSuggestions(false)
+  }
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <input
+        type="text"
+        value={input}
+        placeholder={`Card ${index + 1}`}
+        onChange={e => {
+          setInput(e.target.value)
+          onChange({ id: '', name: e.target.value }) // reset selection
+        }}
+        className={styles.input}
+        onFocus={() => setShowSuggestions(true)}
+        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+      />
+      {showSuggestions && suggestions.length > 0 && (
+        <ul style={{ position: 'absolute', background: '#fff', zIndex: 10, border: '1px solid #ccc', width: '100%', maxHeight: 160, overflowY: 'auto' }}>
+          {suggestions.map(card => (
+            <li
+              key={card.id}
+              onClick={() => handleSelect(card)}
+              style={{ padding: 8, cursor: 'pointer' }}
+            >
+              {card.name}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
