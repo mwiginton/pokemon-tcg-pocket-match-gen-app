@@ -59,19 +59,27 @@ export default function CardAutocompleteInput({ value, onChange, index }: Props)
         }}
         className={styles.input}
         onFocus={() => setShowSuggestions(true)}
-        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+        onBlur={(e) => {
+            const relatedTarget = e.relatedTarget as HTMLElement | null
+            const isClickInsideList = relatedTarget?.dataset?.suggestion === 'true'
+            if (!isClickInsideList) {
+                setShowSuggestions(false)
+            }
+        }}
       />
       {showSuggestions && suggestions.length > 0 && (
         <ul style={{ position: 'absolute', background: '#fff', zIndex: 10, border: '1px solid #ccc', width: '100%', maxHeight: 160, overflowY: 'auto' }}>
           {suggestions.map(card => (
-            <li
-              key={card.id}
-              onClick={() => handleSelect(card)}
-              style={{ padding: 8, cursor: 'pointer' }}
-            >
-              {card.name}
-            </li>
-          ))}
+                <li
+                    key={card.id}
+                    onMouseDown={() => handleSelect(card)}
+                    data-suggestion="true"
+                    tabIndex={-1}
+                    style={{ padding: 8, cursor: 'pointer' }}
+                    >
+                    {card.name}
+                </li>
+            ))}
         </ul>
       )}
     </div>

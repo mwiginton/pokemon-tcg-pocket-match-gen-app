@@ -1,4 +1,3 @@
-// src/app/api/cardsuggestions/route.ts
 import { supabase } from '@/lib/supabaseClient'
 import { NextResponse } from 'next/server'
 
