@@ -6,8 +6,8 @@ export async function GET(req: Request) {
   const query = searchParams.get('query') || ''
 
   const { data, error } = await supabase
-    .from('cards')
-    .select('id, name')
+    .from('unique_cards_per_pack')
+    .select('*')
     .ilike('name', `%${query}%`)
     .limit(10)
 
