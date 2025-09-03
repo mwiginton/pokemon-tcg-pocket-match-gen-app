@@ -6,6 +6,7 @@ import styles from '@/styles/layout.module.css'
 type Card = {
   id: string
   name: string
+  pack?: string
 }
 
 type Props = {
@@ -86,17 +87,23 @@ export default function CardAutocompleteInput({ value, onChange, index }: Props)
             overflowY: 'auto',
           }}
         >
-          {suggestions.map(card => (
-            <li
-              key={card.id}
-              onMouseDown={() => handleSelect(card)}
-              data-suggestion="true"
-              tabIndex={-1}
-              style={{ padding: 8, cursor: 'pointer' }}
-            >
-              {card.name}
-            </li>
-          ))}
+        {suggestions.map(card => {
+            const displayPack =
+                card.pack?.includes(' - ') ? card.pack.split(' - ')[0] : card.pack
+            const displayLabel = `${card.name} - ${displayPack}`
+
+            return (
+                <li
+                key={card.id}
+                onMouseDown={() => handleSelect(card)}
+                data-suggestion="true"
+                tabIndex={-1}
+                style={{ padding: 8, cursor: 'pointer' }}
+                >
+                {displayLabel}
+                </li>
+            )
+        })}
         </ul>
       )}
     </div>

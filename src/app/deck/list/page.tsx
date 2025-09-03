@@ -14,8 +14,11 @@ type Deck = {
 type DeckCard = {
   id: string
   deck_id: string
-  card_name: string
+  card_id: string
   card_index: number
+  cards: {
+    name: string
+  } | null
 }
 
 export default function DeckListPage() {
@@ -60,10 +63,10 @@ export default function DeckListPage() {
 
       const deckIds = decksData.map(d => d.id)
 
-      // Fetch deck_cards for all those decks
+      // Fetch deck_cards with card name via foreign key
       const { data: cardsData, error: cardsError } = await supabase
         .from('deck_cards')
-        .select('id, deck_id, card_name, card_index')
+        .select('id, deck_id, card_id, card_index, cards(name)')
         .in('deck_id', deckIds)
 
       if (cardsError) {
@@ -84,30 +87,30 @@ export default function DeckListPage() {
       .sort((a, b) => a.card_index - b.card_index)
   }
 
-    return (
+  return (
     <div className={styles.page}>
-        <div className={styles.card}>
+      <div className={styles.card}>
         <h1 className={styles.header}>📚 Your Saved Decks</h1>
         {loading && <p>Loading...</p>}
         {error && <p style={{ color: 'red' }}>{error}</p>}
         {decks.length === 0 && !loading && (
-            <p>No decks found. <Link href="/deck/new">Create one?</Link></p>
+          <p>No decks found. <Link href="/deck/new">Create one?</Link></p>
         )}
-        </div>
+      </div>
 
-        {decks.map(deck => (
+      {decks.map(deck => (
         <div key={deck.id} className={styles.card}>
-            <h2>{deck.deck_name}</h2>
-            <p style={{ fontSize: '0.9rem', color: '#666' }}>
+          <h2>{deck.deck_name}</h2>
+          <p style={{ fontSize: '0.9rem', color: '#666' }}>
             Created: {new Date(deck.created_at).toLocaleString()}
-            </p>
-            <ol style={{ columns: 2, paddingLeft: 20 }}>
+          </p>
+          <ol style={{ columns: 2, paddingLeft: 20 }}>
             {getCardsForDeck(deck.id).map(card => (
-                <li key={card.id}>{card.card_name}</li>
+              <li key={card.id}>{card.cards?.name ?? '(Unknown Card)'}</li>
             ))}
-            </ol>
+          </ol>
         </div>
-        ))}
+      ))}
     </div>
-    )
+  )
 }
