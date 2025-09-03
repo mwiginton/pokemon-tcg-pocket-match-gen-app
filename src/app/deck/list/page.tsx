@@ -26,13 +26,12 @@ export default function DeckListPage() {
   const [deckCards, setDeckCards] = useState<DeckCard[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchDecksAndCards = async () => {
       setLoading(true)
       setError('')
-
-      // Get user
       const { data: userData } = await supabase.auth.getUser()
       const user = userData?.user
       if (!user) {
@@ -41,7 +40,6 @@ export default function DeckListPage() {
         return
       }
 
-      // Fetch decks
       const { data: decksData, error: decksError } = await supabase
         .from('decks')
         .select('id, deck_name, created_at')
@@ -63,7 +61,6 @@ export default function DeckListPage() {
 
       const deckIds = decksData.map(d => d.id)
 
-      // Fetch deck_cards with card name via foreign key
       const { data: cardsData, error: cardsError } = await supabase
         .from('deck_cards')
         .select('id, deck_id, card_id, card_index, cards(name)')
@@ -81,10 +78,20 @@ export default function DeckListPage() {
     fetchDecksAndCards()
   }, [])
 
-  const getCardsForDeck = (deckId: string) => {
-    return deckCards
+  const getCardsForDeck = (deckId: string) =>
+    deckCards
       .filter(card => card.deck_id === deckId)
       .sort((a, b) => a.card_index - b.card_index)
+
+  const handleDeleteDeck = async (deckId: string) => {
+    const { error } = await supabase.from('decks').delete().eq('id', deckId)
+    if (error) {
+      alert('Failed to delete deck: ' + error.message)
+      return
+    }
+    setDecks(prev => prev.filter(d => d.id !== deckId))
+    setDeckCards(prev => prev.filter(c => c.deck_id !== deckId))
+    setConfirmDeleteId(null)
   }
 
   return (
@@ -100,7 +107,15 @@ export default function DeckListPage() {
 
       {decks.map(deck => (
         <div key={deck.id} className={styles.card}>
-          <h2>{deck.deck_name}</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2>{deck.deck_name}</h2>
+            <button
+              onClick={() => setConfirmDeleteId(deck.id)}
+              style={{ background: 'transparent', border: 'none', color: 'red', cursor: 'pointer' }}
+            >
+              🗑️ Delete
+            </button>
+          </div>
           <p style={{ fontSize: '0.9rem', color: '#666' }}>
             Created: {new Date(deck.created_at).toLocaleString()}
           </p>
@@ -111,6 +126,55 @@ export default function DeckListPage() {
           </ol>
         </div>
       ))}
+
+      {confirmDeleteId && (
+        <div style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          background: '#fff',
+          border: '1px solid #ccc',
+          borderRadius: 8,
+          padding: '1rem 1.5rem',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+          zIndex: 1000,
+          minWidth: 300,
+          color: '#000' // Ensures all default text inside is black
+        }}>
+          <p style={{ marginBottom: 12, fontWeight: 'bold', color: '#000' }}>
+            Are you sure you want to delete this deck?
+          </p>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+            <button
+              onClick={() => handleDeleteDeck(confirmDeleteId)}
+              style={{
+                background: 'red',
+                color: 'white',
+                border: 'none',
+                padding: '6px 12px',
+                borderRadius: 4,
+                cursor: 'pointer'
+              }}
+            >
+              Yes, delete
+            </button>
+            <button
+              onClick={() => setConfirmDeleteId(null)}
+              style={{
+                background: '#ccc',
+                color: '#000', // Explicitly black text for cancel
+                border: 'none',
+                padding: '6px 12px',
+                borderRadius: 4,
+                cursor: 'pointer'
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
