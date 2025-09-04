@@ -109,12 +109,32 @@ export default function DeckListPage() {
         <div key={deck.id} className={styles.card}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h2>{deck.deck_name}</h2>
-            <button
-              onClick={() => setConfirmDeleteId(deck.id)}
-              style={{ background: 'transparent', border: 'none', color: 'red', cursor: 'pointer' }}
-            >
-              🗑️ Delete
-            </button>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <Link
+                href={`/deck/${deck.id}/edit`}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#0070f3',
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                  padding: 0
+                }}
+              >
+                ✏️ Edit
+              </Link>
+              <button
+                onClick={() => setConfirmDeleteId(deck.id)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'red',
+                  cursor: 'pointer'
+                }}
+              >
+                🗑️ Delete
+              </button>
+            </div>
           </div>
           <p style={{ fontSize: '0.9rem', color: '#666' }}>
             Created: {new Date(deck.created_at).toLocaleString()}

@@ -1,12 +1,11 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import styles from '@/styles/layout.module.css'
 
 type Card = {
   id: string
   name: string
-  pack?: string
 }
 
 type Props = {
@@ -19,91 +18,89 @@ export default function CardAutocompleteInput({ value, onChange, index }: Props)
   const [input, setInput] = useState(value.name)
   const [suggestions, setSuggestions] = useState<Card[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
-  const justSelectedRef = useRef(false)
+  const [isFocused, setIsFocused] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (justSelectedRef.current) {
-      justSelectedRef.current = false
+    if (input.trim().length < 2) {
+      setSuggestions([])
       return
     }
 
     const fetchSuggestions = async () => {
-        if (input.trim().length < 2) {
-            setSuggestions([])
-            setShowSuggestions(false)
-            return
-        }
-
-        const { data, error } = await fetch(`/api/cardsuggestions?query=${input}`).then(res =>
-            res.json()
-        )
-
-        if (!error && data) {
-            setSuggestions(data)
-            setShowSuggestions(true)
-        }
+      const res = await fetch(`/api/cardsuggestions?query=${input}`)
+      const { data } = await res.json()
+      setSuggestions(data || [])
     }
 
-    const debounce = setTimeout(fetchSuggestions, 200)
-    return () => clearTimeout(debounce)
+    fetchSuggestions()
   }, [input])
 
-  const handleSelect = (card: Card) => {
-    justSelectedRef.current = true
-    onChange(card)
-    setInput(card.name)
-    setShowSuggestions(false)
-  }
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div ref={containerRef} style={{ position: 'relative' }}>
       <input
         type="text"
         value={input}
         placeholder={`Card ${index + 1}`}
         onChange={e => {
-          setInput(e.target.value)
-          onChange({ id: '', name: e.target.value }) // reset selection
+          const val = e.target.value
+          setInput(val)
+          onChange({ id: '', name: val }) // clear selection on edit
+          setShowSuggestions(true)
         }}
+        onFocus={() => {
+          setIsFocused(true)
+          if (suggestions.length > 0) setShowSuggestions(true)
+        }}
+        onBlur={() => setIsFocused(false)} // optional — for cleaner interaction
         className={styles.input}
-        onFocus={() => setShowSuggestions(true)}
-        onBlur={(e) => {
-          const relatedTarget = e.relatedTarget as HTMLElement | null
-          const isClickInsideList = relatedTarget?.dataset?.suggestion === 'true'
-          if (!isClickInsideList) {
-            setShowSuggestions(false)
-          }
-        }}
       />
+
       {showSuggestions && suggestions.length > 0 && (
         <ul
           style={{
             position: 'absolute',
-            background: '#fff',
-            zIndex: 10,
+            zIndex: 999,
+            background: 'white',
             border: '1px solid #ccc',
+            borderRadius: 4,
             width: '100%',
-            maxHeight: 160,
+            maxHeight: 200,
             overflowY: 'auto',
+            listStyle: 'none',
+            padding: 0,
+            marginTop: 4,
           }}
         >
-        {suggestions.map(card => {
-            const displayPack =
-                card.pack?.includes(' - ') ? card.pack.split(' - ')[0] : card.pack
-            const displayLabel = `${card.name} - ${displayPack}`
-
-            return (
-                <li
-                key={card.id}
-                onMouseDown={() => handleSelect(card)}
-                data-suggestion="true"
-                tabIndex={-1}
-                style={{ padding: 8, cursor: 'pointer' }}
-                >
-                {displayLabel}
-                </li>
-            )
-        })}
+          {suggestions.map((card) => (
+            <li
+              key={card.id}
+              onMouseDown={() => {
+                onChange(card)
+                setInput(card.name)
+                setShowSuggestions(false)
+              }}
+              style={{
+                padding: '8px 12px',
+                cursor: 'pointer',
+              }}
+            >
+              {card.name}
+            </li>
+          ))}
         </ul>
       )}
     </div>
