@@ -5,7 +5,8 @@ import styles from '@/styles/layout.module.css'
 
 type Card = {
   id: string
-  name: string
+  name: string,
+  pack: string
 }
 
 type Props = {
@@ -70,39 +71,39 @@ export default function CardAutocompleteInput({ value, onChange, index }: Props)
       />
 
       {showSuggestions && suggestions.length > 0 && (
-        <ul
-          style={{
-            position: 'absolute',
-            zIndex: 999,
-            background: 'white',
-            border: '1px solid #ccc',
-            borderRadius: 4,
-            width: '100%',
-            maxHeight: 200,
-            overflowY: 'auto',
-            listStyle: 'none',
-            padding: 0,
-            marginTop: 4,
-          }}
-        >
-          {suggestions.map((card) => (
-            <li
-              key={card.id}
-              onMouseDown={() => {
-                onChange(card)
-                setInput(card.name)
-                setShowSuggestions(false)
-              }}
-              style={{
-                padding: '8px 12px',
-                cursor: 'pointer',
-              }}
-            >
-              {card.name}
-            </li>
-          ))}
-        </ul>
-      )}
+      <ul
+        style={{
+          position: 'absolute',
+          zIndex: 999,
+          background: 'white',
+          border: '1px solid #ccc',
+          borderRadius: 4,
+          width: '100%',
+          maxHeight: 200,
+          overflowY: 'auto',
+          listStyle: 'none',
+          padding: 0,
+          marginTop: 4,
+        }}
+      >
+        {suggestions.map((card) => (
+          <li
+            key={card.id}
+            onMouseDown={() => {
+              onChange(card)
+              setInput(card.name)
+              setShowSuggestions(false)
+            }}
+            style={{
+              padding: '8px 12px',
+              cursor: 'pointer',
+            }}
+          >
+            {`${card.name} - ${card.pack.split(' - ')[0]}`}
+          </li>
+        ))}
+      </ul>
+    )}
     </div>
   )
 }
