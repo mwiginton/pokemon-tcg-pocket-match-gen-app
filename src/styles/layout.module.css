@@ -61,3 +61,23 @@
 .button:hover {
   background-color: #2563eb;
 }
+
+.suggestion {
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+
+.suggestion:hover {
+  background-color: #f0f0f0;
+}
+
+.cardName {
+  font-weight: bold;
+}
+
+.cardPack {
+  font-size: 0.85rem;
+  color: #666;
+}

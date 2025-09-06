@@ -5,7 +5,7 @@ import styles from '@/styles/layout.module.css'
 
 type Card = {
   id: string
-  name: string,
+  name: string
   pack: string
 }
 
@@ -16,7 +16,7 @@ type Props = {
 }
 
 export default function CardAutocompleteInput({ value, onChange, index }: Props) {
-  const [input, setInput] = useState(value.name)
+  const [input, setInput] = useState(value.id ? `${value.name} (${value.pack})` : value.name)
   const [suggestions, setSuggestions] = useState<Card[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [isFocused, setIsFocused] = useState(false)
@@ -59,51 +59,49 @@ export default function CardAutocompleteInput({ value, onChange, index }: Props)
         onChange={e => {
           const val = e.target.value
           setInput(val)
-          onChange({ id: '', name: val }) // clear selection on edit
+          onChange({ id: '', name: val, pack: '' }) // Free-text resets selection
           setShowSuggestions(true)
         }}
         onFocus={() => {
           setIsFocused(true)
           if (suggestions.length > 0) setShowSuggestions(true)
         }}
-        onBlur={() => setIsFocused(false)} // optional — for cleaner interaction
+        onBlur={() => setIsFocused(false)}
         className={styles.input}
       />
 
       {showSuggestions && suggestions.length > 0 && (
-      <ul
-        style={{
-          position: 'absolute',
-          zIndex: 999,
-          background: 'white',
-          border: '1px solid #ccc',
-          borderRadius: 4,
-          width: '100%',
-          maxHeight: 200,
-          overflowY: 'auto',
-          listStyle: 'none',
-          padding: 0,
-          marginTop: 4,
-        }}
-      >
-        {suggestions.map((card) => (
-          <li
-            key={card.id}
-            onMouseDown={() => {
-              onChange(card)
-              setInput(card.name)
-              setShowSuggestions(false)
-            }}
-            style={{
-              padding: '8px 12px',
-              cursor: 'pointer',
-            }}
-          >
-            {`${card.name} - ${card.pack.split(' - ')[0]}`}
-          </li>
-        ))}
-      </ul>
-    )}
+        <ul
+          style={{
+            position: 'absolute',
+            zIndex: 999,
+            background: 'white',
+            border: '1px solid #ccc',
+            borderRadius: 4,
+            width: '100%',
+            maxHeight: 200,
+            overflowY: 'auto',
+            listStyle: 'none',
+            padding: 0,
+            marginTop: 4,
+          }}
+        >
+          {suggestions.map((card) => (
+            <li
+              key={card.id}
+              onMouseDown={() => {
+                onChange(card)
+                setInput(`${card.name} (${card.pack})`)
+                setShowSuggestions(false)
+              }}
+              className={styles.suggestion}
+            >
+              <span className={styles.cardName}>{card.name}</span>
+              <span className={styles.cardPack}>({card.pack})</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }
