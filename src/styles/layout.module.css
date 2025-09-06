@@ -22,10 +22,16 @@
   color: #333333;
 }
 
-.header {
-  margin-top: 2rem;
-  text-align: center;
-  color: #222222;
+.headerWithIcon {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+.headerText {
+  font-size: 1.75rem;
+  font-weight: bold;
 }
 
 .input {
@@ -80,4 +86,39 @@
 .cardPack {
   font-size: 0.85rem;
   color: #666;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 10px;
+}
+
+.iconButton {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.9rem;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+}
+
+.iconButtonEdit {
+  background: #eef6ff;
+  color: #0070f3;
+}
+
+.iconButtonEdit:hover {
+  background: #d6e9ff;
+}
+
+.iconButtonDelete {
+  background: #ffecec;
+  color: #d10000;
+}
+
+.iconButtonDelete:hover {
+  background: #ffc6c6;
 }

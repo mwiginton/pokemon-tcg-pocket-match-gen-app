@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import Link from 'next/link'
 import styles from '@/styles/layout.module.css'
+import { Pencil, Trash2 } from 'lucide-react'
+import { BookMarked } from 'lucide-react'
 
 type Deck = {
   id: string
@@ -97,7 +99,10 @@ export default function DeckListPage() {
   return (
     <div className={styles.page}>
       <div className={styles.card}>
-        <h1 className={styles.header}>📚 Your Saved Decks</h1>
+        <div className={styles.headerWithIcon}>
+          <BookMarked size={28} strokeWidth={2} />
+          <h1 className={styles.headerText}>Your Saved Decks</h1>
+        </div>
         {loading && <p>Loading...</p>}
         {error && <p style={{ color: 'red' }}>{error}</p>}
         {decks.length === 0 && !loading && (
@@ -109,30 +114,20 @@ export default function DeckListPage() {
         <div key={deck.id} className={styles.card}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h2>{deck.deck_name}</h2>
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div className={styles.buttonGroup}>
               <Link
                 href={`/deck/${deck.id}/edit`}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: '#0070f3',
-                  cursor: 'pointer',
-                  textDecoration: 'underline',
-                  padding: 0
-                }}
+                className={`${styles.iconButton} ${styles.iconButtonEdit}`}
               >
-                ✏️ Edit
+                <Pencil size={16} />
+                <span>Edit</span>
               </Link>
               <button
                 onClick={() => setConfirmDeleteId(deck.id)}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: 'red',
-                  cursor: 'pointer'
-                }}
+                className={`${styles.iconButton} ${styles.iconButtonDelete}`}
               >
-                🗑️ Delete
+                <Trash2 size={16} />
+                <span>Delete</span>
               </button>
             </div>
           </div>
@@ -160,7 +155,7 @@ export default function DeckListPage() {
           boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
           zIndex: 1000,
           minWidth: 300,
-          color: '#000' // Ensures all default text inside is black
+          color: '#000'
         }}>
           <p style={{ marginBottom: 12, fontWeight: 'bold', color: '#000' }}>
             Are you sure you want to delete this deck?
@@ -183,7 +178,7 @@ export default function DeckListPage() {
               onClick={() => setConfirmDeleteId(null)}
               style={{
                 background: '#ccc',
-                color: '#000', // Explicitly black text for cancel
+                color: '#000',
                 border: 'none',
                 padding: '6px 12px',
                 borderRadius: 4,
