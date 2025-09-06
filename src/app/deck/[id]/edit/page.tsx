@@ -9,6 +9,7 @@ import CardAutocompleteInput from '@/components/CardAutocompleteInput'
 type CardEntry = {
   id: string
   name: string
+  pack: string
 }
 
 export default function EditDeckPage() {
@@ -17,7 +18,7 @@ export default function EditDeckPage() {
   const deckId = params.id as string
 
   const [deckName, setDeckName] = useState('')
-  const [cards, setCards] = useState<CardEntry[]>(Array(20).fill({ id: '', name: '' }))
+  const [cards, setCards] = useState<CardEntry[]>(Array(20).fill({ id: '', name: '', pack: '' }))
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -50,10 +51,10 @@ export default function EditDeckPage() {
 
       setDeckName(deck.deck_name)
 
-      // Get card entries
+      // Get card entries with name + pack
       const { data: deckCards, error: cardError } = await supabase
         .from('deck_cards')
-        .select('card_id, card_index, cards(name)')
+        .select('card_id, card_index, cards(name, pack)')
         .eq('deck_id', deckId)
         .order('card_index', { ascending: true })
 
@@ -63,12 +64,13 @@ export default function EditDeckPage() {
         return
       }
 
-      const formatted = Array(20).fill({ id: '', name: '' })
+      const formatted = Array(20).fill({ id: '', name: '', pack: '' })
       deckCards.forEach((dc: any) => {
         if (dc.card_index < 20) {
           formatted[dc.card_index] = {
             id: dc.card_id,
             name: dc.cards?.name || '',
+            pack: dc.cards?.pack || '',
           }
         }
       })

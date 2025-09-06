@@ -28,13 +28,26 @@ export default function CardAutocompleteInput({ value, onChange, index }: Props)
       return
     }
 
-    const fetchSuggestions = async () => {
-      const res = await fetch(`/api/cardsuggestions?query=${input}`)
-      const { data } = await res.json()
-      setSuggestions(data || [])
-    }
+    const safeQuery = encodeURIComponent(input.replace(/\s*\(undefined\)/gi, '').trim())
+    const controller = new AbortController()
+    const debounceTimeout = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/cardsuggestions?query=${safeQuery}`, {
+          signal: controller.signal,
+        })
+        const { data } = await res.json()
+        setSuggestions(data || [])
+      } catch (err: any) {
+        if (err.name !== 'AbortError') {
+          console.error('Error fetching card suggestions:', err)
+        }
+      }
+    }, 300) // Delay of 300ms for debounce
 
-    fetchSuggestions()
+    return () => {
+      clearTimeout(debounceTimeout)
+      controller.abort()
+    }
   }, [input])
 
   useEffect(() => {
