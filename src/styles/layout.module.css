@@ -122,3 +122,22 @@
 .iconButtonDelete:hover {
   background: #ffc6c6;
 }
+
+.signOutButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 6px;
+  background-color: #f4f4f4;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+}
+
+.signOutButton:hover {
+  background-color: #e4e4e4;
+}
