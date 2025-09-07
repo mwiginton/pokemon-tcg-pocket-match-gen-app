@@ -20,6 +20,7 @@ type DeckCard = {
   card_index: number
   cards: {
     name: string
+    image: string
   } | null
 }
 
@@ -29,6 +30,7 @@ export default function DeckListPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [selectedCardImage, setSelectedCardImage] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchDecksAndCards = async () => {
@@ -65,7 +67,7 @@ export default function DeckListPage() {
 
       const { data: cardsData, error: cardsError } = await supabase
         .from('deck_cards')
-        .select('id, deck_id, card_id, card_index, cards(name)')
+        .select('id, deck_id, card_id, card_index, cards(name, image)')
         .in('deck_id', deckIds)
 
       if (cardsError) {
@@ -136,7 +138,17 @@ export default function DeckListPage() {
           </p>
           <ol style={{ columns: 2, paddingLeft: 20 }}>
             {getCardsForDeck(deck.id).map(card => (
-              <li key={card.id}>{card.cards?.name ?? '(Unknown Card)'}</li>
+              <li
+                key={card.id}
+                onClick={() => card.cards?.image && setSelectedCardImage(card.cards.image)}
+                style={{
+                  cursor: card.cards?.image ? 'pointer' : 'default',
+                  textDecoration: card.cards?.image ? 'underline' : 'none',
+                  marginBottom: '0.5rem',
+                }}
+              >
+                {card.cards?.name ?? '(Unknown Card)'}
+              </li>
             ))}
           </ol>
         </div>
@@ -186,6 +198,64 @@ export default function DeckListPage() {
               }}
             >
               Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {selectedCardImage && (
+        <div
+          onClick={() => setSelectedCardImage(null)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            backgroundColor: 'rgba(0,0,0,0.7)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1100,
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: '#fff',
+              padding: '1rem',
+              borderRadius: 8,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+              overflow: 'auto',
+            }}
+          >
+            <img
+              src={selectedCardImage}
+              alt="Card"
+              style={{
+                maxWidth: '100%',
+                height: 'auto',
+                borderRadius: 8,
+                display: 'block',
+                margin: '0 auto',
+              }}
+            />
+            <button
+              onClick={() => setSelectedCardImage(null)}
+              style={{
+                display: 'block',
+                margin: '1rem auto 0',
+                padding: '6px 12px',
+                borderRadius: 4,
+                background: '#333',
+                color: '#fff',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              Close
             </button>
           </div>
         </div>
