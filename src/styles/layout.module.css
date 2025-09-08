@@ -141,3 +141,46 @@
 .signOutButton:hover {
   background-color: #e4e4e4;
 }
+
+.deckNameInput {
+  background-color: #f0f9ff;
+  font-weight: 600;
+  border: 2px solid #cce3f9;
+}
+
+.cardGroup {
+  padding: 1rem;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  background-color: #fafafa;
+  margin-top: 0.5rem;
+}
+
+.label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+  font-size: 0.95rem;
+}
+
+.helperText {
+  font-size: 0.85rem;
+  color: #555;
+  margin-bottom: 0.5rem;
+}
+
+.subheader {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.cardInputRow {
+  margin-bottom: 1rem;
+}
+
+.errorText {
+  color: red;
+  margin-bottom: 1rem;
+}

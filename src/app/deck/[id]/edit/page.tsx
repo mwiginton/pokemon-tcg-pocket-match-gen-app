@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import styles from '@/styles/layout.module.css'
 import CardAutocompleteInput from '@/components/CardAutocompleteInput'
+import { Pencil } from 'lucide-react'
 
 type CardEntry = {
   id: string
@@ -148,29 +149,40 @@ export default function EditDeckPage() {
   return (
     <div className={styles.page}>
       <div className={styles.card}>
-        <h1 className={styles.header}>✏️ Edit Deck</h1>
+        <div className={styles.headerWithIcon}>
+          <Pencil size={24} />
+          <span className={styles.headerText}>Edit Deck</span>
+        </div>
 
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {error && <p className={styles.errorText}>{error}</p>}
         {loading && <p>Loading...</p>}
 
         {!loading && (
           <>
+            <label className={styles.label} htmlFor="deckName">Deck Name</label>
             <input
+              id="deckName"
               type="text"
               placeholder="Deck Name"
               value={deckName}
               onChange={e => setDeckName(e.target.value)}
-              className={styles.input}
+              className={`${styles.input} ${styles.deckNameInput}`}
             />
+            <p className={styles.helperText}>Update the name of your deck to something descriptive.</p>
 
-            {cards.map((card, index) => (
-              <CardAutocompleteInput
-                key={index}
-                index={index}
-                value={card}
-                onChange={(newCard) => handleCardSlotChange(index, newCard)}
-              />
-            ))}
+            <h2 className={styles.subheader}>Edit 20 Cards</h2>
+            <div className={styles.cardGroup}>
+              {cards.map((card, index) => (
+                <div key={index} className={styles.cardInputRow}>
+                  <label className={styles.label} htmlFor={`card-${index}`}>Card {index + 1}</label>
+                  <CardAutocompleteInput
+                    index={index}
+                    value={card}
+                    onChange={(newCard) => handleCardSlotChange(index, newCard)}
+                  />
+                </div>
+              ))}
+            </div>
 
             <button
               onClick={handleUpdate}

@@ -20,7 +20,7 @@ export default function Home() {
       const { data } = await supabase.auth.getUser()
       if (data.user) {
         setUser(data.user)
-        router.push('/dashboard') // ✅ redirect if already signed in
+        router.push('/dashboard')
       }
     }
     getUser()
@@ -31,7 +31,7 @@ export default function Home() {
       const currentUser = session?.user ?? null
       setUser(currentUser)
       if (currentUser) {
-        router.push('/dashboard') // ✅ redirect when auth state changes
+        router.push('/dashboard')
       }
     })
 
@@ -42,7 +42,7 @@ export default function Home() {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/dashboard`, // ✅ after Google OAuth
+        redirectTo: `${window.location.origin}/dashboard`,
       },
     })
   }
@@ -50,7 +50,7 @@ export default function Home() {
   const signOut = async () => {
     await supabase.auth.signOut()
     setUser(null)
-    router.push('/') // ✅ back to home after sign-out
+    router.push('/')
   }
 
   const handleEmailLogin = async (e: React.FormEvent) => {
@@ -61,7 +61,7 @@ export default function Home() {
     if (error) {
       setAuthError(error.message)
     } else {
-      router.push('/dashboard') // ✅ redirect on successful login
+      router.push('/dashboard')
     }
     setLoading(false)
   }
@@ -74,7 +74,7 @@ export default function Home() {
     if (error) {
       setAuthError(error.message)
     } else {
-      router.push('/dashboard') // ✅ redirect on successful signup
+      router.push('/dashboard')
     }
     setLoading(false)
   }

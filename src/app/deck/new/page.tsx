@@ -87,24 +87,34 @@ export default function NewDeckPage() {
     <div className={styles.page}>
       <div className={styles.card}>
         <h1 className={styles.header}>Create New Deck</h1>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {error && <p className={styles.errorText}>{error}</p>}
 
+        <label className={styles.label} htmlFor="deckName">Deck Name</label>
         <input
+          id="deckName"
           type="text"
           placeholder="Deck Name"
           value={deckName}
           onChange={e => setDeckName(e.target.value)}
-          className={styles.input}
+          className={`${styles.input} ${styles.deckNameInput}`}
         />
+        <p className={styles.helperText}>Give your deck a unique and descriptive name.</p>
 
-        {cards.map((card, index) => (
-          <CardAutocompleteInput
-            key={index}
-            index={index}
-            value={card}
-            onChange={(newCard) => handleCardSlotChange(index, newCard)}
-          />
-        ))}
+        <h2 className={styles.subheader}>Add 20 Cards</h2>
+        <div className={styles.cardGroup}>
+          {cards.map((card, index) => (
+            <div key={index} className={styles.cardInputRow}>
+              <label className={styles.label} htmlFor={`card-${index}`}>
+                Card {index + 1}
+              </label>
+              <CardAutocompleteInput
+                index={index}
+                value={card}
+                onChange={(newCard) => handleCardSlotChange(index, newCard)}
+              />
+            </div>
+          ))}
+        </div>
 
         <button
           onClick={handleSubmit}
