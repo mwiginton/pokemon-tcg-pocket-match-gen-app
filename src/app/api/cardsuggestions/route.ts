@@ -6,14 +6,21 @@ export async function GET(req: Request) {
   const query = searchParams.get('query') || ''
 
   const { data, error } = await supabase
-    .from('unique_cards_per_pack')
-    .select('*')
-    .ilike('name', `%${query}%`)
-    .limit(10)
+    .from('cards')
+    .select('id, name, pack')
+    .filter('name', 'ilike', `%${query}%`)
+    .order('name', { ascending: true })
+    .limit(50)
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json({ data })
+  console.log("DATA " + data);
+
+  const uniqueCards = Array.from(
+    new Map(data.map(card => [`${card.name}-${card.pack}`, card])).values()
+  )
+
+  return NextResponse.json({ data: uniqueCards })
 }
