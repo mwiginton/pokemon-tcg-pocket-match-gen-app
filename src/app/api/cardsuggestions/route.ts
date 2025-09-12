@@ -16,8 +16,6 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  console.log("DATA " + data);
-
   const uniqueCards = Array.from(
     new Map(data.map(card => [`${card.name}-${card.pack}`, card])).values()
   )
