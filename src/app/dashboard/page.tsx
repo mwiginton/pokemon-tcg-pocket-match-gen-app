@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabaseClient'
 import styles from './dashboard.module.css'
 import Link from 'next/link'
 import { PlusCircle, Library, LogOut } from 'lucide-react'
+import { Dice3 } from 'lucide-react'
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null)
@@ -47,6 +48,13 @@ export default function Dashboard() {
             <button className={styles.signOutButton}>
               <Library size={18} style={{ marginRight: 8 }} />
               View My Decks
+            </button>
+          </Link>
+
+          <Link href="/battle/random">
+            <button className={styles.signOutButton}>
+              <Dice3 size={18} style={{ marginRight: 8 }} />
+              Start Random Match
             </button>
           </Link>
 
