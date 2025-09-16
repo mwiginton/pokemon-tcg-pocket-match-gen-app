@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 
 export default function Home() {
   const [user, setUser] = useState<any>(null)
+  const [loadingUser, setLoadingUser] = useState(true) // 👈 NEW
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [authError, setAuthError] = useState('')
@@ -21,8 +22,11 @@ export default function Home() {
       if (data.user) {
         setUser(data.user)
         router.push('/dashboard')
+      } else {
+        setLoadingUser(false) // 👈 Only stop loading if user is not found
       }
     }
+
     getUser()
 
     const {
@@ -32,6 +36,8 @@ export default function Home() {
       setUser(currentUser)
       if (currentUser) {
         router.push('/dashboard')
+      } else {
+        setLoadingUser(false)
       }
     })
 
@@ -77,6 +83,20 @@ export default function Home() {
       router.push('/dashboard')
     }
     setLoading(false)
+  }
+
+  if (loadingUser) {
+    return (
+      <div className={styles.page}>
+        <main className={styles.main}>
+          <div className={styles.card}>
+            <Image src="/logo.svg" alt="Logo" width={64} height={64} className={styles.logo} />
+            <h1 className={styles.title}>Loading your session...</h1>
+            <div className={styles.spinner}></div>
+          </div>
+        </main>
+      </div>
+    )
   }
 
   return (

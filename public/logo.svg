@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <style>
+      :root { --accent: #F5C518; } /* change this to any accent color */
+      .stroke { stroke: #0F172A; }  /* slate-900 */
+      .fill { fill: none; }
+    </style>
+  </defs>
+
+  <!-- Background transparent for app icon flexibility -->
+  <g stroke-width="10" stroke-linecap="round" stroke-linejoin="round" class="stroke">
+
+    <!-- Ledger/card -->
+    <rect x="40" y="72" rx="16" ry="16" width="176" height="136" class="fill"/>
+
+    <!-- Ledger lines -->
+    <line x1="72" y1="112" x2="168" y2="112"/>
+    <line x1="72" y1="140" x2="152" y2="140"/>
+    <line x1="72" y1="168" x2="132" y2="168"/>
+
+    <!-- Poké-inspired emblem (abstracted) -->
+    <circle cx="128" cy="60" r="28" fill="white"/>
+    <circle cx="128" cy="60" r="28" fill="none"/>
+    <circle cx="128" cy="60" r="10" fill="none"/>
+    <line x1="100" y1="60" x2="156" y2="60"/>
+
+    <!-- Win-rate badge -->
+    <circle cx="188" cy="184" r="28" fill="white"/>
+    <circle cx="188" cy="184" r="28" fill="none"/>
+    <polyline points="176,184 184,192 200,174" fill="none"/>
+  </g>
+
+  <!-- Accent ring for a subtle pop -->
+  <circle cx="188" cy="184" r="32" fill="none" stroke="var(--accent)" stroke-width="6"/>
+</svg>
