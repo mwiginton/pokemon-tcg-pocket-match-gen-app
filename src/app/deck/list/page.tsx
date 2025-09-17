@@ -37,15 +37,15 @@ type DeckStats = {
 
 export default function DeckListPage() {
   const [decks, setDecks] = useState<Deck[]>([])
-  const [deckCards, setDeckCards] = useState<DeckCard[]>([])
   const [deckStats, setDeckStats] = useState<Record<string, DeckStats>>({})
+  const [expandedDecks, setExpandedDecks] = useState<Record<string, DeckCard[]>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [selectedCardImage, setSelectedCardImage] = useState<string | null>(null)
 
   useEffect(() => {
-    const fetchDecksAndCards = async () => {
+    const fetchDecksAndStats = async () => {
       setLoading(true)
       setError('')
 
@@ -70,25 +70,11 @@ export default function DeckListPage() {
       }
 
       setDecks(decksData)
-      const deckIds = decksData.map((d) => d.id)
-
-      const { data: cardsData, error: cardsError } = await supabase
-        .from('deck_cards')
-        .select('id, deck_id, card_id, card_index, cards(name, image)')
-        .in('deck_id', deckIds)
-
-      if (cardsError) {
-        setError(cardsError.message)
-      } else {
-        setDeckCards(cardsData || [])
-      }
-
-      await refreshDeckStats(deckIds)
-
+      await refreshDeckStats(decksData.map(d => d.id))
       setLoading(false)
     }
 
-    fetchDecksAndCards()
+    fetchDecksAndStats()
   }, [])
 
   const refreshDeckStats = async (deckIds: string[]) => {
@@ -149,10 +135,30 @@ export default function DeckListPage() {
     }
   }
 
-  const getCardsForDeck = (deckId: string) =>
-    deckCards
-      .filter((card) => card.deck_id === deckId)
-      .sort((a, b) => a.card_index - b.card_index)
+  const toggleDeckCards = async (deckId: string) => {
+    if (expandedDecks[deckId]) {
+      const updated = { ...expandedDecks }
+      delete updated[deckId]
+      setExpandedDecks(updated)
+      return
+    }
+
+    const { data, error } = await supabase
+      .from('deck_cards')
+      .select('id, deck_id, card_id, card_index, cards(name, image)')
+      .eq('deck_id', deckId)
+      .order('card_index', { ascending: true })
+
+    if (error) {
+      alert('Failed to load cards: ' + error.message)
+      return
+    }
+
+    setExpandedDecks(prev => ({
+      ...prev,
+      [deckId]: data || [],
+    }))
+  }
 
   const handleDeleteDeck = async (deckId: string) => {
     const { error } = await supabase.from('decks').delete().eq('id', deckId)
@@ -161,8 +167,12 @@ export default function DeckListPage() {
       return
     }
 
-    setDecks((prev) => prev.filter((d) => d.id !== deckId))
-    setDeckCards((prev) => prev.filter((c) => c.deck_id !== deckId))
+    setDecks(prev => prev.filter(d => d.id !== deckId))
+    setExpandedDecks(prev => {
+      const copy = { ...prev }
+      delete copy[deckId]
+      return copy
+    })
     setConfirmDeleteId(null)
   }
 
@@ -177,28 +187,22 @@ export default function DeckListPage() {
         {loading && <p>Loading...</p>}
         {error && <p style={{ color: 'red' }}>{error}</p>}
         {decks.length === 0 && !loading && (
-          <p>
-            No decks found. <Link href="/deck/new">Create one?</Link>
-          </p>
+          <p>No decks found. <Link href="/deck/new">Create one?</Link></p>
         )}
       </div>
 
       {decks.map((deck) => {
         const stats = deckStats[deck.id]
-        const winRate =
-          stats && stats.total_games > 0
-            ? Math.round((stats.wins / stats.total_games) * 100)
-            : null
+        const winRate = stats && stats.total_games > 0
+          ? Math.round((stats.wins / stats.total_games) * 100)
+          : 0
 
         return (
           <div key={deck.id} className={styles.card}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2>{deck.deck_name}</h2>
               <div className={styles.buttonGroup}>
-                <Link
-                  href={`/deck/${deck.id}/edit`}
-                  className={`${styles.iconButton} ${styles.iconButtonEdit}`}
-                >
+                <Link href={`/deck/${deck.id}/edit`} className={`${styles.iconButton} ${styles.iconButtonEdit}`}>
                   <Pencil size={16} />
                   <span>Edit</span>
                 </Link>
@@ -218,134 +222,76 @@ export default function DeckListPage() {
 
             {stats && (
               <p style={{ fontSize: '0.85rem', color: '#444' }}>
-                Games Played: {stats.total_games}, Wins: {stats.wins}, Win Rate: {winRate ?? 0}%
+                Games Played: {stats.total_games}, Wins: {stats.wins}, Win Rate: {winRate}%
               </p>
             )}
 
             <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
-              <button
-                onClick={() => recordGame(deck.id, 'win')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 10px',
-                  background: '#e6f9ec',
-                  color: '#1a7f37',
-                  border: '1px solid #b2e0c0',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                  fontSize: '0.9rem',
-                }}
-              >
-                <Trophy size={16} />
-                Record Win
+              <button onClick={() => recordGame(deck.id, 'win')} style={recordBtnStyle('#e6f9ec', '#1a7f37', '#b2e0c0')}>
+                <Trophy size={16} /> Record Win
               </button>
-
-              <button
-                onClick={() => recordGame(deck.id, 'loss')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 10px',
-                  background: '#ffecec',
-                  color: '#c52d2d',
-                  border: '1px solid #f5baba',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                  fontSize: '0.9rem',
-                }}
-              >
-                <XCircle size={16} />
-                Record Loss
+              <button onClick={() => recordGame(deck.id, 'loss')} style={recordBtnStyle('#ffecec', '#c52d2d', '#f5baba')}>
+                <XCircle size={16} /> Record Loss
               </button>
-
-              <button
-                onClick={() => resetGameStats(deck.id)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 10px',
-                  background: '#eef3fb',
-                  color: '#205493',
-                  border: '1px solid #bfd7f2',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                  fontSize: '0.9rem',
-                }}
-              >
-                <RotateCcw size={16} />
-                Reset Stats
+              <button onClick={() => resetGameStats(deck.id)} style={recordBtnStyle('#eef3fb', '#205493', '#bfd7f2')}>
+                <RotateCcw size={16} /> Reset Stats
               </button>
             </div>
 
-            <ol style={{ columns: 2, paddingLeft: 20, marginTop: '1rem' }}>
-              {getCardsForDeck(deck.id).map((card) => (
-                <li
-                  key={card.id}
-                  onClick={() =>
-                    card.cards?.image && setSelectedCardImage(card.cards.image)
-                  }
-                  style={{
-                    cursor: card.cards?.image ? 'pointer' : 'default',
-                    textDecoration: card.cards?.image ? 'underline' : 'none',
-                    marginBottom: '0.5rem',
-                  }}
-                >
-                  {card.cards?.name ?? '(Unknown Card)'}
-                </li>
-              ))}
-            </ol>
+            <button
+              onClick={() => toggleDeckCards(deck.id)}
+              style={{
+                marginTop: '1rem',
+                padding: '6px 12px',
+                background: '#eaf2ff',
+                color: '#205493',
+                border: '1px solid #a5c5f5',
+                borderRadius: 6,
+                cursor: 'pointer',
+                fontWeight: 500,
+                fontSize: '0.9rem',
+              }}
+            >
+              {expandedDecks[deck.id] ? 'Hide Cards' : 'View Cards'}
+            </button>
+
+            {expandedDecks[deck.id] && (
+              <ol style={{ columns: 2, paddingLeft: 20, marginTop: '1rem' }}>
+                {expandedDecks[deck.id].map((card) => (
+                  <li
+                    key={card.id}
+                    onClick={() => card.cards?.image && setSelectedCardImage(card.cards.image)}
+                    style={{
+                      cursor: card.cards?.image ? 'pointer' : 'default',
+                      textDecoration: card.cards?.image ? 'underline' : 'none',
+                      marginBottom: '0.5rem',
+                    }}
+                  >
+                    {card.cards?.name ?? '(Unknown Card)'}
+                  </li>
+                ))}
+              </ol>
+            )}
           </div>
         )
       })}
 
       {/* Confirm Delete Modal */}
       {confirmDeleteId && (
-        <div
-          style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            background: '#fff',
-            border: '1px solid #ccc',
-            borderRadius: 8,
-            padding: '1rem 1.5rem',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-            zIndex: 1000,
-            minWidth: 300,
-          }}
-        >
+        <div style={modalStyle}>
           <p style={{ marginBottom: 12, fontWeight: 'bold' }}>
             Are you sure you want to delete this deck?
           </p>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
             <button
               onClick={() => handleDeleteDeck(confirmDeleteId)}
-              style={{
-                background: 'red',
-                color: 'white',
-                border: 'none',
-                padding: '6px 12px',
-                borderRadius: 4,
-                cursor: 'pointer',
-              }}
+              style={{ ...confirmBtnStyle, background: 'red', color: 'white' }}
             >
               Yes, delete
             </button>
             <button
               onClick={() => setConfirmDeleteId(null)}
-              style={{
-                background: '#ccc',
-                color: '#000',
-                border: 'none',
-                padding: '6px 12px',
-                borderRadius: 4,
-                cursor: 'pointer',
-              }}
+              style={{ ...confirmBtnStyle, background: '#ccc', color: '#000' }}
             >
               Cancel
             </button>
@@ -376,33 +322,21 @@ export default function DeckListPage() {
               background: '#fff',
               padding: '1rem',
               borderRadius: 8,
-              boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
               maxWidth: '90vw',
               maxHeight: '90vh',
               overflow: 'auto',
             }}
           >
-            <img
-              src={selectedCardImage}
-              alt="Card"
-              style={{
-                maxWidth: '100%',
-                height: 'auto',
-                borderRadius: 8,
-                display: 'block',
-                margin: '0 auto',
-              }}
-            />
+            <img src={selectedCardImage} alt="Card" style={{ maxWidth: '100%' }} />
             <button
               onClick={() => setSelectedCardImage(null)}
               style={{
                 display: 'block',
                 margin: '1rem auto 0',
                 padding: '6px 12px',
-                borderRadius: 4,
                 background: '#333',
                 color: '#fff',
-                border: 'none',
+                borderRadius: 4,
                 cursor: 'pointer',
               }}
             >
@@ -413,4 +347,38 @@ export default function DeckListPage() {
       )}
     </div>
   )
+}
+
+const recordBtnStyle = (bg: string, color: string, border: string) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '6px',
+  padding: '6px 10px',
+  background: bg,
+  color: color,
+  border: `1px solid ${border}`,
+  borderRadius: 6,
+  cursor: 'pointer',
+  fontSize: '0.9rem',
+})
+
+const modalStyle = {
+  position: 'fixed',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  background: '#fff',
+  border: '1px solid #ccc',
+  borderRadius: 8,
+  padding: '1rem 1.5rem',
+  boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+  zIndex: 1000,
+  minWidth: 300,
+}
+
+const confirmBtnStyle = {
+  border: 'none',
+  padding: '6px 12px',
+  borderRadius: 4,
+  cursor: 'pointer',
 }

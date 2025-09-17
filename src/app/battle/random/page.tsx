@@ -23,6 +23,7 @@ export default function RandomBattlePage() {
   const [match, setMatch] = useState<MatchResult | null>(null)
   const [error, setError] = useState('')
   const [selectedDifficulties, setSelectedDifficulties] = useState<string[]>([])
+  const [deckStats, setDeckStats] = useState<Record<string, { total_games: number; wins: number }>>({})
 
   const solo_battles = {
     Beginner: {
@@ -77,6 +78,52 @@ export default function RandomBattlePage() {
     )
   }
 
+  const refreshDeckStats = async (deckId: string) => {
+    const { data, error } = await supabase
+      .from('deck_games')
+      .select('deck_id, result')
+      .eq('deck_id', deckId)
+
+    if (error) {
+      setError('Error fetching stats: ' + error.message)
+      return
+    }
+
+    const stats = { total_games: 0, wins: 0 }
+    data.forEach(({ result }) => {
+      stats.total_games++
+      if (result === 'win') stats.wins++
+    })
+
+    setDeckStats(prev => ({
+      ...prev,
+      [deckId]: stats,
+    }))
+  }
+
+  const recordGame = async (result: 'win' | 'loss') => {
+    if (!match) return
+
+    const { data: userData } = await supabase.auth.getUser()
+    const user = userData?.user
+    if (!user) {
+      setError('You must be logged in.')
+      return
+    }
+
+    const { error } = await supabase.from('deck_games').insert({
+      deck_id: match.player_deck.id,
+      result,
+      user_id: user.id,
+    })
+
+    if (error) {
+      setError('Error recording game: ' + error.message)
+    } else {
+      await refreshDeckStats(match.player_deck.id)
+    }
+  }
+
   const generateMatch = async () => {
     setError('')
     setMatch(null)
@@ -118,6 +165,8 @@ export default function RandomBattlePage() {
         deck: enemy_deck,
       },
     })
+
+    await refreshDeckStats(player_deck.id)
   }
 
   return (
@@ -131,10 +180,10 @@ export default function RandomBattlePage() {
         <div style={{ marginBottom: '1rem' }}>
           <strong>
             Select Difficulties:
-              <span style={{ fontWeight: 'normal', color: '#666', fontSize: '0.85rem', marginLeft: 8 }}>
-                (optional)
-              </span>
-            </strong>
+            <span style={{ fontWeight: 'normal', color: '#666', fontSize: '0.85rem', marginLeft: 8 }}>
+              (optional)
+            </span>
+          </strong>
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: 8 }}>
             {Object.keys(solo_battles).map((difficulty) => {
               const selected = selectedDifficulties.includes(difficulty)
@@ -206,6 +255,58 @@ export default function RandomBattlePage() {
                 <p><strong>Expansion:</strong> {match.solo_battle.expansion}</p>
                 <p><strong>Opponent:</strong> {match.solo_battle.deck}</p>
               </div>
+            </div>
+
+            <div style={{ marginTop: '1.5rem' }}>
+              <h3 style={{ fontSize: '1.05rem', marginBottom: '0.5rem' }}>Track Results</h3>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => recordGame('win')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '6px 10px',
+                    background: '#e6f9ec',
+                    color: '#1a7f37',
+                    border: '1px solid #b2e0c0',
+                    borderRadius: 6,
+                    cursor: 'pointer',
+                    fontSize: '0.9rem',
+                  }}
+                >
+                  Record Win
+                </button>
+
+                <button
+                  onClick={() => recordGame('loss')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '6px 10px',
+                    background: '#ffecec',
+                    color: '#c52d2d',
+                    border: '1px solid #f5baba',
+                    borderRadius: 6,
+                    cursor: 'pointer',
+                    fontSize: '0.9rem',
+                  }}
+                >
+                  Record Loss
+                </button>
+              </div>
+
+              {deckStats[match.player_deck.id] && (
+                <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#444' }}>
+                  Games Played: {deckStats[match.player_deck.id].total_games}, Wins: {deckStats[match.player_deck.id].wins}, Win Rate:{" "}
+                  {deckStats[match.player_deck.id].total_games > 0
+                    ? `${Math.round(
+                        (deckStats[match.player_deck.id].wins / deckStats[match.player_deck.id].total_games) * 100
+                      )}%`
+                    : '0%'}
+                </p>
+              )}
             </div>
           </div>
         )}
