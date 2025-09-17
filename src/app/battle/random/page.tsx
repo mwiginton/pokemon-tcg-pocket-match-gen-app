@@ -22,6 +22,7 @@ type MatchResult = {
 export default function RandomBattlePage() {
   const [match, setMatch] = useState<MatchResult | null>(null)
   const [error, setError] = useState('')
+  const [selectedDifficulties, setSelectedDifficulties] = useState<string[]>([])
 
   const solo_battles = {
     Beginner: {
@@ -68,6 +69,14 @@ export default function RandomBattlePage() {
     }
   }
 
+  const toggleDifficulty = (difficulty: string) => {
+    setSelectedDifficulties(prev =>
+      prev.includes(difficulty)
+        ? prev.filter(d => d !== difficulty)
+        : [...prev, difficulty]
+    )
+  }
+
   const generateMatch = async () => {
     setError('')
     setMatch(null)
@@ -90,13 +99,16 @@ export default function RandomBattlePage() {
       return
     }
 
-    const player_deck = decks[Math.floor(Math.random() * decks.length)]
-    const difficulties = Object.keys(solo_battles)
-    const difficulty = difficulties[Math.floor(Math.random() * difficulties.length)]
+    const allowedDifficulties = selectedDifficulties.length > 0
+      ? selectedDifficulties
+      : Object.keys(solo_battles)
+
+    const difficulty = allowedDifficulties[Math.floor(Math.random() * allowedDifficulties.length)]
     const expansions = Object.keys(solo_battles[difficulty])
     const expansion = expansions[Math.floor(Math.random() * expansions.length)]
     const options = solo_battles[difficulty][expansion]
     const enemy_deck = options[Math.floor(Math.random() * options.length)]
+    const player_deck = decks[Math.floor(Math.random() * decks.length)]
 
     setMatch({
       player_deck,
@@ -115,6 +127,37 @@ export default function RandomBattlePage() {
           <Dice3 size={18} style={{ marginRight: 8 }} />
           Generate a Random Match
         </h1>
+
+        <div style={{ marginBottom: '1rem' }}>
+          <strong>Select Difficulties:</strong>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: 8 }}>
+            {Object.keys(solo_battles).map((difficulty) => {
+              const selected = selectedDifficulties.includes(difficulty)
+              return (
+                <label
+                  key={difficulty}
+                  onClick={() => toggleDifficulty(difficulty)}
+                  style={{
+                    display: 'inline-block',
+                    cursor: 'pointer',
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                    border: `2px solid ${selected ? '#0070f3' : '#ccc'}`,
+                    backgroundColor: selected ? '#0070f3' : '#fff',
+                    color: selected ? '#fff' : '#333',
+                    userSelect: 'none',
+                    transition: 'all 0.2s ease-in-out',
+                  }}
+                >
+                  {difficulty}
+                </label>
+              )
+            })}
+          </div>
+        </div>
+
         <button
           onClick={generateMatch}
           style={{
