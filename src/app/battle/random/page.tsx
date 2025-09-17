@@ -129,7 +129,12 @@ export default function RandomBattlePage() {
         </h1>
 
         <div style={{ marginBottom: '1rem' }}>
-          <strong>Select Difficulties:</strong>
+          <strong>
+            Select Difficulties:
+              <span style={{ fontWeight: 'normal', color: '#666', fontSize: '0.85rem', marginLeft: 8 }}>
+                (optional)
+              </span>
+            </strong>
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: 8 }}>
             {Object.keys(solo_battles).map((difficulty) => {
               const selected = selectedDifficulties.includes(difficulty)
