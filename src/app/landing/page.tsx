@@ -18,11 +18,8 @@ export default function LandingPage() {
         </p>
 
         <div className={styles.actions}>
-          <button className={styles.primary} onClick={() => router.push('/')}>
+          <button className={styles.primary} onClick={() => router.push('/auth')}>
             Get Started
-          </button>
-          <button className={styles.secondary} onClick={() => router.push('/dashboard')}>
-            Go to Dashboard
           </button>
         </div>
 
