@@ -1,4 +1,3 @@
-// src/app/landing/page.tsx
 'use client'
 
 import styles from './landing.module.css'

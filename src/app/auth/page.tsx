@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation'
 
 export default function Home() {
   const [user, setUser] = useState<any>(null)
-  const [loadingUser, setLoadingUser] = useState(true) // 👈 NEW
+  const [loadingUser, setLoadingUser] = useState(true)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [authError, setAuthError] = useState('')
@@ -23,7 +23,7 @@ export default function Home() {
         setUser(data.user)
         router.push('/dashboard')
       } else {
-        setLoadingUser(false) // 👈 Only stop loading if user is not found
+        setLoadingUser(false)
       }
     }
 
