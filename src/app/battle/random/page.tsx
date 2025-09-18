@@ -10,6 +10,12 @@ type Deck = {
   deck_name: string
 }
 
+type CardEntry = {
+  id: string
+  name: string
+  pack: string
+}
+
 type MatchResult = {
   player_deck: Deck
   solo_battle: {
@@ -24,6 +30,8 @@ export default function RandomBattlePage() {
   const [error, setError] = useState('')
   const [selectedDifficulties, setSelectedDifficulties] = useState<string[]>([])
   const [deckStats, setDeckStats] = useState<Record<string, { total_games: number; wins: number }>>({})
+  const [deckCards, setDeckCards] = useState<CardEntry[]>([])
+  const [showDeckModal, setShowDeckModal] = useState(false)
 
   const solo_battles = {
     Beginner: {
@@ -99,6 +107,33 @@ export default function RandomBattlePage() {
       ...prev,
       [deckId]: stats,
     }))
+  }
+
+  const loadDeckCards = async (deckId: string) => {
+    const { data, error } = await supabase
+      .from('deck_cards')
+      .select('card_id, card_index, cards(name, pack)')
+      .eq('deck_id', deckId)
+      .order('card_index', { ascending: true })
+
+    if (error || !data) {
+      setError('Failed to load deck cards.')
+      return
+    }
+
+    const formatted: CardEntry[] = Array(20).fill({ id: '', name: '', pack: '' })
+    data.forEach((dc: any) => {
+      if (dc.card_index < 20) {
+        formatted[dc.card_index] = {
+          id: dc.card_id,
+          name: dc.cards?.name || '',
+          pack: dc.cards?.pack || '',
+        }
+      }
+    })
+
+    setDeckCards(formatted)
+    setShowDeckModal(true)
   }
 
   const recordGame = async (result: 'win' | 'loss') => {
@@ -243,7 +278,18 @@ export default function RandomBattlePage() {
               <h2 style={{ fontSize: '1.2rem', marginBottom: '0.5rem', borderBottom: '1px solid #ddd', paddingBottom: '4px' }}>
                 Your Deck
               </h2>
-              <p style={{ fontWeight: '500', fontSize: '1rem', color: '#333' }}>{match.player_deck.deck_name}</p>
+              <p
+                style={{
+                  fontWeight: '500',
+                  fontSize: '1rem',
+                  color: '#0070f3',
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                }}
+                onClick={() => loadDeckCards(match.player_deck.id)}
+              >
+                {match.player_deck.deck_name}
+              </p>
             </div>
 
             <div>
@@ -307,6 +353,67 @@ export default function RandomBattlePage() {
                     : '0%'}
                 </p>
               )}
+            </div>
+          </div>
+        )}
+
+        {showDeckModal && (
+          <div style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}>
+            <div style={{
+              background: '#fff',
+              padding: '2rem',
+              borderRadius: '12px',
+              maxWidth: '500px',
+              width: '90%',
+              maxHeight: '85vh',
+              overflowY: 'auto',
+              boxShadow: '0 8px 20px rgba(0,0,0,0.2)',
+            }}>
+              <h2 style={{ fontSize: '1.4rem', fontWeight: '700', marginBottom: '1.2rem', borderBottom: '1px solid #eee', paddingBottom: 8 }}>
+                Deck Contents
+              </h2>
+              <div style={{ display: 'grid', rowGap: '0.75rem' }}>
+                {deckCards.map((card, idx) => (
+                  <div key={idx} style={{
+                    padding: '0.6rem 0.8rem',
+                    backgroundColor: '#f7f9fb',
+                    border: '1px solid #e0e0e0',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    fontSize: '0.95rem',
+                  }}>
+                    <div style={{ fontWeight: 600 }}>{String(idx + 1).padStart(2, '0')}. {card.name}</div>
+                    <div style={{ color: '#666', fontSize: '0.85rem', marginTop: 2 }}>{card.pack}</div>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => setShowDeckModal(false)}
+                style={{
+                  marginTop: '1.8rem',
+                  padding: '10px 18px',
+                  backgroundColor: '#0070f3',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  display: 'block',
+                  marginLeft: 'auto',
+                }}
+              >
+                Close
+              </button>
             </div>
           </div>
         )}
