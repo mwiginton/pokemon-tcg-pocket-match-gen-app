@@ -84,21 +84,7 @@ export default function CardAutocompleteInput({ value, onChange, index }: Props)
       />
 
       {showSuggestions && suggestions.length > 0 && (
-        <ul
-          style={{
-            position: 'absolute',
-            zIndex: 999,
-            background: 'white',
-            border: '1px solid #ccc',
-            borderRadius: 4,
-            width: '100%',
-            maxHeight: 200,
-            overflowY: 'auto',
-            listStyle: 'none',
-            padding: 0,
-            marginTop: 4,
-          }}
-        >
+        <ul className={styles.suggestionList}>
           {suggestions.map((card) => (
             <li
               key={card.id}

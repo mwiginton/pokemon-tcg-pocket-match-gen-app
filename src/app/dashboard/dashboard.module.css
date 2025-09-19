@@ -65,19 +65,20 @@
 }
 
 .primary {
-  background-color: #7c3aed;
+  background-color: #a78bfa;
   font-weight: 700;
-  box-shadow: 0 4px 10px rgba(124, 58, 237, 0.35);
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(167, 139, 250, 0.35);
 }
 
 .primary:hover {
-  background-color: #6d28d9;
-  box-shadow: 0 6px 14px rgba(124, 58, 237, 0.45);
+  background-color: #8b5cf6;
+  box-shadow: 0 6px 14px rgba(139, 92, 246, 0.45);
   transform: translateY(-2px);
 }
 
 .primary:active {
-  background-color: #5b21b6;
+  background-color: #7c3aed;
   transform: translateY(0);
   box-shadow: 0 3px 8px rgba(124, 58, 237, 0.35);
 }

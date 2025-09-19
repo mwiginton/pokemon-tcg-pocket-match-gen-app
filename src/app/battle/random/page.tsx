@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import styles from '@/styles/layout.module.css'
-import { Dice3 } from 'lucide-react'
+import { Dice3, Loader2 } from 'lucide-react' // Loader2 is a spinner icon
 
 type Deck = {
   id: string
@@ -32,6 +32,7 @@ export default function RandomBattlePage() {
   const [deckStats, setDeckStats] = useState<Record<string, { total_games: number; wins: number }>>({})
   const [deckCards, setDeckCards] = useState<CardEntry[]>([])
   const [showDeckModal, setShowDeckModal] = useState(false)
+  const [isRecording, setIsRecording] = useState(false) // 🔹 New spinner state
 
   const solo_battles = {
     Beginner: {
@@ -138,24 +139,29 @@ export default function RandomBattlePage() {
 
   const recordGame = async (result: 'win' | 'loss') => {
     if (!match) return
+    setIsRecording(true) // 🔹 Start spinner
 
-    const { data: userData } = await supabase.auth.getUser()
-    const user = userData?.user
-    if (!user) {
-      setError('You must be logged in.')
-      return
-    }
+    try {
+      const { data: userData } = await supabase.auth.getUser()
+      const user = userData?.user
+      if (!user) {
+        setError('You must be logged in.')
+        return
+      }
 
-    const { error } = await supabase.from('deck_games').insert({
-      deck_id: match.player_deck.id,
-      result,
-      user_id: user.id,
-    })
+      const { error } = await supabase.from('deck_games').insert({
+        deck_id: match.player_deck.id,
+        result,
+        user_id: user.id,
+      })
 
-    if (error) {
-      setError('Error recording game: ' + error.message)
-    } else {
-      await refreshDeckStats(match.player_deck.id)
+      if (error) {
+        setError('Error recording game: ' + error.message)
+      } else {
+        await refreshDeckStats(match.player_deck.id)
+      }
+    } finally {
+      setIsRecording(false) // 🔹 Stop spinner
     }
   }
 
@@ -212,6 +218,7 @@ export default function RandomBattlePage() {
           Generate a Random Match
         </h1>
 
+        {/* Difficulty selectors */}
         <div style={{ marginBottom: '1rem' }}>
           <strong>
             Select Difficulties:
@@ -247,6 +254,7 @@ export default function RandomBattlePage() {
           </div>
         </div>
 
+        {/* Generate match */}
         <button
           onClick={generateMatch}
           style={{
@@ -264,6 +272,7 @@ export default function RandomBattlePage() {
 
         {error && <p style={{ color: 'red', marginTop: 12 }}>{error}</p>}
 
+        {/* Match results */}
         {match && (
           <div
             style={{
@@ -303,11 +312,13 @@ export default function RandomBattlePage() {
               </div>
             </div>
 
+            {/* Record Results */}
             <div style={{ marginTop: '1.5rem' }}>
               <h3 style={{ fontSize: '1.05rem', marginBottom: '0.5rem' }}>Track Results</h3>
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                 <button
                   onClick={() => recordGame('win')}
+                  disabled={isRecording}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -317,15 +328,18 @@ export default function RandomBattlePage() {
                     color: '#1a7f37',
                     border: '1px solid #b2e0c0',
                     borderRadius: 6,
-                    cursor: 'pointer',
+                    cursor: isRecording ? 'not-allowed' : 'pointer',
                     fontSize: '0.9rem',
+                    opacity: isRecording ? 0.7 : 1,
                   }}
                 >
-                  Record Win
+                  {isRecording ? <Loader2 className="spin" size={16} /> : null}
+                  {isRecording ? 'Recording...' : 'Record Win'}
                 </button>
 
                 <button
                   onClick={() => recordGame('loss')}
+                  disabled={isRecording}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -335,11 +349,13 @@ export default function RandomBattlePage() {
                     color: '#c52d2d',
                     border: '1px solid #f5baba',
                     borderRadius: 6,
-                    cursor: 'pointer',
+                    cursor: isRecording ? 'not-allowed' : 'pointer',
                     fontSize: '0.9rem',
+                    opacity: isRecording ? 0.7 : 1,
                   }}
                 >
-                  Record Loss
+                  {isRecording ? <Loader2 className="spin" size={16} /> : null}
+                  {isRecording ? 'Recording...' : 'Record Loss'}
                 </button>
               </div>
 
@@ -347,9 +363,7 @@ export default function RandomBattlePage() {
                 <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#444' }}>
                   Games Played: {deckStats[match.player_deck.id].total_games}, Wins: {deckStats[match.player_deck.id].wins}, Win Rate:{" "}
                   {deckStats[match.player_deck.id].total_games > 0
-                    ? `${Math.round(
-                        (deckStats[match.player_deck.id].wins / deckStats[match.player_deck.id].total_games) * 100
-                      )}%`
+                    ? `${Math.round((deckStats[match.player_deck.id].wins / deckStats[match.player_deck.id].total_games) * 100)}%`
                     : '0%'}
                 </p>
               )}
@@ -357,6 +371,7 @@ export default function RandomBattlePage() {
           </div>
         )}
 
+        {/* Deck Modal */}
         {showDeckModal && (
           <div style={{
             position: 'fixed',
@@ -367,16 +382,7 @@ export default function RandomBattlePage() {
             justifyContent: 'center',
             zIndex: 1000,
           }}>
-            <div style={{
-              background: '#fff',
-              padding: '2rem',
-              borderRadius: '12px',
-              maxWidth: '500px',
-              width: '90%',
-              maxHeight: '85vh',
-              overflowY: 'auto',
-              boxShadow: '0 8px 20px rgba(0,0,0,0.2)',
-            }}>
+            <div className={styles.modalContent}>
               <h2 style={{ fontSize: '1.4rem', fontWeight: '700', marginBottom: '1.2rem', borderBottom: '1px solid #eee', paddingBottom: 8 }}>
                 Deck Contents
               </h2>
