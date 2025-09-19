@@ -23,29 +23,74 @@
   max-width: 500px;
   width: 100%;
   background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
   text-align: center;
   color: #333333;
 }
 
 .userEmail {
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: #555555;
 }
 
-.signOutButton {
-  margin-top: 1rem;
-  padding: 0.75rem;
-  font-size: 1rem;
-  background-color: #e63946;
-  color: #ffffff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 20px;
 }
 
-.signOutButton:hover {
-  background-color: #c72f3d;
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0.9rem 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  width: 100%;
+  background-color: #f4f4f4;
+  color: #333;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.button:hover {
+  background-color: #eaeaea;
+  transform: translateY(-2px);
+}
+/* DISTINCT primary (not blue) — violet → pink gradient */
+.primary {
+  background-color: #7c3aed; /* solid violet */
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(124, 58, 237, 0.35);
+}
+
+.primary:hover {
+  background-color: #6d28d9; /* darker violet on hover */
+  box-shadow: 0 6px 14px rgba(124, 58, 237, 0.45);
+  transform: translateY(-2px);
+}
+
+.primary:active {
+  background-color: #5b21b6; /* even darker when pressed */
+  transform: translateY(0);
+  box-shadow: 0 3px 8px rgba(124, 58, 237, 0.35);
+}
+
+.signOut {
+  background-color: transparent;
+  border: 2px solid #e63946;
+  color: #e63946;
+  font-weight: 600;
+}
+
+.signOut:hover {
+  background-color: #e63946;
+  color: #fff;
 }

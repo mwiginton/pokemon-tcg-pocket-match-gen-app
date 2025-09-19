@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import styles from './dashboard.module.css'
 import Link from 'next/link'
-import { PlusCircle, Library, LogOut } from 'lucide-react'
-import { Dice3 } from 'lucide-react'
+import { PlusCircle, Library, LogOut, Dice3 } from 'lucide-react'
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null)
@@ -36,31 +35,31 @@ export default function Dashboard() {
       <div className={styles.card}>
         {user && <p className={styles.userEmail}>Logged in as: {user.email}</p>}
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
+        <div className={styles.actions}>
           <Link href="/deck/new">
-            <button className={styles.signOutButton}>
-              <PlusCircle size={18} style={{ marginRight: 8 }} />
-              Create New Deck
+            <button className={`${styles.button} ${styles.primary}`}>
+              <PlusCircle size={18} />
+              <span>Create New Deck</span>
             </button>
           </Link>
 
           <Link href="/deck/list">
-            <button className={styles.signOutButton}>
-              <Library size={18} style={{ marginRight: 8 }} />
-              View My Decks
+            <button className={styles.button}>
+              <Library size={18} />
+              <span>View My Decks</span>
             </button>
           </Link>
 
           <Link href="/battle/random">
-            <button className={styles.signOutButton}>
-              <Dice3 size={18} style={{ marginRight: 8 }} />
-              Start Random Match
+            <button className={styles.button}>
+              <Dice3 size={18} />
+              <span>Start Random Match</span>
             </button>
           </Link>
 
-          <button onClick={signOut} className={styles.signOutButton}>
-            <LogOut size={18} style={{ marginRight: 8 }} />
-            Sign Out
+          <button onClick={signOut} className={`${styles.button} ${styles.signOut}`}>
+            <LogOut size={18} />
+            <span>Sign Out</span>
           </button>
         </div>
       </div>
