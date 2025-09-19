@@ -63,22 +63,21 @@
   background-color: #eaeaea;
   transform: translateY(-2px);
 }
-/* DISTINCT primary (not blue) — violet → pink gradient */
+
 .primary {
-  background-color: #7c3aed; /* solid violet */
-  color: #fff;
+  background-color: #7c3aed;
   font-weight: 700;
   box-shadow: 0 4px 10px rgba(124, 58, 237, 0.35);
 }
 
 .primary:hover {
-  background-color: #6d28d9; /* darker violet on hover */
+  background-color: #6d28d9;
   box-shadow: 0 6px 14px rgba(124, 58, 237, 0.45);
   transform: translateY(-2px);
 }
 
 .primary:active {
-  background-color: #5b21b6; /* even darker when pressed */
+  background-color: #5b21b6;
   transform: translateY(0);
   box-shadow: 0 3px 8px rgba(124, 58, 237, 0.35);
 }

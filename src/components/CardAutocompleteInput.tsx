@@ -42,7 +42,7 @@ export default function CardAutocompleteInput({ value, onChange, index }: Props)
           console.error('Error fetching card suggestions:', err)
         }
       }
-    }, 300) // Delay of 300ms for debounce
+    }, 300)
 
     return () => {
       clearTimeout(debounceTimeout)
@@ -72,7 +72,7 @@ export default function CardAutocompleteInput({ value, onChange, index }: Props)
         onChange={e => {
           const val = e.target.value
           setInput(val)
-          onChange({ id: '', name: val, pack: '' }) // Free-text resets selection
+          onChange({ id: '', name: val, pack: '' })
           setShowSuggestions(true)
         }}
         onFocus={() => {
@@ -109,8 +109,11 @@ export default function CardAutocompleteInput({ value, onChange, index }: Props)
               }}
               className={styles.suggestion}
             >
-              <span className={styles.cardName}>{card.name}</span>
-              <span className={styles.cardPack}>({card.pack})</span>
+              <div className={styles.suggestionRow}>
+                <span className={styles.cardId}>[{card.id}]</span>
+                <span className={styles.cardName}>{card.name}</span>
+                <span className={styles.cardPack}>({card.pack})</span>
+              </div>
             </li>
           ))}
         </ul>
