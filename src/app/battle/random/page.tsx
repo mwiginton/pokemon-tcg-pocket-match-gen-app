@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import styles from '@/styles/layout.module.css'
-import { Dice3, Loader2 } from 'lucide-react' // Loader2 is a spinner icon
+import buttonStyles from '@/styles/button.module.css'
+import { Dice3, Loader2 } from 'lucide-react'
 
 type Deck = {
   id: string
@@ -139,7 +140,7 @@ export default function RandomBattlePage() {
 
   const recordGame = async (result: 'win' | 'loss') => {
     if (!match) return
-    setIsRecording(true) // 🔹 Start spinner
+    setIsRecording(true)
 
     try {
       const { data: userData } = await supabase.auth.getUser()
@@ -161,7 +162,7 @@ export default function RandomBattlePage() {
         await refreshDeckStats(match.player_deck.id)
       }
     } finally {
-      setIsRecording(false) // 🔹 Stop spinner
+      setIsRecording(false)
     }
   }
 
@@ -230,25 +231,14 @@ export default function RandomBattlePage() {
             {Object.keys(solo_battles).map((difficulty) => {
               const selected = selectedDifficulties.includes(difficulty)
               return (
-                <label
+                <button
                   key={difficulty}
                   onClick={() => toggleDifficulty(difficulty)}
-                  style={{
-                    display: 'inline-block',
-                    cursor: 'pointer',
-                    padding: '6px 12px',
-                    borderRadius: '6px',
-                    fontSize: '0.875rem',
-                    fontWeight: 500,
-                    border: `2px solid ${selected ? '#0070f3' : '#ccc'}`,
-                    backgroundColor: selected ? '#0070f3' : '#fff',
-                    color: selected ? '#fff' : '#333',
-                    userSelect: 'none',
-                    transition: 'all 0.2s ease-in-out',
-                  }}
+                  className={`${buttonStyles.buttonCompact} ${selected ? buttonStyles.primary : ''}`}
+                  type="button"
                 >
                   {difficulty}
-                </label>
+                </button>
               )
             })}
           </div>
@@ -257,15 +247,7 @@ export default function RandomBattlePage() {
         {/* Generate match */}
         <button
           onClick={generateMatch}
-          style={{
-            padding: '10px 20px',
-            borderRadius: 6,
-            fontSize: '1rem',
-            cursor: 'pointer',
-            backgroundColor: '#0070f3',
-            color: '#fff',
-            border: 'none',
-          }}
+          className={`${buttonStyles.buttonCompact} ${buttonStyles.primary}`}
         >
           Generate Match
         </button>
