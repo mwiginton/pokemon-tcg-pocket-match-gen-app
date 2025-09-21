@@ -355,32 +355,53 @@ export default function RandomBattlePage() {
 
         {/* Deck Modal */}
         {showDeckModal && (
-          <div style={{
-            position: 'fixed',
-            top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-          }}>
-            <div className={styles.modalContent}>
-              <h2 style={{ fontSize: '1.4rem', fontWeight: '700', marginBottom: '1.2rem', borderBottom: '1px solid #eee', paddingBottom: 8 }}>
+          <div
+            style={{
+              position: 'fixed',
+              top: 0, left: 0, right: 0, bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+            }}
+            onClick={() => setShowDeckModal(false)} // 🔹 close on backdrop click
+          >
+            <div
+              className={styles.modalContent}
+              onClick={(e) => e.stopPropagation()} // 🔹 prevent closing when clicking inside modal
+            >
+              <h2
+                style={{
+                  fontSize: '1.4rem',
+                  fontWeight: '700',
+                  marginBottom: '1.2rem',
+                  borderBottom: '1px solid #eee',
+                  paddingBottom: 8,
+                }}
+              >
                 Deck Contents
               </h2>
               <div style={{ display: 'grid', rowGap: '0.75rem' }}>
                 {deckCards.map((card, idx) => (
-                  <div key={idx} style={{
-                    padding: '0.6rem 0.8rem',
-                    backgroundColor: '#f7f9fb',
-                    border: '1px solid #e0e0e0',
-                    borderRadius: '8px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    fontSize: '0.95rem',
-                  }}>
-                    <div style={{ fontWeight: 600 }}>{String(idx + 1).padStart(2, '0')}. {card.name}</div>
-                    <div style={{ color: '#666', fontSize: '0.85rem', marginTop: 2 }}>{card.pack}</div>
+                  <div
+                    key={idx}
+                    style={{
+                      padding: '0.6rem 0.8rem',
+                      backgroundColor: '#f7f9fb',
+                      border: '1px solid #e0e0e0',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      fontSize: '0.95rem',
+                    }}
+                  >
+                    <div style={{ fontWeight: 600 }}>
+                      {String(idx + 1).padStart(2, '0')}. {card.name}
+                    </div>
+                    <div style={{ color: '#666', fontSize: '0.85rem', marginTop: 2 }}>
+                      {card.pack}
+                    </div>
                   </div>
                 ))}
               </div>
