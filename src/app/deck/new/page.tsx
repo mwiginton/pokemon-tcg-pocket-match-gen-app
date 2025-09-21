@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import styles from '@/styles/layout.module.css'
+import buttonStyles from '@/styles/button.module.css'
 import CardAutocompleteInput from '@/components/CardAutocompleteInput'
 
 type CardEntry = {
@@ -119,7 +120,7 @@ export default function NewDeckPage() {
         <button
           onClick={handleSubmit}
           disabled={loading}
-          className={styles.button}
+          className={`${buttonStyles.button} ${buttonStyles.primary}`}
         >
           {loading ? 'Saving...' : 'Save Deck'}
         </button>

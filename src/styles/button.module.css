@@ -21,27 +21,25 @@
   transform: translateY(-2px);
 }
 
-/* Primary button (purple) */
 .primary {
-  background-color: #a78bfa;
+  background-color: #7c3aed;
   font-weight: 700;
   color: #fff;
-  box-shadow: 0 4px 10px rgba(167, 139, 250, 0.35);
+  box-shadow: 0 4px 10px rgba(124, 58, 237, 0.35);
 }
 
 .primary:hover {
-  background-color: #8b5cf6;
-  box-shadow: 0 6px 14px rgba(139, 92, 246, 0.45);
+  background-color: #6d28d9;
+  box-shadow: 0 6px 14px rgba(109, 40, 217, 0.45);
   transform: translateY(-2px);
 }
 
 .primary:active {
-  background-color: #7c3aed;
+  background-color: #5b21b6;
   transform: translateY(0);
-  box-shadow: 0 3px 8px rgba(124, 58, 237, 0.35);
+  box-shadow: 0 3px 8px rgba(91, 33, 182, 0.35);
 }
 
-/* Sign out (red outline) */
 .signOut {
   background-color: transparent;
   border: 2px solid #e63946;
@@ -69,7 +67,7 @@
   background-color: #f4f4f4;
   color: #333;
   box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-  width: auto; /* ✅ prevent full width */
+  width: auto;
 }
 
 .buttonCompact:hover {
@@ -77,15 +75,14 @@
   transform: translateY(-1px);
 }
 
-/* Reuse .primary coloring */
 .buttonCompact.primary {
-  background-color: #a78bfa;
+  background-color: #7c3aed;
   color: #fff;
   font-weight: 600;
-  box-shadow: 0 3px 6px rgba(167, 139, 250, 0.35);
+  box-shadow: 0 3px 6px rgba(124, 58, 237, 0.35);
 }
 
 .buttonCompact.primary:hover {
-  background-color: #8b5cf6;
-  box-shadow: 0 4px 8px rgba(139, 92, 246, 0.45);
+  background-color: #6d28d9;
+  box-shadow: 0 4px 8px rgba(109, 40, 217, 0.45);
 }
