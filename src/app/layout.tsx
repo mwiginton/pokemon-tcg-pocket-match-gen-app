@@ -14,7 +14,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "TCG Pocket BattleLedger",
-  description: "TCG Pocket BattleLedger",
+  description: "Track decks, generate battle scenarios, and log wins/losses for Pokémon TCG Pocket.",
+  keywords: ["Pokémon TCG Pocket", "deck tracker", "battle simulator", "trading card game", "deck logging"],
   icons: {
     icon: [
       { url: "/logo.svg", type: "image/svg+xml" },
