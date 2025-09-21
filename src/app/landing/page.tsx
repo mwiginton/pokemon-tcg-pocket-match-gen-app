@@ -12,7 +12,7 @@ export default function LandingPage() {
     <div className={styles.page}>
       <main className={styles.main}>
         <Image src="/logo.svg" alt="Logo" width={72} height={72} className={styles.logo} />
-        <h1 className={styles.title}>Pokémon TCG Pocket Companion</h1>
+        <h1 className={styles.title}>Pokémon TCG Pocket BattleLedger</h1>
         <p className={styles.subtitle}>
           Track your decks. Generate random battle scenarios. Record wins and losses. All in one place.
         </p>
@@ -46,7 +46,7 @@ export default function LandingPage() {
         </section>
 
         <footer className={styles.footer}>
-          © {new Date().getFullYear()} Pokémon TCG Pocket Companion. All rights reserved.
+          © {new Date().getFullYear()} Pokémon TCG Pocket BattleLedger. All rights reserved.
         </footer>
       </main>
     </div>
