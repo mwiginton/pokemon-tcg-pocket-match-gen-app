@@ -217,7 +217,7 @@ export default function DeckListPage() {
             </div>
 
             <p style={{ fontSize: '0.9rem', color: '#666' }}>
-              Created: {new Date(deck.created_at).toLocaleString()}
+              Created: {new Date(deck.created_at).toLocaleDateString()}
             </p>
 
             {stats && (
