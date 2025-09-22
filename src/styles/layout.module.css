@@ -23,11 +23,6 @@
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.card:active {
-  transform: scale(0.98);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-
 .headerWithIcon {
   display: flex;
   align-items: center;
