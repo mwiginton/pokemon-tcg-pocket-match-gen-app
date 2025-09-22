@@ -255,7 +255,7 @@
   }
 }
 
-/* --- New: Card Actions Grid --- */
+/* Action buttons row (Record Win, Record Loss, Reset Stats) */
 .cardActions {
   display: flex;
   gap: 0.5rem;
@@ -302,7 +302,7 @@
   }
 
   .iconButton span {
-    display: none; /* hide Edit/Delete text on mobile */
+    display: none;
   }
 
   .card h2 {
@@ -321,15 +321,16 @@
     padding: 10px;
   }
 
+  /* Force Record buttons to one row */
   .cardActions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
+    flex-wrap: nowrap;
+    justify-content: space-between;
   }
 
   .cardActions button {
-    width: 100%;
+    flex: 1;
     font-size: 0.8rem;
+    padding: 8px;
   }
 
   .card button.viewCards {

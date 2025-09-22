@@ -226,7 +226,8 @@ export default function DeckListPage() {
               </p>
             )}
 
-            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+            {/* Updated: use styles.cardActions */}
+            <div className={styles.cardActions}>
               <button onClick={() => recordGame(deck.id, 'win')} style={recordBtnStyle('#e6f9ec', '#1a7f37', '#b2e0c0')}>
                 <Trophy size={16} /> Record Win
               </button>
@@ -363,7 +364,7 @@ const recordBtnStyle = (bg: string, color: string, border: string) => ({
 })
 
 const modalStyle = {
-  position: 'fixed',
+  position: 'fixed' as const,
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',

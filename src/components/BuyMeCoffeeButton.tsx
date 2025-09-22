@@ -12,7 +12,8 @@ export default function BuyMeCoffeeButton() {
       className={styles.floatingButton}
       aria-label="Buy me a coffee"
     >
-      <Coffee size={20} />
+      <Coffee size={18} className={styles.icon} />
+      <span className={styles.text}>Buy me a coffee</span>
     </a>
   )
 }

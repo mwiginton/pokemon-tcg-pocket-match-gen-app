@@ -1,24 +1,50 @@
 .floatingButton {
   position: fixed;
-  bottom: 2rem; /* Give it more breathing room */
+  bottom: 2rem;
   right: 1.5rem;
   z-index: 9999;
 
-  width: 48px;
-  height: 48px;
-  border-radius: 9999px;
-
-  background-color: #facc15; /* Yellow-ish */
-  color: #000000;
   display: flex;
   align-items: center;
   justify-content: center;
 
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  background-color: #facc15;
+  color: #000000;
   text-decoration: none;
+  font-weight: 500;
+
+  border-radius: 9999px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   transition: background-color 0.2s ease;
 }
 
+.floatingButton {
+  width: 48px;
+  height: 48px;
+}
+
+.text {
+  display: none;
+}
+
+.icon {
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .floatingButton {
+    padding: 0 1rem;
+    height: 48px;
+    width: auto;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+  }
+
+  .text {
+    display: inline;
+  }
+}
+
 .floatingButton:hover {
-  background-color: #fcd34d; /* Lighter yellow on hover */
+  background-color: #fcd34d;
 }
