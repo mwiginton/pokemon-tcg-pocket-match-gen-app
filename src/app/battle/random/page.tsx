@@ -26,6 +26,8 @@ type MatchResult = {
   }
 }
 
+type BattlesGrouped = Record<string, Record<string, string[]>>
+
 export default function RandomBattlePage() {
   const [match, setMatch] = useState<MatchResult | null>(null)
   const [error, setError] = useState('')
@@ -33,57 +35,38 @@ export default function RandomBattlePage() {
   const [deckStats, setDeckStats] = useState<Record<string, { total_games: number; wins: number }>>({})
   const [deckCards, setDeckCards] = useState<CardEntry[]>([])
   const [showDeckModal, setShowDeckModal] = useState(false)
-  const [isRecording, setIsRecording] = useState(false) // 🔹 New spinner state
+  const [isRecording, setIsRecording] = useState(false)
+  const [soloBattles, setSoloBattles] = useState<BattlesGrouped>({})
 
-  const solo_battles = {
-    Beginner: {
-      "Secluded Springs": ["Fletchinder", "Poliwhirl", "Elektrik"],
-      "Wisdom of Sea and Sky": ["Bayleef", "Quilava", "Croconaw"],
-      "Eevee Grove": ["Steenee", "Torracat", "Brionne"],
-      "Extradimensional Crisis": ["Luxio", "Korokorok", "Lairon"],
-      "Celestial Guardians": ["Dartix", "Torracat", "Brionne"],
-      "Genetic Apex": ["Ivysaur", "Charmeleon", "Wartortle", "Heliolisk", "Swoobat", "Grapploct", "Nidorina & Nidorino"],
-    },
-    Intermediate: {
-      "Secluded Springs": ["Sunflora", "Talonflame", "Milotic", "Elektross", "Latios & Latias", "Donphan"],
-      "Wisdom of Sea and Sky": ["Meganium", "Entei", "Suicune", "Raiku", "Togekiss", "Mamoswine", "Tyranitar", "Scizor", "Porygon-Z"],
-      "Eevee Grove": ["Leafeon", "Flareon", "Vaporeon & Glaceon", "Jolteon", "Espeon & Sylveon", "Umbron", "Melmetal"],
-      "Extradimensional Crisis": ["Decidueye", "Zeraora", "Neganadel", "Stakataka", "Stoutland"],
-      "Celestial Guardians": ["Alolan Exeggutor", "Turtonator", "Alolan Ninetails", "Alolan Golem", "Necrozma", "Lycanroc", "Alolan Persian", "Alolan Dugtrio"],
-      "Triumphant Light": ["Carnivine", "Abomasnow", "Tyranitar", "Magnezone"],
-      "Spacetime Smackdown": ["Torterra & Shaymin", "Magmortar & Regigigas", "Glaceon & Mamoswine", "Magnezone & Electivire", "Togekiss & Giratina", "Rampardos & Rhyperior", "Darkrai & Regigigas", "Bastiodon & Heatran"],
-      "Genetic Apex": ["Venusaur & Exeggutor", "Charizard & Arcanine", "Blastoise & Gyarados", "Magneton & Elektross", "Alakazam & Mewtwo", "Golem & Machamp", "Nidoking & Muk"]
-    },
-    Advanced: {
-      "Secluded Springs": ["Jumpluff EX", "Entei EX", "Suicune EX", "Raikou EX", "Latios & Latias", "Poliwrath EX"],
-      "Wisdom of Sea and Sky": ["Shuckle EX & Meganium", "Ho-Oh EX & Entei", "Kingdra EX", "Lanturn EX", "Espeon EX", "Donphan", "Umbreon EX", "Scarmory EX & Scizor", "Lugia EX"],
-      "Eevee Grove": ["Flareon EX & Eevee EX", "Primarina EX", "Sylveon EX & Eevee EX", "Dragonite EX", "Snorlax EX"],
-      "Extradimensional Crisis": ["Buzzwole EX", "Tapu Koko EX", "Lycanroc EX", "Guzzlord EX", "Alolan Dugtrio EX"],
-      "Celestial Guardians": ["Decidueye EX", "Inceneroar EX", "Crabominable EX", "Alolan Raichu EX", "Lunala EX", "Passimian EX", "Alolan Muk EX", "Solgaleo EX"],
-      "Triumphant Light": ["Leafon EX", "Arceus Ex & Heatran", "Glaceon EX", "Arceus EX & Raichu", "Garchomp EX", "Arceus EX & Crobat", "Probopass EX"],
-      "Spacetime Smackdown": ["Yanmega EX", "Infernape EX", "Palkia EX", "Pachirisu Ex", "Mismagius EX", "Gallade EX", "Darkrai EX", "Dialga EX", "Lickilicki EX"],
-      "Mythical Island": ["Celebi EX", "Volcarona & Blaine", "Gyarados Ex", "Raichu & Lt. Surge", "Mew EX", "Aerodactyl EX", "Golem & Brock", "Blue & Pidgeot"],
-      "Genetic Apex": ["Venusaur EX", "Charizard EX", "Blastoise EX", "Pikachu EX", "Mewtwo EX", "Machamp EX", "Nidoqueen & Nidoking"],
-      "Shining Revelry": ["Beedrill EX", "Charizard EX", "Wugtrio EX", "Pikachu EX", "Giratina EX", "Lucario EX", "Paldean Clodsire EX", "Tinkaton EX", "Bibarel EX"]
-    },
-    Expert: {
-      "Secluded Springs": ["Jumpluff EX & Shuckle EX", "Entei EX & Flareon EX", "Suicune EX & Milotic", "Raikou EX & Pikachu EX", "Latios & Latias", "Poliwrath EX & Politoed"],
-      "Wisdom of Sea and Sky": ["Shuckle EX & Venusaur EX", "Lugia EX & Ho-Oh EX", "Kingdra EX", "Lanturn EX", "Espeon EX & Sylveon EX", "Donphan EX & Lucario", "Umbreon EX & Darkrai EX", "Scarmory EX & Scizor"],
-      "Eevee Grove": ["Tsareena & Buzzwole EX", "Flareon & Flareon EX", "Primarina EX & Pyukumuku", "Sylveon EX & Sylveon"],
-      "Extradimensional Crisis": ["Buzzwole EX", "Tapu Koko EX & Pikachu EX", "Lycanroc EX & Passimian EX", "Guzzlord EX & Naganadel", "Alolan Dugtrio EX & Skarmory"],
-      "Celestial Guardians": ["Decidueye EX & Lurantis", "Incineroar EX & Moltres EX", "Crabominable EX & Primarina", "Alolan Raichu EX & Orocorio", "Lunala EX & Giratina EX", "Passimian EX & Lucario EX", "Alolan Muk EX & Toxapex", "Solgaleo EX & Excadrill"],
-      "Triumphant Light": ["Leafeon EX & Yanmega EX", "Arceus EX & Infernape EX", "Glaceon Ex & Palkia Ex", "Arceus EX & Pachirisu EX", "Garchomp EX & Marshadow", "Arceus EX & Weavile EX", "Probopass EX & Dialga EX"],
-      "Spacetime Smackdown": ["Yanmega EX & Exeggutor Ex", "Infernape EX & Rapidash", "Plakia EX & Vaporeon", "Pachirisu EX & Pikachu EX", "Mismagius EX & Gardevoir", "Gallade EX & Lucario", "Darkrai EX & Weavile EX", "Dialga EX & Melmetal"],
-      "Mythical Island": ["Venusaur EX & Serperior", "Celebi EX & Serperior", "Volcarona EX & Moltres", "Gyarados EX & Vaporeon", "Raichu & Magneton", "Mew EX & Mewtwo EX", "Aerodactyl EX & Marowak EX", "Blue & Pidgeot EX"],
-      "Genetic Apex": ["Venusaur EX & Exeggutor EX", "Charizard EX & Moltres EX", "Starmie EX & Greninja", "Pikachu Ex & Raichu", "Mewtwo EX & Gardevoir", "Machamp EX & Marowak EX"],
-      "Shining Revelry": ["Beedrill EX", "Charizard EX", "Wugtrio EX", "Pikachu EX", "Giratina EX", "Lucario EX", "Paldean Clodsire EX", "Tinkaton EX", "Bibarel EX"]
+  // 🔹 Load solo battles from Supabase on mount
+  useEffect(() => {
+    const loadBattles = async () => {
+      const { data, error } = await supabase
+        .from('solo_battles')
+        .select('difficulty, expansion, deck_name')
+
+      if (error) {
+        setError('Failed to load solo battles: ' + error.message)
+        return
+      }
+
+      const grouped: BattlesGrouped = {}
+      data?.forEach((row) => {
+        if (!grouped[row.difficulty]) grouped[row.difficulty] = {}
+        if (!grouped[row.difficulty][row.expansion]) grouped[row.difficulty][row.expansion] = []
+        grouped[row.difficulty][row.expansion].push(row.deck_name)
+      })
+
+      setSoloBattles(grouped)
     }
-  }
+
+    loadBattles()
+  }, [])
 
   const toggleDifficulty = (difficulty: string) => {
-    setSelectedDifficulties(prev =>
+    setSelectedDifficulties((prev) =>
       prev.includes(difficulty)
-        ? prev.filter(d => d !== difficulty)
+        ? prev.filter((d) => d !== difficulty)
         : [...prev, difficulty]
     )
   }
@@ -105,7 +88,7 @@ export default function RandomBattlePage() {
       if (result === 'win') stats.wins++
     })
 
-    setDeckStats(prev => ({
+    setDeckStats((prev) => ({
       ...prev,
       [deckId]: stats,
     }))
@@ -188,14 +171,26 @@ export default function RandomBattlePage() {
       return
     }
 
-    const allowedDifficulties = selectedDifficulties.length > 0
-      ? selectedDifficulties
-      : Object.keys(solo_battles)
+    const allowedDifficulties =
+      selectedDifficulties.length > 0
+        ? selectedDifficulties
+        : Object.keys(soloBattles)
 
-    const difficulty = allowedDifficulties[Math.floor(Math.random() * allowedDifficulties.length)]
-    const expansions = Object.keys(solo_battles[difficulty])
+    if (allowedDifficulties.length === 0) {
+      setError('No solo battles available.')
+      return
+    }
+
+    const difficulty =
+      allowedDifficulties[Math.floor(Math.random() * allowedDifficulties.length)]
+    const expansions = Object.keys(soloBattles[difficulty] || {})
+    if (expansions.length === 0) {
+      setError('No expansions available for this difficulty.')
+      return
+    }
+
     const expansion = expansions[Math.floor(Math.random() * expansions.length)]
-    const options = solo_battles[difficulty][expansion]
+    const options = soloBattles[difficulty][expansion]
     const enemy_deck = options[Math.floor(Math.random() * options.length)]
     const player_deck = decks[Math.floor(Math.random() * decks.length)]
 
@@ -223,18 +218,27 @@ export default function RandomBattlePage() {
         <div style={{ marginBottom: '1rem' }}>
           <strong>
             Select Difficulties:
-            <span style={{ fontWeight: 'normal', color: '#666', fontSize: '0.85rem', marginLeft: 8 }}>
+            <span
+              style={{
+                fontWeight: 'normal',
+                color: '#666',
+                fontSize: '0.85rem',
+                marginLeft: 8,
+              }}
+            >
               (optional)
             </span>
           </strong>
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: 8 }}>
-            {Object.keys(solo_battles).map((difficulty) => {
+            {Object.keys(soloBattles).map((difficulty) => {
               const selected = selectedDifficulties.includes(difficulty)
               return (
                 <button
                   key={difficulty}
                   onClick={() => toggleDifficulty(difficulty)}
-                  className={`${buttonStyles.buttonCompact} ${selected ? buttonStyles.primary : ''}`}
+                  className={`${buttonStyles.buttonCompact} ${
+                    selected ? buttonStyles.primary : ''
+                  }`}
                   type="button"
                 >
                   {difficulty}
@@ -266,7 +270,14 @@ export default function RandomBattlePage() {
             }}
           >
             <div style={{ marginBottom: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.2rem', marginBottom: '0.5rem', borderBottom: '1px solid #ddd', paddingBottom: '4px' }}>
+              <h2
+                style={{
+                  fontSize: '1.2rem',
+                  marginBottom: '0.5rem',
+                  borderBottom: '1px solid #ddd',
+                  paddingBottom: '4px',
+                }}
+              >
                 Your Deck
               </h2>
               <p
@@ -284,19 +295,34 @@ export default function RandomBattlePage() {
             </div>
 
             <div>
-              <h2 style={{ fontSize: '1.2rem', marginBottom: '0.5rem', borderBottom: '1px solid #ddd', paddingBottom: '4px' }}>
+              <h2
+                style={{
+                  fontSize: '1.2rem',
+                  marginBottom: '0.5rem',
+                  borderBottom: '1px solid #ddd',
+                  paddingBottom: '4px',
+                }}
+              >
                 Solo Battle
               </h2>
               <div style={{ lineHeight: '1.8', fontSize: '0.95rem' }}>
-                <p><strong>Difficulty:</strong> {match.solo_battle.difficulty}</p>
-                <p><strong>Expansion:</strong> {match.solo_battle.expansion}</p>
-                <p><strong>Opponent:</strong> {match.solo_battle.deck}</p>
+                <p>
+                  <strong>Difficulty:</strong> {match.solo_battle.difficulty}
+                </p>
+                <p>
+                  <strong>Expansion:</strong> {match.solo_battle.expansion}
+                </p>
+                <p>
+                  <strong>Opponent:</strong> {match.solo_battle.deck}
+                </p>
               </div>
             </div>
 
             {/* Record Results */}
             <div style={{ marginTop: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.05rem', marginBottom: '0.5rem' }}>Track Results</h3>
+              <h3 style={{ fontSize: '1.05rem', marginBottom: '0.5rem' }}>
+                Track Results
+              </h3>
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                 <button
                   onClick={() => recordGame('win')}
@@ -343,9 +369,14 @@ export default function RandomBattlePage() {
 
               {deckStats[match.player_deck.id] && (
                 <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#444' }}>
-                  Games Played: {deckStats[match.player_deck.id].total_games}, Wins: {deckStats[match.player_deck.id].wins}, Win Rate:{" "}
+                  Games Played: {deckStats[match.player_deck.id].total_games}, Wins:{' '}
+                  {deckStats[match.player_deck.id].wins}, Win Rate:{' '}
                   {deckStats[match.player_deck.id].total_games > 0
-                    ? `${Math.round((deckStats[match.player_deck.id].wins / deckStats[match.player_deck.id].total_games) * 100)}%`
+                    ? `${Math.round(
+                        (deckStats[match.player_deck.id].wins /
+                          deckStats[match.player_deck.id].total_games) *
+                          100
+                      )}%`
                     : '0%'}
                 </p>
               )}
@@ -358,18 +389,21 @@ export default function RandomBattlePage() {
           <div
             style={{
               position: 'fixed',
-              top: 0, left: 0, right: 0, bottom: 0,
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
               backgroundColor: 'rgba(0,0,0,0.5)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               zIndex: 1000,
             }}
-            onClick={() => setShowDeckModal(false)} // 🔹 close on backdrop click
+            onClick={() => setShowDeckModal(false)}
           >
             <div
               className={styles.modalContent}
-              onClick={(e) => e.stopPropagation()} // 🔹 prevent closing when clicking inside modal
+              onClick={(e) => e.stopPropagation()}
             >
               <h2
                 style={{
@@ -399,7 +433,13 @@ export default function RandomBattlePage() {
                     <div style={{ fontWeight: 600 }}>
                       {String(idx + 1).padStart(2, '0')}. {card.name}
                     </div>
-                    <div style={{ color: '#666', fontSize: '0.85rem', marginTop: 2 }}>
+                    <div
+                      style={{
+                        color: '#666',
+                        fontSize: '0.85rem',
+                        marginTop: 2,
+                      }}
+                    >
                       {card.pack}
                     </div>
                   </div>
