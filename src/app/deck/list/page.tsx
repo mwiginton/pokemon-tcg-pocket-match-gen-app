@@ -87,14 +87,20 @@ export default function DeckListPage() {
       setError(gamesError.message)
     } else {
       const statsMap: Record<string, DeckStats> = {}
+
+      deckIds.forEach(id => {
+        statsMap[id] = { total_games: 0, wins: 0 }
+      })
+
       gamesData?.forEach(({ deck_id, result }) => {
-        if (!statsMap[deck_id]) {
-          statsMap[deck_id] = { total_games: 0, wins: 0 }
-        }
         statsMap[deck_id].total_games++
         if (result === 'win') statsMap[deck_id].wins++
       })
-      setDeckStats(statsMap)
+
+      setDeckStats(prev => ({
+        ...prev,
+        ...statsMap,
+      }))
     }
   }
 
@@ -161,7 +167,6 @@ export default function DeckListPage() {
   }
 
   const handleDeleteDeck = async (deckId: string) => {
-    // First delete all deck_games linked to this deck
     const { error: gamesError } = await supabase
       .from('deck_games')
       .delete()
@@ -172,7 +177,6 @@ export default function DeckListPage() {
       return
     }
 
-    // Then delete the deck itself
     const { error: deckError } = await supabase
       .from('decks')
       .delete()
@@ -299,7 +303,7 @@ export default function DeckListPage() {
               marginBottom: 12,
               fontWeight: 'bold',
               fontSize: '1rem',
-              color: '#222', // darker, more readable
+              color: '#222',
             }}
           >
             Are you sure you want to delete this deck?
