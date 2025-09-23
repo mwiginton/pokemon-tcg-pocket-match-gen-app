@@ -147,6 +147,10 @@ export default function EditDeckPage() {
     router.push('/deck/list')
   }
 
+  const handleCancel = () => {
+    router.push('/deck/list')
+  }
+
   return (
     <div className={styles.page}>
       <div className={styles.card}>
@@ -185,13 +189,24 @@ export default function EditDeckPage() {
               ))}
             </div>
 
-            <button
-              onClick={handleUpdate}
-              disabled={loading}
-              className={`${buttonStyles.button} ${buttonStyles.primary}`}
-            >
-              {loading ? 'Saving...' : 'Save Deck'}
-            </button>
+            <div className={styles.buttonRow}>
+              <button
+                onClick={handleUpdate}
+                disabled={loading}
+                className={`${buttonStyles.button} ${buttonStyles.primary}`}
+              >
+                {loading ? 'Saving...' : 'Save Deck'}
+              </button>
+              <button
+                type="button"
+                onClick={handleCancel}
+                disabled={loading}
+                aria-disabled={loading}
+                className={`${buttonStyles.button} ${buttonStyles.secondary} ${loading ? buttonStyles.disabled : ''}`}
+              >
+                Cancel
+              </button>
+            </div>
           </>
         )}
       </div>

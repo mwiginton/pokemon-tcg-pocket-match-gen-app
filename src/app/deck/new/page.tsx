@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import styles from '@/styles/layout.module.css'
@@ -19,6 +19,25 @@ export default function NewDeckPage() {
   const [cards, setCards] = useState<CardEntry[]>(Array(20).fill({ id: '', name: '' }))
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [deckCount, setDeckCount] = useState<number | null>(null)
+  const maxDecks = 10
+
+  useEffect(() => {
+    const fetchDeckCount = async () => {
+      const { data: userData } = await supabase.auth.getUser()
+      const user = userData?.user
+      if (!user) return
+
+      const { count, error } = await supabase
+        .from('decks')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+
+      if (!error) setDeckCount(count ?? 0)
+    }
+
+    fetchDeckCount()
+  }, [])
 
   const handleCardSlotChange = (index: number, newCard: CardEntry) => {
     const newCards = [...cards]
@@ -27,6 +46,9 @@ export default function NewDeckPage() {
   }
 
   const handleSubmit = async () => {
+    // hard guard in case someone triggers via keyboard/event
+    if (hasReachedLimit) return
+
     setError('')
     setLoading(true)
 
@@ -84,11 +106,24 @@ export default function NewDeckPage() {
     router.push('/deck/list')
   }
 
+  const handleCancel = () => {
+    router.push('/dashboard')
+  }
+
+  const hasReachedLimit = deckCount !== null && deckCount >= maxDecks
+  const disableAll = loading || hasReachedLimit
+
   return (
     <div className={styles.page}>
-      <div className={styles.card}>
+      <div className={`${styles.card} ${hasReachedLimit ? styles.noPress : ''}`}>
         <h1 className={styles.header}>Create New Deck</h1>
         {error && <p className={styles.errorText}>{error}</p>}
+
+        {hasReachedLimit && (
+          <p className={styles.errorText}>
+            You’ve reached the maximum of {maxDecks} decks. Delete one to add a new deck.
+          </p>
+        )}
 
         <label className={styles.label} htmlFor="deckName">Deck Name</label>
         <input
@@ -98,6 +133,7 @@ export default function NewDeckPage() {
           value={deckName}
           onChange={e => setDeckName(e.target.value)}
           className={`${styles.input} ${styles.deckNameInput}`}
+          disabled={hasReachedLimit}
         />
         <p className={styles.helperText}>Give your deck a unique and descriptive name.</p>
 
@@ -112,18 +148,32 @@ export default function NewDeckPage() {
                 index={index}
                 value={card}
                 onChange={(newCard) => handleCardSlotChange(index, newCard)}
+                disabled={hasReachedLimit} // optional: lock suggestions if limit is reached
               />
             </div>
           ))}
         </div>
 
-        <button
-          onClick={handleSubmit}
-          disabled={loading}
-          className={`${buttonStyles.button} ${buttonStyles.primary}`}
-        >
-          {loading ? 'Saving...' : 'Save Deck'}
-        </button>
+        <div className={styles.buttonRow}>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={disableAll}
+            aria-disabled={disableAll}
+            className={`${buttonStyles.button} ${buttonStyles.primary} ${disableAll ? buttonStyles.disabled : ''}`}
+          >
+            {loading ? 'Saving...' : 'Save Deck'}
+          </button>
+          <button
+            type="button"
+            onClick={handleCancel}
+            disabled={loading}
+            aria-disabled={loading}
+            className={`${buttonStyles.button} ${buttonStyles.secondary} ${loading ? buttonStyles.disabled : ''}`}
+          >
+            Cancel
+          </button>
+        </div>
       </div>
     </div>
   )

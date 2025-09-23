@@ -86,3 +86,30 @@
   background-color: #6d28d9;
   box-shadow: 0 4px 8px rgba(109, 40, 217, 0.45);
 }
+
+.button:disabled,
+.button[disabled] {
+  background-color: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+  pointer-events: none;
+}
+
+.primary:disabled,
+.primary[disabled] {
+  background-color: #d1d5db;
+  color: #f3f4f6;
+  box-shadow: none;
+}
+
+.buttonCompact:disabled,
+.buttonCompact[disabled] {
+  background-color: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+  pointer-events: none;
+}
