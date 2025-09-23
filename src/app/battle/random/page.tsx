@@ -239,6 +239,7 @@ export default function RandomBattlePage() {
           Back to Dashboard
         </Link>
       </div>
+
       <div className={styles.card}>
         <h1 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center' }}>
           <Dice3 size={18} style={{ marginRight: 8 }} />
@@ -260,7 +261,9 @@ export default function RandomBattlePage() {
               (optional)
             </span>
           </strong>
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: 8 }}>
+
+          {/* Desktop: flex (wrap if needed). Mobile: 4-column grid on one row */}
+          <div className="difficultyRow">
             {Object.keys(soloBattles).map((difficulty) => {
               const selected = selectedDifficulties.includes(difficulty)
               return (
@@ -370,7 +373,7 @@ export default function RandomBattlePage() {
                     cursor: isRecording ? 'not-allowed' : 'pointer',
                     fontSize: '0.9rem',
                     opacity: isRecording ? 0.7 : 1,
-                  }}
+                  } as React.CSSProperties}
                 >
                   {isRecording ? <Loader2 className="spin" size={16} /> : null}
                   {isRecording ? 'Recording...' : 'Record Win'}
@@ -392,7 +395,7 @@ export default function RandomBattlePage() {
                     cursor: isRecording ? 'not-allowed' : 'pointer',
                     fontSize: '0.9rem',
                     opacity: isRecording ? 0.7 : 1,
-                  }}
+                  } as React.CSSProperties}
                 >
                   {isRecording ? <Loader2 className="spin" size={16} /> : null}
                   {isRecording ? 'Recording...' : 'Record Loss'}
@@ -430,7 +433,6 @@ export default function RandomBattlePage() {
               justifyContent: 'center',
               zIndex: 1000,
             }}
-            // Close ONLY if the backdrop itself was the target
             onMouseDown={(e) => {
               if (e.target === e.currentTarget) closeDeckModal()
             }}
@@ -510,6 +512,38 @@ export default function RandomBattlePage() {
             </div>
           </div>
         )}
+
+        {/* Component-scoped responsive styles */}
+        <style jsx>{`
+          /* Default (desktop/tablet): keep your original flex behavior */
+          .difficultyRow {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 8px;
+            flex-wrap: wrap;
+          }
+
+          /* On small screens, make one row with auto-sized buttons */
+          @media (max-width: 480px) {
+            .difficultyRow {
+              display: flex;
+              justify-content: space-between;
+              gap: 0.4rem;
+              flex-wrap: nowrap; /* stay on one row */
+            }
+            .difficultyRow :global(button) {
+              flex: 1 1 auto;          /* buttons grow/shrink */
+              min-width: 0;            /* allow shrinking */
+              padding: 6px 6px !important;
+              font-size: 0.8rem !important;
+              line-height: 1rem;
+              white-space: nowrap;     /* keep text on one line */
+              text-align: center;
+              overflow: hidden;
+              text-overflow: ellipsis; /* add … if text still too long */
+            }
+          }
+        `}</style>
       </div>
     </div>
   )
