@@ -11,6 +11,7 @@ import {
   Trophy,
   XCircle,
   RotateCcw,
+  Home
 } from 'lucide-react'
 
 type Deck = {
@@ -197,6 +198,27 @@ export default function DeckListPage() {
 
   return (
     <div className={styles.page}>
+      <div style={{ marginBottom: '1rem', textAlign: 'left' }}>
+        <Link
+          href="/dashboard"
+          className={styles.iconButton}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '6px 12px',
+            borderRadius: 6,
+            background: '#eef3fb',
+            border: '1px solid #a5c5f5',
+            color: '#205493',
+            fontWeight: 500,
+            textDecoration: 'none',
+          }}
+        >
+          <Home size={16} />
+          Back to Dashboard
+        </Link>
+      </div>
       <div className={styles.card}>
         <div className={styles.headerWithIcon}>
           <BookMarked size={28} strokeWidth={2} />

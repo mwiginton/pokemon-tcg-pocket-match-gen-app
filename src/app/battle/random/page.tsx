@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import styles from '@/styles/layout.module.css'
 import buttonStyles from '@/styles/button.module.css'
-import { Dice3, Loader2 } from 'lucide-react'
+import { Dice3, Loader2, Home } from 'lucide-react'
+import Link from 'next/link'
 
 type Deck = {
   id: string
@@ -38,10 +39,8 @@ export default function RandomBattlePage() {
   const [isRecording, setIsRecording] = useState(false)
   const [soloBattles, setSoloBattles] = useState<BattlesGrouped>({})
 
-  // Helper: close function used everywhere
   const closeDeckModal = () => setShowDeckModal(false)
 
-  // Escape-to-close (optional but handy)
   useEffect(() => {
     if (!showDeckModal) return
     const onKey = (e: KeyboardEvent) => {
@@ -51,7 +50,6 @@ export default function RandomBattlePage() {
     return () => window.removeEventListener('keydown', onKey)
   }, [showDeckModal])
 
-  // 🔹 Load solo battles from Supabase on mount
   useEffect(() => {
     const loadBattles = async () => {
       const { data, error } = await supabase
@@ -220,6 +218,27 @@ export default function RandomBattlePage() {
 
   return (
     <div className={styles.page}>
+      <div style={{ marginBottom: '1rem', textAlign: 'left' }}>
+        <Link
+          href="/dashboard"
+          className={styles.iconButton}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '6px 12px',
+            borderRadius: 6,
+            background: '#eef3fb',
+            border: '1px solid #a5c5f5',
+            color: '#205493',
+            fontWeight: 500,
+            textDecoration: 'none',
+          }}
+        >
+          <Home size={16} />
+          Back to Dashboard
+        </Link>
+      </div>
       <div className={styles.card}>
         <h1 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center' }}>
           <Dice3 size={18} style={{ marginRight: 8 }} />
