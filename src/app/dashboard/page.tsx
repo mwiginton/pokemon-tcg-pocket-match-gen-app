@@ -10,18 +10,32 @@ import { PlusCircle, Library, LogOut, Dice3 } from 'lucide-react'
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null)
+  const [deckCount, setDeckCount] = useState<number>(0)
+  const [loading, setLoading] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchUserAndDecks = async () => {
       const { data } = await supabase.auth.getUser()
       if (!data.user) {
         router.push('/')
-      } else {
-        setUser(data.user)
+        return
       }
+      setUser(data.user)
+
+      // fetch deck count for this user
+      const { count, error } = await supabase
+        .from('decks')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', data.user.id)
+
+      if (!error && typeof count === 'number') {
+        setDeckCount(count)
+      }
+      setLoading(false)
     }
-    fetchUser()
+
+    fetchUserAndDecks()
   }, [router])
 
   const signOut = async () => {
@@ -37,12 +51,22 @@ export default function Dashboard() {
         {user && <p className={styles.userEmail}>Logged in as: {user.email}</p>}
 
         <div className={styles.actions}>
-          <Link href="/deck/new">
-            <button className={`${buttonStyles.button} ${buttonStyles.primary}`}>
+          {/* Create Deck Button */}
+          <Link href={deckCount >= 10 ? '#' : '/deck/new'}>
+            <button
+              disabled={deckCount >= 10}
+              className={`${buttonStyles.button} ${buttonStyles.primary}`}
+            >
               <PlusCircle size={18} />
               <span>Create New Deck</span>
             </button>
           </Link>
+
+          {deckCount >= 10 && (
+            <p style={{ color: '#205493', fontSize: '0.85rem', marginTop: '0.5rem' }}>
+              You’ve reached the maximum of 10 decks. The ability to add more decks is coming soon!
+            </p>
+          )}
 
           <Link href="/deck/list">
             <button className={buttonStyles.button}>
@@ -58,7 +82,10 @@ export default function Dashboard() {
             </button>
           </Link>
 
-          <button onClick={signOut} className={`${buttonStyles.button} ${buttonStyles.signOut}`}>
+          <button
+            onClick={signOut}
+            className={`${buttonStyles.button} ${buttonStyles.signOut}`}
+          >
             <LogOut size={18} />
             <span>Sign Out</span>
           </button>
