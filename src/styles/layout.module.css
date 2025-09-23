@@ -258,6 +258,59 @@
   flex-wrap: wrap;
 }
 
+/* ---------------- Footer ---------------- */
+.pageWrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.mainContent {
+  flex: 1;
+}
+
+.footer {
+  background: #f9f9f9;        /* match page background */
+  color: #444;                /* soft text */
+  border-top: 1px solid #e5e7eb;
+  width: 100%;
+}
+
+.footerContainer {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.footerText {
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.footerLinks {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.footerLink {
+  color: #2563eb;             /* blue link */
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.footerLink:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
+/* On small screens stack neatly */
 @media (max-width: 640px) {
   .page {
     padding: 1rem;
@@ -276,6 +329,12 @@
 
   .card p {
     font-size: 0.85rem;
+  }
+
+  .footerContainer {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
   }
 }
 
