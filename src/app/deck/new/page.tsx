@@ -81,7 +81,7 @@ export default function NewDeckPage() {
       return
     }
 
-    router.push('/dashboard')
+    router.push('/deck/list')
   }
 
   return (

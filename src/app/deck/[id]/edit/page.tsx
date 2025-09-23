@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabaseClient'
 import styles from '@/styles/layout.module.css'
 import CardAutocompleteInput from '@/components/CardAutocompleteInput'
 import { Pencil } from 'lucide-react'
+import buttonStyles from '@/styles/button.module.css'
 
 type CardEntry = {
   id: string
@@ -143,7 +144,7 @@ export default function EditDeckPage() {
       return
     }
 
-    router.push('/dashboard')
+    router.push('/deck/list')
   }
 
   return (
@@ -187,9 +188,9 @@ export default function EditDeckPage() {
             <button
               onClick={handleUpdate}
               disabled={loading}
-              className={styles.button}
+              className={`${buttonStyles.button} ${buttonStyles.primary}`}
             >
-              {loading ? 'Updating...' : 'Save Changes'}
+              {loading ? 'Saving...' : 'Save Deck'}
             </button>
           </>
         )}

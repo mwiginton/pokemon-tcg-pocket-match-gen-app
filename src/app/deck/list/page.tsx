@@ -161,9 +161,25 @@ export default function DeckListPage() {
   }
 
   const handleDeleteDeck = async (deckId: string) => {
-    const { error } = await supabase.from('decks').delete().eq('id', deckId)
-    if (error) {
-      alert('Failed to delete deck: ' + error.message)
+    // First delete all deck_games linked to this deck
+    const { error: gamesError } = await supabase
+      .from('deck_games')
+      .delete()
+      .eq('deck_id', deckId)
+
+    if (gamesError) {
+      alert('Failed to delete related games: ' + gamesError.message)
+      return
+    }
+
+    // Then delete the deck itself
+    const { error: deckError } = await supabase
+      .from('decks')
+      .delete()
+      .eq('id', deckId)
+
+    if (deckError) {
+      alert('Failed to delete deck: ' + deckError.message)
       return
     }
 
@@ -226,7 +242,6 @@ export default function DeckListPage() {
               </p>
             )}
 
-            {/* Updated: use styles.cardActions */}
             <div className={styles.cardActions}>
               <button onClick={() => recordGame(deck.id, 'win')} style={recordBtnStyle('#e6f9ec', '#1a7f37', '#b2e0c0')}>
                 <Trophy size={16} /> Record Win
@@ -277,10 +292,16 @@ export default function DeckListPage() {
         )
       })}
 
-      {/* Confirm Delete Modal */}
       {confirmDeleteId && (
         <div style={modalStyle}>
-          <p style={{ marginBottom: 12, fontWeight: 'bold' }}>
+          <p
+            style={{
+              marginBottom: 12,
+              fontWeight: 'bold',
+              fontSize: '1rem',
+              color: '#222', // darker, more readable
+            }}
+          >
             Are you sure you want to delete this deck?
           </p>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
@@ -300,7 +321,6 @@ export default function DeckListPage() {
         </div>
       )}
 
-      {/* Card Image Modal */}
       {selectedCardImage && (
         <div
           onClick={() => setSelectedCardImage(null)}
