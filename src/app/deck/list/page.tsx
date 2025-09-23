@@ -42,6 +42,7 @@ export default function DeckListPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [confirmResetId, setConfirmResetId] = useState<string | null>(null)
   const [selectedCardImage, setSelectedCardImage] = useState<string | null>(null)
 
   useEffect(() => {
@@ -126,9 +127,6 @@ export default function DeckListPage() {
   }
 
   const resetGameStats = async (deckId: string) => {
-    const confirmReset = confirm('Are you sure you want to reset all recorded games for this deck?')
-    if (!confirmReset) return
-
     const { error } = await supabase
       .from('deck_games')
       .delete()
@@ -139,6 +137,7 @@ export default function DeckListPage() {
     } else {
       await refreshDeckStats([deckId])
     }
+    setConfirmResetId(null)
   }
 
   const toggleDeckCards = async (deckId: string) => {
@@ -253,7 +252,7 @@ export default function DeckListPage() {
               <button onClick={() => recordGame(deck.id, 'loss')} style={recordBtnStyle('#ffecec', '#c52d2d', '#f5baba')}>
                 <XCircle size={16} /> Record Loss
               </button>
-              <button onClick={() => resetGameStats(deck.id)} style={recordBtnStyle('#eef3fb', '#205493', '#bfd7f2')}>
+              <button onClick={() => setConfirmResetId(deck.id)} style={recordBtnStyle('#eef3fb', '#205493', '#bfd7f2')}>
                 <RotateCcw size={16} /> Reset Stats
               </button>
             </div>
@@ -296,16 +295,10 @@ export default function DeckListPage() {
         )
       })}
 
+      {/* Delete Deck Modal */}
       {confirmDeleteId && (
         <div style={modalStyle}>
-          <p
-            style={{
-              marginBottom: 12,
-              fontWeight: 'bold',
-              fontSize: '1rem',
-              color: '#222',
-            }}
-          >
+          <p style={{ marginBottom: 12, fontWeight: 'bold', fontSize: '1rem', color: '#222' }}>
             Are you sure you want to delete this deck?
           </p>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
@@ -317,6 +310,29 @@ export default function DeckListPage() {
             </button>
             <button
               onClick={() => setConfirmDeleteId(null)}
+              style={{ ...confirmBtnStyle, background: '#ccc', color: '#000' }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Stats Modal */}
+      {confirmResetId && (
+        <div style={modalStyle}>
+          <p style={{ marginBottom: 12, fontWeight: 'bold', fontSize: '1rem', color: '#222' }}>
+            Reset all recorded games for this deck?
+          </p>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+            <button
+              onClick={() => resetGameStats(confirmResetId)}
+              style={{ ...confirmBtnStyle, background: '#205493', color: 'white' }}
+            >
+              Yes, reset
+            </button>
+            <button
+              onClick={() => setConfirmResetId(null)}
               style={{ ...confirmBtnStyle, background: '#ccc', color: '#000' }}
             >
               Cancel
