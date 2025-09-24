@@ -185,7 +185,9 @@ export default function Home() {
                 )}
               </p>
 
-              <div className={styles.divider}>or</div>
+              <div className={styles.divider}>
+                <span>or</span>
+              </div>
 
               <button className={styles.googleButton} onClick={signInWithGoogle}>
                 <Image src="/google-icon.svg" alt="Google" width={20} height={20} />
