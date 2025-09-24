@@ -375,7 +375,6 @@
     padding: 10px;
   }
 
-  /* Force Record buttons to one row */
   .cardActions {
     flex-wrap: nowrap;
     justify-content: space-between;

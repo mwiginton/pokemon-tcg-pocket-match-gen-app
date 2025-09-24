@@ -6,7 +6,7 @@ import styles from './page.module.css'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 
-export default function Home() {
+export default function AuthPage() {
   const [user, setUser] = useState<any>(null)
   const [loadingUser, setLoadingUser] = useState(true)
   const [email, setEmail] = useState('')
@@ -21,7 +21,7 @@ export default function Home() {
       const { data } = await supabase.auth.getUser()
       if (data.user) {
         setUser(data.user)
-        router.push('/dashboard')
+        router.replace('/dashboard')
       } else {
         setLoadingUser(false)
       }
@@ -35,7 +35,7 @@ export default function Home() {
       const currentUser = session?.user ?? null
       setUser(currentUser)
       if (currentUser) {
-        router.push('/dashboard')
+        router.replace('/dashboard')
       } else {
         setLoadingUser(false)
       }
@@ -67,7 +67,7 @@ export default function Home() {
     if (error) {
       setAuthError(error.message)
     } else {
-      router.push('/dashboard')
+      router.replace('/dashboard')
     }
     setLoading(false)
   }
@@ -80,17 +80,24 @@ export default function Home() {
     if (error) {
       setAuthError(error.message)
     } else {
-      router.push('/dashboard')
+      router.replace('/dashboard')
     }
     setLoading(false)
   }
 
+  // 🔑 Always render the spinner until we’re sure user is null
   if (loadingUser) {
     return (
       <div className={styles.page}>
         <main className={styles.main}>
           <div className={styles.card}>
-            <Image src="/logo.svg" alt="Logo" width={64} height={64} className={styles.logo} />
+            <Image
+              src="/logo.svg"
+              alt="Logo"
+              width={64}
+              height={64}
+              className={styles.logo}
+            />
             <h1 className={styles.title}>Loading your session...</h1>
             <div className={styles.spinner}></div>
           </div>
@@ -103,7 +110,13 @@ export default function Home() {
     <div className={styles.page}>
       <main className={styles.main}>
         <div className={styles.card}>
-          <Image src="/logo.svg" alt="Logo" width={64} height={64} className={styles.logo} />
+          <Image
+            src="/logo.svg"
+            alt="Logo"
+            width={64}
+            height={64}
+            className={styles.logo}
+          />
           <h1 className={styles.title}>
             {user
               ? `Welcome, ${user.email}`
