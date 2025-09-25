@@ -46,9 +46,7 @@ export default function NewDeckPage() {
   }
 
   const handleSubmit = async () => {
-    // hard guard in case someone triggers via keyboard/event
     if (hasReachedLimit) return
-
     setError('')
     setLoading(true)
 
@@ -148,7 +146,7 @@ export default function NewDeckPage() {
                 index={index}
                 value={card}
                 onChange={(newCard) => handleCardSlotChange(index, newCard)}
-                disabled={hasReachedLimit} // optional: lock suggestions if limit is reached
+                disabled={hasReachedLimit}
               />
             </div>
           ))}

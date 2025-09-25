@@ -1,104 +1,116 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabaseClient'
 import styles from '@/styles/layout.module.css'
 
-type Card = {
+type CardEntry = {
   id: string
   name: string
-  pack: string
+  pack?: string
 }
 
 type Props = {
-  value: Card
-  onChange: (card: Card) => void
   index: number
+  value: CardEntry
+  onChange: (newCard: CardEntry) => void
+  disabled?: boolean
 }
 
-export default function CardAutocompleteInput({ value, onChange, index }: Props) {
-  const [input, setInput] = useState(value.id ? `${value.name} (${value.pack})` : value.name)
-  const [suggestions, setSuggestions] = useState<Card[]>([])
-  const [showSuggestions, setShowSuggestions] = useState(false)
-  const [isFocused, setIsFocused] = useState(false)
-  const containerRef = useRef<HTMLDivElement>(null)
+export default function CardAutocompleteInput({ index, value, onChange, disabled }: Props) {
+  const [inputValue, setInputValue] = useState('')
+  const [suggestions, setSuggestions] = useState<CardEntry[]>([])
+  const [isValid, setIsValid] = useState(false)
+  const [showError, setShowError] = useState(false)
 
+  // keep input in sync with external value
   useEffect(() => {
-    if (input.trim().length < 2) {
+    if (value?.id) {
+      setInputValue(formatCardLabel(value))
+      setIsValid(true)
+    } else {
+      setInputValue(value?.name || '')
+      setIsValid(false)
+    }
+    setShowError(false)
+  }, [value])
+
+  const formatCardLabel = (card: CardEntry) => {
+    return card.pack ? `${card.name} (${card.pack})` : card.name
+  }
+
+  const fetchSuggestions = async (query: string) => {
+    if (!query.trim()) {
       setSuggestions([])
       return
     }
+    const { data, error } = await supabase
+      .from('cards')
+      .select('id, name, pack')
+      .ilike('name', `%${query}%`)
+      .limit(10)
 
-    const safeQuery = encodeURIComponent(input.replace(/\s*\(undefined\)/gi, '').trim())
-    const controller = new AbortController()
-    const debounceTimeout = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/cardsuggestions?query=${safeQuery}`, {
-          signal: controller.signal,
-        })
-        const { data } = await res.json()
-        setSuggestions(data || [])
-      } catch (err: any) {
-        if (err.name !== 'AbortError') {
-          console.error('Error fetching card suggestions:', err)
-        }
-      }
-    }, 300)
-
-    return () => {
-      clearTimeout(debounceTimeout)
-      controller.abort()
+    if (!error && data) {
+      setSuggestions(data)
     }
-  }, [input])
+  }
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setShowSuggestions(false)
-      }
-    }
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value
+    setInputValue(val)
+    setIsValid(false)
+    setShowError(false)
+    fetchSuggestions(val)
+    onChange({ id: '', name: val }) // mark invalid until suggestion chosen
+  }
 
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
+  const handleSelect = (card: CardEntry) => {
+    setInputValue(formatCardLabel(card)) // only show name + pack in input
+    setSuggestions([])
+    setIsValid(true)
+    setShowError(false)
+    onChange(card)
+  }
+
+  const handleBlur = () => {
+    if (!isValid && inputValue.trim() !== '') {
+      setShowError(true)
     }
-  }, [])
+  }
 
   return (
-    <div ref={containerRef} style={{ position: 'relative' }}>
+    <div style={{ position: 'relative' }}>
       <input
+        id={`card-${index}`}
         type="text"
-        value={input}
-        placeholder={`Card ${index + 1}`}
-        onChange={e => {
-          const val = e.target.value
-          setInput(val)
-          onChange({ id: '', name: val, pack: '' })
-          setShowSuggestions(true)
-        }}
-        onFocus={() => {
-          setIsFocused(true)
-          if (suggestions.length > 0) setShowSuggestions(true)
-        }}
-        onBlur={() => setIsFocused(false)}
-        className={styles.input}
+        value={inputValue}
+        disabled={disabled}
+        onChange={handleInputChange}
+        onBlur={handleBlur}
+        className={`${styles.input} ${showError ? styles.inputInvalid : ''}`}
+        placeholder="Search cards..."
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="off"
+        spellCheck={false}
       />
-
-      {showSuggestions && suggestions.length > 0 && (
+      {showError && (
+        <p className={styles.errorText}>Please select a valid suggestion</p>
+      )}
+      {suggestions.length > 0 && (
         <ul className={styles.suggestionList}>
           {suggestions.map((card) => (
             <li
               key={card.id}
-              onMouseDown={() => {
-                onChange(card)
-                setInput(`${card.name} (${card.pack})`)
-                setShowSuggestions(false)
-              }}
               className={styles.suggestion}
+              onMouseDown={() => handleSelect(card)}
             >
               <div className={styles.suggestionRow}>
                 <span className={styles.cardId}>[{card.id}]</span>
                 <span className={styles.cardName}>{card.name}</span>
-                <span className={styles.cardPack}>({card.pack})</span>
+                {card.pack && (
+                  <span className={styles.cardPack}>({card.pack})</span>
+                )}
               </div>
             </li>
           ))}
