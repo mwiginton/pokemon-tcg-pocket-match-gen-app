@@ -246,7 +246,7 @@ export default function RandomBattlePage() {
           Generate a Random Match
         </h1>
 
-        {/* Difficulty selectors */}
+        {/* Difficulty selection */}
         <div style={{ marginBottom: '1rem' }}>
           <strong>
             Select Difficulties:
@@ -262,7 +262,7 @@ export default function RandomBattlePage() {
             </span>
           </strong>
 
-          {/* Desktop: flex (wrap if needed). Mobile: 4-column grid on one row */}
+          {/* Keep all difficulty buttons on one line */}
           <div className="difficultyRow">
             {Object.keys(soloBattles).map((difficulty) => {
               const selected = selectedDifficulties.includes(difficulty)
@@ -280,7 +280,6 @@ export default function RandomBattlePage() {
           </div>
         </div>
 
-        {/* Generate match */}
         <button
           onClick={generateMatch}
           className={`${buttonStyles.buttonCompact} ${buttonStyles.primary}`}
@@ -291,7 +290,7 @@ export default function RandomBattlePage() {
 
         {error && <p style={{ color: 'red', marginTop: 12 }}>{error}</p>}
 
-        {/* Match results */}
+        {/* Match display */}
         {match && (
           <div
             style={{
@@ -303,14 +302,7 @@ export default function RandomBattlePage() {
             }}
           >
             <div style={{ marginBottom: '1.5rem' }}>
-              <h2
-                style={{
-                  fontSize: '1.2rem',
-                  marginBottom: '0.5rem',
-                  borderBottom: '1px solid #ddd',
-                  paddingBottom: '4px',
-                }}
-              >
+              <h2 style={{ fontSize: '1.2rem', marginBottom: '0.5rem', borderBottom: '1px solid #ddd', paddingBottom: '4px' }}>
                 Your Deck
               </h2>
               <p
@@ -328,219 +320,115 @@ export default function RandomBattlePage() {
             </div>
 
             <div>
-              <h2
-                style={{
-                  fontSize: '1.2rem',
-                  marginBottom: '0.5rem',
-                  borderBottom: '1px solid #ddd',
-                  paddingBottom: '4px',
-                }}
-              >
+              <h2 style={{ fontSize: '1.2rem', marginBottom: '0.5rem', borderBottom: '1px solid #ddd', paddingBottom: '4px' }}>
                 Solo Battle
               </h2>
               <div style={{ lineHeight: '1.8', fontSize: '0.95rem' }}>
-                <p>
-                  <strong>Difficulty:</strong> {match.solo_battle.difficulty}
-                </p>
-                <p>
-                  <strong>Expansion:</strong> {match.solo_battle.expansion}
-                </p>
-                <p>
-                  <strong>Opponent:</strong> {match.solo_battle.deck}
-                </p>
+                <p><strong>Difficulty:</strong> {match.solo_battle.difficulty}</p>
+                <p><strong>Expansion:</strong> {match.solo_battle.expansion}</p>
+                <p><strong>Opponent:</strong> {match.solo_battle.deck}</p>
               </div>
             </div>
 
-            {/* Record Results */}
-            <div style={{ marginTop: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.05rem', marginBottom: '0.5rem' }}>
-                Track Results
-              </h3>
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                <button
-                  onClick={() => recordGame('win')}
-                  disabled={isRecording}
-                  type="button"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '6px 10px',
-                    background: '#e6f9ec',
-                    color: '#1a7f37',
-                    border: '1px solid #b2e0c0',
-                    borderRadius: 6,
-                    cursor: isRecording ? 'not-allowed' : 'pointer',
-                    fontSize: '0.9rem',
-                    opacity: isRecording ? 0.7 : 1,
-                  } as React.CSSProperties}
-                >
-                  {isRecording ? <Loader2 className="spin" size={16} /> : null}
-                  {isRecording ? 'Recording...' : 'Record Win'}
-                </button>
-
-                <button
-                  onClick={() => recordGame('loss')}
-                  disabled={isRecording}
-                  type="button"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '6px 10px',
-                    background: '#ffecec',
-                    color: '#c52d2d',
-                    border: '1px solid #f5baba',
-                    borderRadius: 6,
-                    cursor: isRecording ? 'not-allowed' : 'pointer',
-                    fontSize: '0.9rem',
-                    opacity: isRecording ? 0.7 : 1,
-                  } as React.CSSProperties}
-                >
-                  {isRecording ? <Loader2 className="spin" size={16} /> : null}
-                  {isRecording ? 'Recording...' : 'Record Loss'}
-                </button>
-              </div>
-
-              {deckStats[match.player_deck.id] && (
-                <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#444' }}>
-                  Games Played: {deckStats[match.player_deck.id].total_games}, Wins{' '}
-                  {deckStats[match.player_deck.id].wins}, Win Rate{' '}
-                  {deckStats[match.player_deck.id].total_games > 0
-                    ? `${Math.round(
-                        (deckStats[match.player_deck.id].wins /
-                          deckStats[match.player_deck.id].total_games) * 100
-                      )}%`
-                    : '0%'}
-                </p>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Deck Modal */}
-        {showDeckModal && (
-          <div
-            role="dialog"
-            aria-modal="true"
-            tabIndex={-1}
-            style={{
-              position: 'fixed',
-              inset: 0,
-              backgroundColor: 'rgba(0,0,0,0.5)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 1000,
-            }}
-            onMouseDown={(e) => {
-              if (e.target === e.currentTarget) closeDeckModal()
-            }}
-          >
-            <div
-              className={styles.modalContent}
-              style={{
-                background: '#fff',
-                borderRadius: '8px',
-                padding: '1.5rem',
-                maxWidth: '500px',
-                width: '100%',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
-              }}
-            >
-              <h2
-                style={{
-                  fontSize: '1.4rem',
-                  fontWeight: '700',
-                  marginBottom: '1.2rem',
-                  borderBottom: '1px solid #eee',
-                  paddingBottom: 8,
-                }}
-              >
-                Deck Contents
-              </h2>
-
-              <div style={{ display: 'grid', rowGap: '0.75rem' }}>
-                {deckCards.map((card, idx) => (
-                  <div
-                    key={idx}
-                    style={{
-                      padding: '0.6rem 0.8rem',
-                      backgroundColor: '#f7f9fb',
-                      border: '1px solid #e0e0e0',
-                      borderRadius: '8px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      fontSize: '0.95rem',
-                    }}
-                  >
-                    <div style={{ fontWeight: 600 }}>
-                      {String(idx + 1).padStart(2, '0')}. {card.name}
-                    </div>
-                    <div
-                      style={{
-                        color: '#666',
-                        fontSize: '0.85rem',
-                        marginTop: 2,
-                      }}
-                    >
-                      {card.pack}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
+            {/* Record buttons */}
+            <div className="cardActions">
               <button
+                onClick={() => recordGame('win')}
+                disabled={isRecording}
                 type="button"
-                onClick={closeDeckModal}
-                style={{
-                  marginTop: '1.8rem',
-                  padding: '10px 18px',
-                  backgroundColor: '#0070f3',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '1rem',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  display: 'block',
-                  marginLeft: 'auto',
-                }}
+                className="winBtn"
               >
-                Close
+                {isRecording ? <Loader2 className="spin" size={16} /> : 'Record Win'}
+              </button>
+              <button
+                onClick={() => recordGame('loss')}
+                disabled={isRecording}
+                type="button"
+                className="lossBtn"
+              >
+                {isRecording ? <Loader2 className="spin" size={16} /> : 'Record Loss'}
               </button>
             </div>
+
+            {deckStats[match.player_deck.id] && (
+              <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#444' }}>
+                Games Played: {deckStats[match.player_deck.id].total_games}, Wins {deckStats[match.player_deck.id].wins}, Win Rate{' '}
+                {deckStats[match.player_deck.id].total_games > 0
+                  ? `${Math.round((deckStats[match.player_deck.id].wins / deckStats[match.player_deck.id].total_games) * 100)}%`
+                  : '0%'}
+              </p>
+            )}
           </div>
         )}
 
-        {/* Component-scoped responsive styles */}
+        {/* ✅ Restored difficulty + button color + mobile fix */}
         <style jsx>{`
-          /* Default (desktop/tablet): keep your original flex behavior */
           .difficultyRow {
             display: flex;
-            gap: 0.5rem;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.4rem;
             margin-top: 8px;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
           }
 
-          /* On small screens, make one row with auto-sized buttons */
+          .difficultyRow button {
+            flex: 1;
+            min-width: 0; /* ✅ allow shrinking */
+            font-size: 0.8rem;
+            padding: 0.4rem 0.3rem;
+            white-space: nowrap;
+          }
+
+          .cardActions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: nowrap;
+            justify-content: center;
+          }
+
+          .winBtn {
+            flex: 1;
+            background: #e6f9ec;
+            color: #1a7f37;
+            border: 1px solid #b2e0c0;
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+          }
+
+          .lossBtn {
+            flex: 1;
+            background: #ffecec;
+            color: #c52d2d;
+            border: 1px solid #f5baba;
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+          }
+
           @media (max-width: 480px) {
             .difficultyRow {
-              display: flex;
-              justify-content: space-between;
-              gap: 0.4rem;
-              flex-wrap: nowrap; /* stay on one row */
+              gap: 0.3rem;
             }
-            .difficultyRow :global(button) {
-              flex: 1 1 auto;          /* buttons grow/shrink */
-              min-width: 0;            /* allow shrinking */
-              padding: 6px 6px !important;
-              font-size: 0.8rem !important;
-              line-height: 1rem;
-              white-space: nowrap;     /* keep text on one line */
-              text-align: center;
-              overflow: hidden;
-              text-overflow: ellipsis; /* add … if text still too long */
+
+            .difficultyRow button {
+              flex: 1;
+              font-size: 0.7rem;
+              padding: 0.35rem 0.25rem;
+            }
+
+            .cardActions {
+              flex-wrap: nowrap;
+              gap: 0.4rem;
+            }
+
+            .cardActions button {
+              flex: 1;
+              white-space: nowrap;
             }
           }
         `}</style>
