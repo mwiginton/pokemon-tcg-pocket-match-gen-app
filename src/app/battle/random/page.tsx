@@ -374,7 +374,7 @@ export default function RandomBattlePage() {
 
           .difficultyRow button {
             flex: 1;
-            min-width: 0; /* ✅ allow shrinking */
+            min-width: 0;
             font-size: 0.8rem;
             padding: 0.4rem 0.3rem;
             white-space: nowrap;
@@ -411,6 +411,13 @@ export default function RandomBattlePage() {
           }
 
           @media (max-width: 480px) {
+            h1 {
+              font-size: 1.25rem !important;
+              line-height: 1.3;
+              text-align: center;
+              margin-bottom: 0.75rem;
+            }
+
             .difficultyRow {
               gap: 0.3rem;
             }
