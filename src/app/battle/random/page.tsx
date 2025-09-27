@@ -241,7 +241,7 @@ export default function RandomBattlePage() {
       </div>
 
       <div className={styles.card}>
-        {/* 🎲 Simple Dice icon + text header */}
+        {/* 🎲 Header */}
         <div className="headerWithDice">
           <Dice3 size={22} className="diceIcon" />
           <h1 className="headerText">Generate a Random Match</h1>
@@ -341,7 +341,37 @@ export default function RandomBattlePage() {
           </div>
         )}
 
+        {/* ✅ Restored difficulty button layout */}
         <style jsx>{`
+          .difficultyRow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.4rem;
+            margin-top: 8px;
+            flex-wrap: nowrap;
+          }
+
+          .difficultyRow button {
+            flex: 1;
+            min-width: 0;
+            font-size: 0.8rem;
+            padding: 0.4rem 0.3rem;
+            white-space: nowrap;
+          }
+
+          @media (max-width: 480px) {
+            .difficultyRow {
+              gap: 0.3rem;
+            }
+
+            .difficultyRow button {
+              flex: 1;
+              font-size: 0.7rem;
+              padding: 0.35rem 0.25rem;
+            }
+          }
+
           .headerWithDice {
             display: flex;
             align-items: center;
@@ -349,7 +379,6 @@ export default function RandomBattlePage() {
             gap: 0.6rem;
             margin-bottom: 1.25rem;
             text-align: center;
-            flex-wrap: wrap;
           }
 
           .diceIcon {
@@ -360,46 +389,6 @@ export default function RandomBattlePage() {
             font-size: 1.6rem;
             font-weight: 600;
             color: #1f2937;
-          }
-
-          @media (max-width: 480px) {
-            .headerText {
-              font-size: 1.25rem;
-            }
-          }
-
-          .matchCard {
-            margin-top: 2rem;
-            padding: 1.5rem;
-            border-radius: 8px;
-            background-color: #f9f9f9;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-          }
-
-          .sectionTitle {
-            font-size: 1.2rem;
-            margin-bottom: 0.5rem;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 4px;
-          }
-
-          .deckNameClickable {
-            font-weight: 500;
-            font-size: 1rem;
-            color: #0070f3;
-            text-decoration: underline;
-            cursor: pointer;
-          }
-
-          .battleInfo {
-            line-height: 1.8;
-            font-size: 0.95rem;
-          }
-
-          .statsText {
-            margin-top: 0.5rem;
-            font-size: 0.9rem;
-            color: #444;
           }
         `}</style>
       </div>
