@@ -3,8 +3,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  flex: 1;              /* instead of min-height: 100vh */
-  width: 100%;          /* full width */
+  flex: 1;
+  width: 100%;
   padding: 2rem;
   background-color: #f9f9f9;
 }
@@ -250,7 +250,6 @@
   }
 }
 
-/* Action buttons row (Record Win, Record Loss, Reset Stats) */
 .cardActions {
   display: flex;
   gap: 0.5rem;
@@ -258,16 +257,15 @@
   flex-wrap: wrap;
 }
 
-/* ---------------- Footer ---------------- */
 .pageWrapper {
   display: flex;
   flex-direction: column;
-  flex: 1;           /* fill body flex column */
-  min-height: 0;     /* prevent overflow issues */
+  flex: 1;
+  min-height: 0;
 }
 
 .mainContent {
-  flex: 1;           /* pushes footer down */
+  flex: 1;
   display: flex;
   flex-direction: column;
 }
@@ -277,7 +275,7 @@
   color: #444;
   border-top: 1px solid #e5e7eb;
   width: 100%;
-  margin-top: auto;  /* footer pinned at bottom */
+  margin-top: auto;
 }
 
 .footerContainer {
@@ -314,7 +312,6 @@
   opacity: 0.85;
 }
 
-/* On small screens stack neatly */
 @media (max-width: 640px) {
   .page {
     padding: 1rem;

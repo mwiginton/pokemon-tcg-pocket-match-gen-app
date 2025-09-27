@@ -241,10 +241,11 @@ export default function RandomBattlePage() {
       </div>
 
       <div className={styles.card}>
-        <h1 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center' }}>
-          <Dice3 size={18} style={{ marginRight: 8 }} />
-          Generate a Random Match
-        </h1>
+        {/* 🎲 Simple Dice icon + text header */}
+        <div className="headerWithDice">
+          <Dice3 size={22} className="diceIcon" />
+          <h1 className="headerText">Generate a Random Match</h1>
+        </div>
 
         {/* Difficulty selection */}
         <div style={{ marginBottom: '1rem' }}>
@@ -262,7 +263,6 @@ export default function RandomBattlePage() {
             </span>
           </strong>
 
-          {/* Keep all difficulty buttons on one line */}
           <div className="difficultyRow">
             {Object.keys(soloBattles).map((difficulty) => {
               const selected = selectedDifficulties.includes(difficulty)
@@ -290,29 +290,12 @@ export default function RandomBattlePage() {
 
         {error && <p style={{ color: 'red', marginTop: 12 }}>{error}</p>}
 
-        {/* Match display */}
         {match && (
-          <div
-            style={{
-              marginTop: '2rem',
-              padding: '1.5rem',
-              borderRadius: '8px',
-              backgroundColor: '#f9f9f9',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
-            }}
-          >
+          <div className="matchCard">
             <div style={{ marginBottom: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.2rem', marginBottom: '0.5rem', borderBottom: '1px solid #ddd', paddingBottom: '4px' }}>
-                Your Deck
-              </h2>
+              <h2 className="sectionTitle">Your Deck</h2>
               <p
-                style={{
-                  fontWeight: '500',
-                  fontSize: '1rem',
-                  color: '#0070f3',
-                  textDecoration: 'underline',
-                  cursor: 'pointer',
-                }}
+                className="deckNameClickable"
                 onClick={() => loadDeckCards(match.player_deck.id)}
               >
                 {match.player_deck.deck_name}
@@ -320,17 +303,14 @@ export default function RandomBattlePage() {
             </div>
 
             <div>
-              <h2 style={{ fontSize: '1.2rem', marginBottom: '0.5rem', borderBottom: '1px solid #ddd', paddingBottom: '4px' }}>
-                Solo Battle
-              </h2>
-              <div style={{ lineHeight: '1.8', fontSize: '0.95rem' }}>
+              <h2 className="sectionTitle">Solo Battle</h2>
+              <div className="battleInfo">
                 <p><strong>Difficulty:</strong> {match.solo_battle.difficulty}</p>
                 <p><strong>Expansion:</strong> {match.solo_battle.expansion}</p>
                 <p><strong>Opponent:</strong> {match.solo_battle.deck}</p>
               </div>
             </div>
 
-            {/* Record buttons */}
             <div className="cardActions">
               <button
                 onClick={() => recordGame('win')}
@@ -351,7 +331,7 @@ export default function RandomBattlePage() {
             </div>
 
             {deckStats[match.player_deck.id] && (
-              <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#444' }}>
+              <p className="statsText">
                 Games Played: {deckStats[match.player_deck.id].total_games}, Wins {deckStats[match.player_deck.id].wins}, Win Rate{' '}
                 {deckStats[match.player_deck.id].total_games > 0
                   ? `${Math.round((deckStats[match.player_deck.id].wins / deckStats[match.player_deck.id].total_games) * 100)}%`
@@ -361,82 +341,65 @@ export default function RandomBattlePage() {
           </div>
         )}
 
-        {/* ✅ Restored difficulty + button color + mobile fix */}
         <style jsx>{`
-          .difficultyRow {
+          .headerWithDice {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            gap: 0.4rem;
-            margin-top: 8px;
-            flex-wrap: nowrap;
-          }
-
-          .difficultyRow button {
-            flex: 1;
-            min-width: 0;
-            font-size: 0.8rem;
-            padding: 0.4rem 0.3rem;
-            white-space: nowrap;
-          }
-
-          .cardActions {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
-            flex-wrap: nowrap;
             justify-content: center;
+            gap: 0.6rem;
+            margin-bottom: 1.25rem;
+            text-align: center;
+            flex-wrap: wrap;
           }
 
-          .winBtn {
-            flex: 1;
-            background: #e6f9ec;
-            color: #1a7f37;
-            border: 1px solid #b2e0c0;
-            border-radius: 6px;
-            padding: 8px 10px;
-            font-size: 0.9rem;
-            font-weight: 500;
+          .diceIcon {
+            color: #205493;
           }
 
-          .lossBtn {
-            flex: 1;
-            background: #ffecec;
-            color: #c52d2d;
-            border: 1px solid #f5baba;
-            border-radius: 6px;
-            padding: 8px 10px;
-            font-size: 0.9rem;
-            font-weight: 500;
+          .headerText {
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: #1f2937;
           }
 
           @media (max-width: 480px) {
-            h1 {
-              font-size: 1.25rem !important;
-              line-height: 1.3;
-              text-align: center;
-              margin-bottom: 0.75rem;
+            .headerText {
+              font-size: 1.25rem;
             }
+          }
 
-            .difficultyRow {
-              gap: 0.3rem;
-            }
+          .matchCard {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+          }
 
-            .difficultyRow button {
-              flex: 1;
-              font-size: 0.7rem;
-              padding: 0.35rem 0.25rem;
-            }
+          .sectionTitle {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 4px;
+          }
 
-            .cardActions {
-              flex-wrap: nowrap;
-              gap: 0.4rem;
-            }
+          .deckNameClickable {
+            font-weight: 500;
+            font-size: 1rem;
+            color: #0070f3;
+            text-decoration: underline;
+            cursor: pointer;
+          }
 
-            .cardActions button {
-              flex: 1;
-              white-space: nowrap;
-            }
+          .battleInfo {
+            line-height: 1.8;
+            font-size: 0.95rem;
+          }
+
+          .statsText {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #444;
           }
         `}</style>
       </div>

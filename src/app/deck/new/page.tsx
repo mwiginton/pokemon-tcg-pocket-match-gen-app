@@ -132,6 +132,7 @@ export default function NewDeckPage() {
           onChange={e => setDeckName(e.target.value)}
           className={`${styles.input} ${styles.deckNameInput}`}
           disabled={hasReachedLimit}
+          autoComplete="off" 
         />
         <p className={styles.helperText}>Give your deck a unique and descriptive name.</p>
 

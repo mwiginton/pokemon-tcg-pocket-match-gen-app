@@ -23,7 +23,6 @@ export default function Dashboard() {
       }
       setUser(data.user)
 
-      // fetch deck count for this user
       const { count, error } = await supabase
         .from('decks')
         .select('id', { count: 'exact', head: true })

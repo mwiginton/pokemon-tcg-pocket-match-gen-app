@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import Link from 'next/link'
 import styles from '@/styles/layout.module.css'
+import buttonStyles from '@/styles/button.module.css'
 import {
   Pencil,
   Trash2,
@@ -11,7 +12,8 @@ import {
   Trophy,
   XCircle,
   RotateCcw,
-  Home
+  Home,
+  PlusCircle
 } from 'lucide-react'
 
 type Deck = {
@@ -89,20 +91,12 @@ export default function DeckListPage() {
       setError(gamesError.message)
     } else {
       const statsMap: Record<string, DeckStats> = {}
-
-      deckIds.forEach(id => {
-        statsMap[id] = { total_games: 0, wins: 0 }
-      })
-
+      deckIds.forEach(id => (statsMap[id] = { total_games: 0, wins: 0 }))
       gamesData?.forEach(({ deck_id, result }) => {
         statsMap[deck_id].total_games++
         if (result === 'win') statsMap[deck_id].wins++
       })
-
-      setDeckStats(prev => ({
-        ...prev,
-        ...statsMap,
-      }))
+      setDeckStats(prev => ({ ...prev, ...statsMap }))
     }
   }
 
@@ -128,11 +122,7 @@ export default function DeckListPage() {
   }
 
   const resetGameStats = async (deckId: string) => {
-    const { error } = await supabase
-      .from('deck_games')
-      .delete()
-      .eq('deck_id', deckId)
-
+    const { error } = await supabase.from('deck_games').delete().eq('deck_id', deckId)
     if (error) {
       alert('Failed to reset stats: ' + error.message)
     } else {
@@ -160,28 +150,17 @@ export default function DeckListPage() {
       return
     }
 
-    setExpandedDecks(prev => ({
-      ...prev,
-      [deckId]: data || [],
-    }))
+    setExpandedDecks(prev => ({ ...prev, [deckId]: data || [] }))
   }
 
   const handleDeleteDeck = async (deckId: string) => {
-    const { error: gamesError } = await supabase
-      .from('deck_games')
-      .delete()
-      .eq('deck_id', deckId)
-
+    const { error: gamesError } = await supabase.from('deck_games').delete().eq('deck_id', deckId)
     if (gamesError) {
       alert('Failed to delete related games: ' + gamesError.message)
       return
     }
 
-    const { error: deckError } = await supabase
-      .from('decks')
-      .delete()
-      .eq('id', deckId)
-
+    const { error: deckError } = await supabase.from('decks').delete().eq('id', deckId)
     if (deckError) {
       alert('Failed to delete deck: ' + deckError.message)
       return
@@ -219,6 +198,7 @@ export default function DeckListPage() {
           Back to Dashboard
         </Link>
       </div>
+
       <div className={styles.card}>
         <div className={styles.headerWithIcon}>
           <BookMarked size={28} strokeWidth={2} />
@@ -227,16 +207,31 @@ export default function DeckListPage() {
 
         {loading && <p>Loading...</p>}
         {error && <p style={{ color: 'red' }}>{error}</p>}
+
         {decks.length === 0 && !loading && (
-          <p>No decks found. <Link href="/deck/new">Create one?</Link></p>
+          <div style={{ textAlign: 'center', marginTop: '1.25rem' }}>
+            <p style={{ fontSize: '1rem', color: '#333', marginBottom: '1rem' }}>
+              No decks found.
+            </p>
+            <Link href="/deck/new">
+              <button
+                className={`${buttonStyles.button} ${buttonStyles.primary}`}
+                style={{ marginTop: '0.5rem' }}
+              >
+                <PlusCircle size={18} />
+                <span>Create New Deck</span>
+              </button>
+            </Link>
+          </div>
         )}
       </div>
 
       {decks.map((deck) => {
         const stats = deckStats[deck.id]
-        const winRate = stats && stats.total_games > 0
-          ? Math.round((stats.wins / stats.total_games) * 100)
-          : 0
+        const winRate =
+          stats && stats.total_games > 0
+            ? Math.round((stats.wins / stats.total_games) * 100)
+            : 0
 
         return (
           <div key={deck.id} className={styles.card}>
@@ -317,7 +312,7 @@ export default function DeckListPage() {
         )
       })}
 
-      {/* Delete Deck Modal */}
+      {/* Modals (same as before) */}
       {confirmDeleteId && (
         <div style={modalStyle}>
           <p style={{ marginBottom: 12, fontWeight: 'bold', fontSize: '1rem', color: '#222' }}>
@@ -340,7 +335,6 @@ export default function DeckListPage() {
         </div>
       )}
 
-      {/* Reset Stats Modal */}
       {confirmResetId && (
         <div style={modalStyle}>
           <p style={{ marginBottom: 12, fontWeight: 'bold', fontSize: '1rem', color: '#222' }}>
