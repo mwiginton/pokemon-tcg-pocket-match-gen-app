@@ -10,6 +10,7 @@ import CardAutocompleteInput from '@/components/CardAutocompleteInput'
 type CardEntry = {
   id: string
   name: string
+  pack?: string
 }
 
 export default function EditDeckPage() {
@@ -50,9 +51,10 @@ export default function EditDeckPage() {
 
       setDeckName(deckData.deck_name)
 
+      // ✅ Fetch card name and pack for display
       const { data: deckCards, error: cardsError } = await supabase
         .from('deck_cards')
-        .select('card_id, cards(name)')
+        .select('card_id, cards(name, pack)')
         .eq('deck_id', deckId)
         .order('card_index', { ascending: true })
 
@@ -65,6 +67,7 @@ export default function EditDeckPage() {
       const formattedCards = deckCards.map((c: any) => ({
         id: c.card_id,
         name: c.cards?.name || '',
+        pack: c.cards?.pack || '',
       }))
 
       // ensure array length = 20
@@ -194,7 +197,7 @@ export default function EditDeckPage() {
         </div>
       </div>
 
-      {/* Floating Save / Cancel buttons (matches Create Deck) */}
+      {/* Floating Save / Cancel buttons */}
       <div className={styles.floatingButtonBar}>
         <button
           type="button"
