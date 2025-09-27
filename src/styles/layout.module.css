@@ -8,6 +8,7 @@
   padding: 2rem;
   background-color: #f9f9f9;
 }
+
 .card {
   display: flex;
   flex-direction: column;
@@ -23,11 +24,12 @@
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.headerWithIcon {
+/* ↓ Tightened spacing below header */
+.card .headerWithIcon {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 1rem;
+  margin-bottom: 0.25rem !important;
 }
 
 .headerText {
@@ -179,7 +181,7 @@
   width: 90%;
   max-height: 85vh;
   overflow-y: auto;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 
   scrollbar-width: thin;
   scrollbar-color: #c1c1c1 #f1f1f1;
@@ -399,4 +401,13 @@
 .inputInvalid {
   border-color: #dc2626;
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.3);
+}
+
+/* ↓ Force deck usage text closer to header */
+.card .deckUsage {
+  font-size: 0.95rem;
+  color: #444;
+  margin-top: -0.5rem !important;
+  margin-bottom: 0.25rem !important;
+  text-align: center;
 }

@@ -47,6 +47,7 @@ export default function DeckListPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [confirmResetId, setConfirmResetId] = useState<string | null>(null)
   const [selectedCardImage, setSelectedCardImage] = useState<string | null>(null)
+  const maxDecks = 20
 
   useEffect(() => {
     const fetchDecksAndStats = async () => {
@@ -205,6 +206,13 @@ export default function DeckListPage() {
           <h1 className={styles.headerText}>Your Saved Decks</h1>
         </div>
 
+        {/* Deck usage indicator */}
+        {!loading && (
+          <p className={styles.deckUsage}>
+            Decks: <strong>{decks.length}</strong> / <strong>{maxDecks}</strong>
+          </p>
+        )}
+
         {loading && <p>Loading...</p>}
         {error && <p style={{ color: 'red' }}>{error}</p>}
 
@@ -312,7 +320,7 @@ export default function DeckListPage() {
         )
       })}
 
-      {/* Modals (same as before) */}
+      {/* Modals */}
       {confirmDeleteId && (
         <div style={modalStyle}>
           <p style={{ marginBottom: 12, fontWeight: 'bold', fontSize: '1rem', color: '#222' }}>
