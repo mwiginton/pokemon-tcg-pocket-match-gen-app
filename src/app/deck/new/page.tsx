@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import styles from '@/styles/layout.module.css'
@@ -20,6 +20,8 @@ export default function NewDeckPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [deckCount, setDeckCount] = useState<number | null>(null)
+  const [invalidDeckName, setInvalidDeckName] = useState(false)
+  const deckNameRef = useRef<HTMLInputElement | null>(null)
   const maxDecks = 10
 
   useEffect(() => {
@@ -45,14 +47,23 @@ export default function NewDeckPage() {
     setCards(newCards)
   }
 
+  const scrollToError = () => {
+    // Smoothly scroll to deck name field if visible error
+    deckNameRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    deckNameRef.current?.focus()
+  }
+
   const handleSubmit = async () => {
     if (hasReachedLimit) return
     setError('')
+    setInvalidDeckName(false)
     setLoading(true)
 
     if (!deckName.trim()) {
       setError('Deck name is required.')
+      setInvalidDeckName(true)
       setLoading(false)
+      scrollToError()
       return
     }
 
@@ -127,10 +138,14 @@ export default function NewDeckPage() {
         <input
           id="deckName"
           type="text"
+          ref={deckNameRef}
           placeholder="Deck Name"
           value={deckName}
-          onChange={e => setDeckName(e.target.value)}
-          className={`${styles.input} ${styles.deckNameInput}`}
+          onChange={e => {
+            setDeckName(e.target.value)
+            if (invalidDeckName && e.target.value.trim()) setInvalidDeckName(false)
+          }}
+          className={`${styles.input} ${styles.deckNameInput} ${invalidDeckName ? styles.inputInvalid : ''}`}
           disabled={hasReachedLimit}
           autoComplete="off" 
         />
@@ -152,27 +167,28 @@ export default function NewDeckPage() {
             </div>
           ))}
         </div>
+      </div>
 
-        <div className={styles.buttonRow}>
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={disableAll}
-            aria-disabled={disableAll}
-            className={`${buttonStyles.button} ${buttonStyles.primary} ${disableAll ? buttonStyles.disabled : ''}`}
-          >
-            {loading ? 'Saving...' : 'Save Deck'}
-          </button>
-          <button
-            type="button"
-            onClick={handleCancel}
-            disabled={loading}
-            aria-disabled={loading}
-            className={`${buttonStyles.button} ${buttonStyles.secondary} ${loading ? buttonStyles.disabled : ''}`}
-          >
-            Cancel
-          </button>
-        </div>
+      {/* Floating action bar */}
+      <div className={styles.floatingButtonBar}>
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={disableAll}
+          aria-disabled={disableAll}
+          className={`${buttonStyles.button} ${buttonStyles.primary} ${disableAll ? buttonStyles.disabled : ''}`}
+        >
+          {loading ? 'Saving...' : 'Save Deck'}
+        </button>
+        <button
+          type="button"
+          onClick={handleCancel}
+          disabled={loading}
+          aria-disabled={loading}
+          className={`${buttonStyles.button} ${buttonStyles.secondary} ${loading ? buttonStyles.disabled : ''}`}
+        >
+          Cancel
+        </button>
       </div>
     </div>
   )
