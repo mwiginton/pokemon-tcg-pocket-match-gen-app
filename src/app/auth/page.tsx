@@ -14,6 +14,7 @@ export default function AuthPage() {
   const [authError, setAuthError] = useState('')
   const [loading, setLoading] = useState(false)
   const [mode, setMode] = useState<'signIn' | 'signUp'>('signIn')
+  const [confirmationSent, setConfirmationSent] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -76,28 +77,34 @@ export default function AuthPage() {
     e.preventDefault()
     setLoading(true)
     setAuthError('')
-    const { error } = await supabase.auth.signUp({ email, password })
+
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/`,
+      },
+    })
+
     if (error) {
       setAuthError(error.message)
+    } else if (!data.session) {
+      // ✅ Show confirmation screen if no session (email verification required)
+      setConfirmationSent(true)
     } else {
       router.replace('/dashboard')
     }
+
     setLoading(false)
   }
 
-  // 🔑 Always render the spinner until we’re sure user is null
+  // 🔄 Loading screen while checking session
   if (loadingUser) {
     return (
       <div className={styles.page}>
         <main className={styles.main}>
           <div className={styles.card}>
-            <Image
-              src="/logo.svg"
-              alt="Logo"
-              width={64}
-              height={64}
-              className={styles.logo}
-            />
+            <Image src="/logo.svg" alt="Logo" width={64} height={64} className={styles.logo} />
             <h1 className={styles.title}>Loading your session...</h1>
             <div className={styles.spinner}></div>
           </div>
@@ -106,17 +113,47 @@ export default function AuthPage() {
     )
   }
 
+  // ✉️ Confirmation screen after sign-up
+  if (confirmationSent) {
+    return (
+      <div className={styles.page}>
+        <main className={styles.main}>
+          <div className={styles.card}>
+            <Image src="/logo.svg" alt="Logo" width={64} height={64} className={styles.logo} />
+            <h1 className={styles.title}>Check your email</h1>
+            <p style={{ textAlign: 'center', marginTop: '1rem', color: '#444' }}>
+              A confirmation link has been sent to <strong>{email}</strong>.<br />
+              Click the link in your inbox to verify your account before signing in.
+            </p>
+            <button
+              onClick={() => {
+                setConfirmationSent(false)
+                setMode('signIn')
+              }}
+              style={{
+                marginTop: '1.5rem',
+                backgroundColor: '#0070f3',
+                color: '#fff',
+                padding: '0.75rem 1rem',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+              }}
+            >
+              Back to Sign In
+            </button>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
+  // 🧩 Regular sign-in / sign-up UI
   return (
     <div className={styles.page}>
       <main className={styles.main}>
         <div className={styles.card}>
-          <Image
-            src="/logo.svg"
-            alt="Logo"
-            width={64}
-            height={64}
-            className={styles.logo}
-          />
+          <Image src="/logo.svg" alt="Logo" width={64} height={64} className={styles.logo} />
           <h1 className={styles.title}>
             {user
               ? `Welcome, ${user.email}`

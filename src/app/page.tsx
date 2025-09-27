@@ -24,7 +24,6 @@ export default function IndexRedirectPage() {
     checkSession()
   }, [router])
 
-  // Always show spinner until the new page takes over
   return (
     <div className={styles.page}>
       <main className={styles.mainContent}>
