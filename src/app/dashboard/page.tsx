@@ -45,7 +45,7 @@ export default function Dashboard() {
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.header}>Welcome to your Dashboard</h1>
+      <h1 className={styles.header}>BattleLedger Dashboard</h1>
 
       <div className={styles.card}>
         {user && <p className={styles.userEmail}>Logged in as: {user.email}</p>}
