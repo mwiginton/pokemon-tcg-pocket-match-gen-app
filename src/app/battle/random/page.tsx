@@ -4,30 +4,30 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import styles from '@/styles/layout.module.css'
 import buttonStyles from '@/styles/button.module.css'
-import { Dice3, Loader2, Home } from 'lucide-react'
+import { Dice3, Loader2, Home, Trophy, XCircle } from 'lucide-react'
 import Link from 'next/link'
 
-type Deck = {
-  id: string
-  deck_name: string
-}
-
-type CardEntry = {
-  id: string
-  name: string
-  pack: string
-}
-
+type Deck = { id: string; deck_name: string }
+type CardEntry = { id: string; name: string; pack: string }
 type MatchResult = {
   player_deck: Deck
-  solo_battle: {
-    difficulty: string
-    expansion: string
-    deck: string
-  }
+  solo_battle: { difficulty: string; expansion: string; deck: string }
 }
-
 type BattlesGrouped = Record<string, Record<string, string[]>>
+
+// identical to Deck List page style helper
+const recordBtnStyle = (bg: string, color: string, border: string) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '6px',
+  padding: '6px 10px',
+  background: bg,
+  color,
+  border: `1px solid ${border}`,
+  borderRadius: 6,
+  cursor: 'pointer',
+  fontSize: '0.9rem',
+} as const)
 
 export default function RandomBattlePage() {
   const [match, setMatch] = useState<MatchResult | null>(null)
@@ -43,9 +43,7 @@ export default function RandomBattlePage() {
 
   useEffect(() => {
     if (!showDeckModal) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closeDeckModal()
-    }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeDeckModal() }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [showDeckModal])
@@ -69,15 +67,12 @@ export default function RandomBattlePage() {
       })
       setSoloBattles(grouped)
     }
-
     loadBattles()
   }, [])
 
   const toggleDifficulty = (difficulty: string) => {
     setSelectedDifficulties((prev) =>
-      prev.includes(difficulty)
-        ? prev.filter((d) => d !== difficulty)
-        : [...prev, difficulty]
+      prev.includes(difficulty) ? prev.filter((d) => d !== difficulty) : [...prev, difficulty]
     )
   }
 
@@ -94,14 +89,10 @@ export default function RandomBattlePage() {
 
     const stats = { total_games: 0, wins: 0 }
     data.forEach(({ result }) => {
-      stats.total_games++
-      if (result === 'win') stats.wins++
+      stats.total_games++; if (result === 'win') stats.wins++
     })
 
-    setDeckStats((prev) => ({
-      ...prev,
-      [deckId]: stats,
-    }))
+    setDeckStats((prev) => ({ ...prev, [deckId]: stats }))
   }
 
   const loadDeckCards = async (deckId: string) => {
@@ -134,85 +125,46 @@ export default function RandomBattlePage() {
   const recordGame = async (result: 'win' | 'loss') => {
     if (!match) return
     setIsRecording(true)
-
     try {
       const { data: userData } = await supabase.auth.getUser()
       const user = userData?.user
-      if (!user) {
-        setError('You must be logged in.')
-        return
-      }
+      if (!user) { setError('You must be logged in.'); return }
 
       const { error } = await supabase.from('deck_games').insert({
-        deck_id: match.player_deck.id,
-        result,
-        user_id: user.id,
+        deck_id: match.player_deck.id, result, user_id: user.id,
       })
 
-      if (error) {
-        setError('Error recording game: ' + error.message)
-      } else {
-        await refreshDeckStats(match.player_deck.id)
-      }
+      if (error) setError('Error recording game: ' + error.message)
+      else await refreshDeckStats(match.player_deck.id)
     } finally {
       setIsRecording(false)
     }
   }
 
   const generateMatch = async () => {
-    setError('')
-    setMatch(null)
-
+    setError(''); setMatch(null)
     const { data: userData } = await supabase.auth.getUser()
     const user = userData?.user
-
-    if (!user) {
-      setError('You must be logged in.')
-      return
-    }
+    if (!user) { setError('You must be logged in.'); return }
 
     const { data: decks, error } = await supabase
-      .from('decks')
-      .select('id, deck_name')
-      .eq('user_id', user.id)
+      .from('decks').select('id, deck_name').eq('user_id', user.id)
 
-    if (error || !decks || decks.length === 0) {
-      setError('No decks found for this user.')
-      return
-    }
+    if (error || !decks || decks.length === 0) { setError('No decks found for this user.'); return }
 
-    const allowedDifficulties =
-      selectedDifficulties.length > 0
-        ? selectedDifficulties
-        : Object.keys(soloBattles)
+    const allowedDifficulties = selectedDifficulties.length > 0 ? selectedDifficulties : Object.keys(soloBattles)
+    if (allowedDifficulties.length === 0) { setError('No solo battles available.'); return }
 
-    if (allowedDifficulties.length === 0) {
-      setError('No solo battles available.')
-      return
-    }
-
-    const difficulty =
-      allowedDifficulties[Math.floor(Math.random() * allowedDifficulties.length)]
+    const difficulty = allowedDifficulties[Math.floor(Math.random() * allowedDifficulties.length)]
     const expansions = Object.keys(soloBattles[difficulty] || {})
-    if (expansions.length === 0) {
-      setError('No expansions available for this difficulty.')
-      return
-    }
+    if (expansions.length === 0) { setError('No expansions available for this difficulty.'); return }
 
     const expansion = expansions[Math.floor(Math.random() * expansions.length)]
     const options = soloBattles[difficulty][expansion]
     const enemy_deck = options[Math.floor(Math.random() * options.length)]
     const player_deck = decks[Math.floor(Math.random() * decks.length)]
 
-    setMatch({
-      player_deck,
-      solo_battle: {
-        difficulty,
-        expansion,
-        deck: enemy_deck,
-      },
-    })
-
+    setMatch({ player_deck, solo_battle: { difficulty, expansion, deck: enemy_deck } })
     await refreshDeckStats(player_deck.id)
   }
 
@@ -241,7 +193,7 @@ export default function RandomBattlePage() {
       </div>
 
       <div className={styles.card}>
-        {/* 🎲 Header */}
+        {/* Header */}
         <div className="headerWithDice">
           <Dice3 size={22} className="diceIcon" />
           <h1 className="headerText">Generate a Random Match</h1>
@@ -251,14 +203,7 @@ export default function RandomBattlePage() {
         <div style={{ marginBottom: '1rem' }}>
           <strong>
             Select Difficulties:
-            <span
-              style={{
-                fontWeight: 'normal',
-                color: '#666',
-                fontSize: '0.85rem',
-                marginLeft: 8,
-              }}
-            >
+            <span style={{ fontWeight: 'normal', color: '#666', fontSize: '0.85rem', marginLeft: 8 }}>
               (optional)
             </span>
           </strong>
@@ -291,11 +236,21 @@ export default function RandomBattlePage() {
         {error && <p style={{ color: 'red', marginTop: 12 }}>{error}</p>}
 
         {match && (
-          <div className="matchCard">
+          <div
+            style={{
+              marginTop: '2rem',
+              padding: '1.5rem',
+              borderRadius: '8px',
+              backgroundColor: '#f9f9f9',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
+            }}
+          >
             <div style={{ marginBottom: '1.5rem' }}>
-              <h2 className="sectionTitle">Your Deck</h2>
+              <h2 style={{ fontSize: '1.2rem', marginBottom: '0.5rem', borderBottom: '1px solid #ddd', paddingBottom: '4px' }}>
+                Your Deck
+              </h2>
               <p
-                className="deckNameClickable"
+                style={{ fontWeight: 500, fontSize: '1rem', color: '#0070f3', textDecoration: 'underline', cursor: 'pointer' }}
                 onClick={() => loadDeckCards(match.player_deck.id)}
               >
                 {match.player_deck.deck_name}
@@ -303,35 +258,41 @@ export default function RandomBattlePage() {
             </div>
 
             <div>
-              <h2 className="sectionTitle">Solo Battle</h2>
-              <div className="battleInfo">
+              <h2 style={{ fontSize: '1.2rem', marginBottom: '0.5rem', borderBottom: '1px solid #ddd', paddingBottom: '4px' }}>
+                Solo Battle
+              </h2>
+              <div style={{ lineHeight: 1.8, fontSize: '0.95rem' }}>
                 <p><strong>Difficulty:</strong> {match.solo_battle.difficulty}</p>
                 <p><strong>Expansion:</strong> {match.solo_battle.expansion}</p>
                 <p><strong>Opponent:</strong> {match.solo_battle.deck}</p>
               </div>
             </div>
 
-            <div className="cardActions">
+            {/* Record buttons — EXACT look as Deck List */}
+            <div className={styles.cardActions}>
               <button
                 onClick={() => recordGame('win')}
                 disabled={isRecording}
                 type="button"
-                className="winBtn"
+                style={recordBtnStyle('#e6f9ec', '#1a7f37', '#b2e0c0')}
               >
-                {isRecording ? <Loader2 className="spin" size={16} /> : 'Record Win'}
+                {isRecording ? <Loader2 className="spin" size={16} /> : <Trophy size={16} />}
+                Record Win
               </button>
+
               <button
                 onClick={() => recordGame('loss')}
                 disabled={isRecording}
                 type="button"
-                className="lossBtn"
+                style={recordBtnStyle('#ffecec', '#c52d2d', '#f5baba')}
               >
-                {isRecording ? <Loader2 className="spin" size={16} /> : 'Record Loss'}
+                {isRecording ? <Loader2 className="spin" size={16} /> : <XCircle size={16} />}
+                Record Loss
               </button>
             </div>
 
             {deckStats[match.player_deck.id] && (
-              <p className="statsText">
+              <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#444' }}>
                 Games Played: {deckStats[match.player_deck.id].total_games}, Wins {deckStats[match.player_deck.id].wins}, Win Rate{' '}
                 {deckStats[match.player_deck.id].total_games > 0
                   ? `${Math.round((deckStats[match.player_deck.id].wins / deckStats[match.player_deck.id].total_games) * 100)}%`
@@ -341,8 +302,20 @@ export default function RandomBattlePage() {
           </div>
         )}
 
-        {/* ✅ Restored difficulty button layout */}
+        {/* local styles only for header + difficulty row; NO overrides to .cardActions */}
         <style jsx>{`
+          .headerWithDice {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            margin-bottom: 1.25rem;
+            text-align: center;
+            flex-wrap: wrap;
+          }
+          .diceIcon { color: #205493; }
+          .headerText { font-size: 1.6rem; font-weight: 600; color: #1f2937; }
+
           .difficultyRow {
             display: flex;
             justify-content: space-between;
@@ -351,7 +324,6 @@ export default function RandomBattlePage() {
             margin-top: 8px;
             flex-wrap: nowrap;
           }
-
           .difficultyRow button {
             flex: 1;
             min-width: 0;
@@ -359,36 +331,10 @@ export default function RandomBattlePage() {
             padding: 0.4rem 0.3rem;
             white-space: nowrap;
           }
-
           @media (max-width: 480px) {
-            .difficultyRow {
-              gap: 0.3rem;
-            }
-
-            .difficultyRow button {
-              flex: 1;
-              font-size: 0.7rem;
-              padding: 0.35rem 0.25rem;
-            }
-          }
-
-          .headerWithDice {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.6rem;
-            margin-bottom: 1.25rem;
-            text-align: center;
-          }
-
-          .diceIcon {
-            color: #205493;
-          }
-
-          .headerText {
-            font-size: 1.6rem;
-            font-weight: 600;
-            color: #1f2937;
+            .headerText { font-size: 1.25rem; }
+            .difficultyRow { gap: 0.3rem; }
+            .difficultyRow button { flex: 1; font-size: 0.7rem; padding: 0.35rem 0.25rem; }
           }
         `}</style>
       </div>
