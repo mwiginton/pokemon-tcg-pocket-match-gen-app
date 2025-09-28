@@ -21,7 +21,7 @@ export default function EditDeckPage() {
   const [deckName, setDeckName] = useState('')
   const [cards, setCards] = useState<CardEntry[]>(Array(20).fill({ id: '', name: '' }))
   const [error, setError] = useState('')
-  const [duplicateError, setDuplicateError] = useState<string | null>(null)
+  const [duplicateErrors, setDuplicateErrors] = useState<Record<number, string>>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [invalidDeckName, setInvalidDeckName] = useState(false)
@@ -80,21 +80,26 @@ export default function EditDeckPage() {
     fetchDeck()
   }, [deckId, router])
 
-  const validateDuplicateCards = (cardsToCheck: CardEntry[]): string | null => {
+  // --- duplicate validation (per-slot) ---
+  const validateDuplicateCards = (cardsToCheck: CardEntry[]): Record<number, string> => {
     const nameCounts: Record<string, number> = {}
+    const violations: Record<number, string> = {}
+
     for (const card of cardsToCheck) {
       if (!card.name.trim()) continue
       const name = card.name.trim()
       nameCounts[name] = (nameCounts[name] || 0) + 1
     }
 
-    const overLimit = Object.entries(nameCounts).find(([_, count]) => count > 2)
-    if (overLimit) {
-      const [name] = overLimit
-      return `You can only include up to 2 copies of "${name}".`
+    for (let i = 0; i < cardsToCheck.length; i++) {
+      const card = cardsToCheck[i]
+      if (!card.name.trim()) continue
+      if (nameCounts[card.name.trim()] > 2) {
+        violations[i] = `You can only include up to 2 copies of "${card.name.trim()}".`
+      }
     }
 
-    return null
+    return violations
   }
 
   const handleCardSlotChange = (index: number, newCard: CardEntry) => {
@@ -102,9 +107,8 @@ export default function EditDeckPage() {
     updatedCards[index] = newCard
     setCards(updatedCards)
 
-    // Live duplicate validation
-    const liveError = validateDuplicateCards(updatedCards)
-    setDuplicateError(liveError)
+    const validation = validateDuplicateCards(updatedCards)
+    setDuplicateErrors(validation)
   }
 
   const scrollToError = () => {
@@ -129,9 +133,10 @@ export default function EditDeckPage() {
       return
     }
 
-    if (duplicateError) {
-      setError(duplicateError)
-      scrollToError()
+    const validation = validateDuplicateCards(cards)
+    setDuplicateErrors(validation)
+    if (Object.keys(validation).length > 0) {
+      setError('Some cards exceed the 2-copy limit. Please review highlighted slots.')
       return
     }
 
@@ -156,7 +161,6 @@ export default function EditDeckPage() {
       return
     }
 
-    // Replace deck_cards
     await supabase.from('deck_cards').delete().eq('deck_id', deckId)
     const deckCards = cards.map((card, index) => ({
       deck_id: deckId,
@@ -185,7 +189,7 @@ export default function EditDeckPage() {
     )
   }
 
-  const disableSave = saving || !!duplicateError
+  const disableSave = saving || Object.keys(duplicateErrors).length > 0
 
   return (
     <div className={styles.page}>
@@ -210,7 +214,7 @@ export default function EditDeckPage() {
         <p className={styles.helperText}>Update your deck’s name or card list below.</p>
 
         <h2 className={styles.subheader}>Update Cards</h2>
-        {(error || duplicateError) && <p className={styles.errorText}>{error || duplicateError}</p>}
+        {error && <p className={styles.errorText}>{error}</p>}
 
         <div className={styles.cardGroup}>
           {cards.map((card, index) => (
@@ -222,6 +226,11 @@ export default function EditDeckPage() {
                 onChange={(newCard) => handleCardSlotChange(index, newCard)}
                 disabled={saving}
               />
+              {duplicateErrors[index] && (
+                <p className={styles.errorText} style={{ marginTop: '4px' }}>
+                  {duplicateErrors[index]}
+                </p>
+              )}
             </div>
           ))}
         </div>

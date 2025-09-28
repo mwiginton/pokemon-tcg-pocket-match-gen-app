@@ -21,7 +21,7 @@ export default function NewDeckPage() {
   const [loading, setLoading] = useState(false)
   const [deckCount, setDeckCount] = useState<number | null>(null)
   const [invalidDeckName, setInvalidDeckName] = useState(false)
-  const [duplicateError, setDuplicateError] = useState<string | null>(null)
+  const [duplicateErrors, setDuplicateErrors] = useState<Record<number, string>>({})
   const deckNameRef = useRef<HTMLInputElement | null>(null)
   const maxDecks = 10
 
@@ -47,21 +47,28 @@ export default function NewDeckPage() {
     deckNameRef.current?.focus()
   }
 
-  const validateDuplicateCards = (cardsToCheck: CardEntry[]): string | null => {
+  // Find cards appearing more than twice and mark their positions
+  const validateDuplicateCards = (cardsToCheck: CardEntry[]): Record<number, string> => {
     const nameCounts: Record<string, number> = {}
+    const violations: Record<number, string> = {}
+
+    // Count each card name
     for (const card of cardsToCheck) {
       if (!card.name.trim()) continue
       const name = card.name.trim()
       nameCounts[name] = (nameCounts[name] || 0) + 1
     }
 
-    const overLimit = Object.entries(nameCounts).find(([_, count]) => count > 2)
-    if (overLimit) {
-      const [name] = overLimit
-      return `You can only include up to 2 copies of "${name}".`
+    // Mark indices that violate
+    for (let i = 0; i < cardsToCheck.length; i++) {
+      const card = cardsToCheck[i]
+      if (!card.name.trim()) continue
+      if (nameCounts[card.name.trim()] > 2) {
+        violations[i] = `You can only include up to 2 copies of "${card.name.trim()}".`
+      }
     }
 
-    return null
+    return violations
   }
 
   const handleCardSlotChange = (index: number, newCard: CardEntry) => {
@@ -69,9 +76,8 @@ export default function NewDeckPage() {
     newCards[index] = newCard
     setCards(newCards)
 
-    // Live validation
-    const liveError = validateDuplicateCards(newCards)
-    setDuplicateError(liveError)
+    const validation = validateDuplicateCards(newCards)
+    setDuplicateErrors(validation)
   }
 
   const handleSubmit = async () => {
@@ -95,10 +101,12 @@ export default function NewDeckPage() {
       return
     }
 
-    if (duplicateError) {
-      setError(duplicateError)
+    const validation = validateDuplicateCards(cards)
+    setDuplicateErrors(validation)
+
+    if (Object.keys(validation).length > 0) {
+      setError('Some cards exceed the 2-copy limit. Please review highlighted slots.')
       setLoading(false)
-      scrollToError()
       return
     }
 
@@ -149,7 +157,7 @@ export default function NewDeckPage() {
   }
 
   const hasReachedLimit = deckCount !== null && deckCount >= maxDecks
-  const disableAll = loading || hasReachedLimit || !!duplicateError
+  const disableAll = loading || hasReachedLimit
 
   return (
     <div className={styles.page}>
@@ -175,12 +183,12 @@ export default function NewDeckPage() {
           }}
           className={`${styles.input} ${styles.deckNameInput} ${invalidDeckName ? styles.inputInvalid : ''}`}
           disabled={hasReachedLimit}
-          autoComplete="off" 
+          autoComplete="off"
         />
         <p className={styles.helperText}>Give your deck a unique and descriptive name.</p>
 
         <h2 className={styles.subheader}>Add 20 Cards</h2>
-        {(error || duplicateError) && <p className={styles.errorText}>{error || duplicateError}</p>}
+        {error && <p className={styles.errorText}>{error}</p>}
 
         <div className={styles.cardGroup}>
           {cards.map((card, index) => (
@@ -194,6 +202,11 @@ export default function NewDeckPage() {
                 onChange={(newCard) => handleCardSlotChange(index, newCard)}
                 disabled={hasReachedLimit}
               />
+              {duplicateErrors[index] && (
+                <p className={styles.errorText} style={{ marginTop: '4px' }}>
+                  {duplicateErrors[index]}
+                </p>
+              )}
             </div>
           ))}
         </div>
