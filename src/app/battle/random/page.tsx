@@ -15,7 +15,6 @@ type MatchResult = {
 }
 type BattlesGrouped = Record<string, Record<string, string[]>>
 
-// identical to Deck List page style helper
 const recordBtnStyle = (bg: string, color: string, border: string) => ({
   display: 'flex',
   alignItems: 'center',
@@ -41,6 +40,7 @@ export default function RandomBattlePage() {
 
   const closeDeckModal = () => setShowDeckModal(false)
 
+  // Allow ESC to close modal
   useEffect(() => {
     if (!showDeckModal) return
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeDeckModal() }
@@ -268,7 +268,7 @@ export default function RandomBattlePage() {
               </div>
             </div>
 
-            {/* Record buttons — EXACT look as Deck List */}
+            {/* Record buttons */}
             <div className={styles.cardActions}>
               <button
                 onClick={() => recordGame('win')}
@@ -302,7 +302,52 @@ export default function RandomBattlePage() {
           </div>
         )}
 
-        {/* local styles only for header + difficulty row; NO overrides to .cardActions */}
+        {/* ✅ Deck Modal (Restored) */}
+        {showDeckModal && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              background: 'rgba(0, 0, 0, 0.4)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+            }}
+            onClick={closeDeckModal}
+          >
+            <div
+              className={styles.modalContent}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 style={{ textAlign: 'center', marginBottom: '1rem' }}>Deck Cards</h2>
+              {deckCards.map((card, i) => (
+                <div key={i} style={{ marginBottom: '0.5rem' }}>
+                  {card.name ? (
+                    <div className={styles.suggestionRow}>
+                      <span className={styles.cardName}>{card.name}</span>
+                      {card.pack && <span className={styles.cardPack}>({card.pack})</span>}
+                    </div>
+                  ) : (
+                    <span style={{ color: '#aaa' }}>Empty Slot</span>
+                  )}
+                </div>
+              ))}
+              <button
+                onClick={closeDeckModal}
+                className={`${buttonStyles.buttonCompact} ${buttonStyles.secondary}`}
+                style={{ marginTop: '1rem', width: '100%' }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Scoped styles */}
         <style jsx>{`
           .headerWithDice {
             display: flex;
