@@ -21,6 +21,7 @@ export default function NewDeckPage() {
   const [loading, setLoading] = useState(false)
   const [deckCount, setDeckCount] = useState<number | null>(null)
   const [invalidDeckName, setInvalidDeckName] = useState(false)
+  const [duplicateError, setDuplicateError] = useState<string | null>(null)
   const deckNameRef = useRef<HTMLInputElement | null>(null)
   const maxDecks = 10
 
@@ -41,16 +42,36 @@ export default function NewDeckPage() {
     fetchDeckCount()
   }, [])
 
+  const scrollToError = () => {
+    deckNameRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    deckNameRef.current?.focus()
+  }
+
+  const validateDuplicateCards = (cardsToCheck: CardEntry[]): string | null => {
+    const nameCounts: Record<string, number> = {}
+    for (const card of cardsToCheck) {
+      if (!card.name.trim()) continue
+      const name = card.name.trim()
+      nameCounts[name] = (nameCounts[name] || 0) + 1
+    }
+
+    const overLimit = Object.entries(nameCounts).find(([_, count]) => count > 2)
+    if (overLimit) {
+      const [name] = overLimit
+      return `You can only include up to 2 copies of "${name}".`
+    }
+
+    return null
+  }
+
   const handleCardSlotChange = (index: number, newCard: CardEntry) => {
     const newCards = [...cards]
     newCards[index] = newCard
     setCards(newCards)
-  }
 
-  const scrollToError = () => {
-    // Smoothly scroll to deck name field if visible error
-    deckNameRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    deckNameRef.current?.focus()
+    // Live validation
+    const liveError = validateDuplicateCards(newCards)
+    setDuplicateError(liveError)
   }
 
   const handleSubmit = async () => {
@@ -69,6 +90,13 @@ export default function NewDeckPage() {
 
     if (cards.some(card => !card.id)) {
       setError('All 20 card slots must be filled with valid card selections.')
+      setLoading(false)
+      scrollToError()
+      return
+    }
+
+    if (duplicateError) {
+      setError(duplicateError)
       setLoading(false)
       scrollToError()
       return
@@ -121,13 +149,12 @@ export default function NewDeckPage() {
   }
 
   const hasReachedLimit = deckCount !== null && deckCount >= maxDecks
-  const disableAll = loading || hasReachedLimit
+  const disableAll = loading || hasReachedLimit || !!duplicateError
 
   return (
     <div className={styles.page}>
       <div className={`${styles.card} ${hasReachedLimit ? styles.noPress : ''}`}>
         <h1 className={styles.header}>Create New Deck</h1>
-        {error && <p className={styles.errorText}>{error}</p>}
 
         {hasReachedLimit && (
           <p className={styles.errorText}>
@@ -153,6 +180,8 @@ export default function NewDeckPage() {
         <p className={styles.helperText}>Give your deck a unique and descriptive name.</p>
 
         <h2 className={styles.subheader}>Add 20 Cards</h2>
+        {(error || duplicateError) && <p className={styles.errorText}>{error || duplicateError}</p>}
+
         <div className={styles.cardGroup}>
           {cards.map((card, index) => (
             <div key={index} className={styles.cardInputRow}>

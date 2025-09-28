@@ -21,6 +21,7 @@ export default function EditDeckPage() {
   const [deckName, setDeckName] = useState('')
   const [cards, setCards] = useState<CardEntry[]>(Array(20).fill({ id: '', name: '' }))
   const [error, setError] = useState('')
+  const [duplicateError, setDuplicateError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [invalidDeckName, setInvalidDeckName] = useState(false)
@@ -69,7 +70,6 @@ export default function EditDeckPage() {
         pack: c.cards?.pack || '',
       }))
 
-      // ensure array length = 20
       setCards([
         ...formattedCards,
         ...Array(Math.max(0, 20 - formattedCards.length)).fill({ id: '', name: '' }),
@@ -80,10 +80,31 @@ export default function EditDeckPage() {
     fetchDeck()
   }, [deckId, router])
 
+  const validateDuplicateCards = (cardsToCheck: CardEntry[]): string | null => {
+    const nameCounts: Record<string, number> = {}
+    for (const card of cardsToCheck) {
+      if (!card.name.trim()) continue
+      const name = card.name.trim()
+      nameCounts[name] = (nameCounts[name] || 0) + 1
+    }
+
+    const overLimit = Object.entries(nameCounts).find(([_, count]) => count > 2)
+    if (overLimit) {
+      const [name] = overLimit
+      return `You can only include up to 2 copies of "${name}".`
+    }
+
+    return null
+  }
+
   const handleCardSlotChange = (index: number, newCard: CardEntry) => {
     const updatedCards = [...cards]
     updatedCards[index] = newCard
     setCards(updatedCards)
+
+    // Live duplicate validation
+    const liveError = validateDuplicateCards(updatedCards)
+    setDuplicateError(liveError)
   }
 
   const scrollToError = () => {
@@ -104,6 +125,12 @@ export default function EditDeckPage() {
 
     if (cards.some(c => !c.id)) {
       setError('All 20 card slots must be filled with valid card selections.')
+      scrollToError()
+      return
+    }
+
+    if (duplicateError) {
+      setError(duplicateError)
       scrollToError()
       return
     }
@@ -158,11 +185,12 @@ export default function EditDeckPage() {
     )
   }
 
+  const disableSave = saving || !!duplicateError
+
   return (
     <div className={styles.page}>
       <div className={styles.card}>
         <h1 className={styles.header}>Edit Deck</h1>
-        {error && <p className={styles.errorText}>{error}</p>}
 
         <label htmlFor="deckName" className={styles.label}>Deck Name</label>
         <input
@@ -182,6 +210,8 @@ export default function EditDeckPage() {
         <p className={styles.helperText}>Update your deck’s name or card list below.</p>
 
         <h2 className={styles.subheader}>Update Cards</h2>
+        {(error || duplicateError) && <p className={styles.errorText}>{error || duplicateError}</p>}
+
         <div className={styles.cardGroup}>
           {cards.map((card, index) => (
             <div key={index} className={styles.cardInputRow}>
@@ -202,9 +232,9 @@ export default function EditDeckPage() {
         <button
           type="button"
           onClick={handleSave}
-          disabled={saving}
-          aria-disabled={saving}
-          className={`${buttonStyles.button} ${buttonStyles.primary} ${saving ? buttonStyles.disabled : ''}`}
+          disabled={disableSave}
+          aria-disabled={disableSave}
+          className={`${buttonStyles.button} ${buttonStyles.primary} ${disableSave ? buttonStyles.disabled : ''}`}
         >
           {saving ? 'Saving...' : 'Save Changes'}
         </button>

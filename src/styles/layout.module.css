@@ -24,7 +24,6 @@
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-/* ↓ Tightened spacing below header */
 .card .headerWithIcon {
   display: flex;
   align-items: center;
@@ -403,7 +402,6 @@
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.3);
 }
 
-/* ↓ Force deck usage text closer to header */
 .card .deckUsage {
   font-size: 0.95rem;
   color: #444;
