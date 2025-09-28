@@ -47,7 +47,7 @@ export default function DeckListPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [confirmResetId, setConfirmResetId] = useState<string | null>(null)
   const [selectedCardImage, setSelectedCardImage] = useState<string | null>(null)
-  const maxDecks = 20
+  const maxDecks = 10
 
   useEffect(() => {
     const fetchDecksAndStats = async () => {
