@@ -51,7 +51,6 @@ export default function EditDeckPage() {
 
       setDeckName(deckData.deck_name)
 
-      // ✅ Fetch card name and pack for display
       const { data: deckCards, error: cardsError } = await supabase
         .from('deck_cards')
         .select('card_id, cards(name, pack)')
@@ -105,6 +104,7 @@ export default function EditDeckPage() {
 
     if (cards.some(c => !c.id)) {
       setError('All 20 card slots must be filled with valid card selections.')
+      scrollToError()
       return
     }
 

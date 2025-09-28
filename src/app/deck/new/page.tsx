@@ -70,6 +70,7 @@ export default function NewDeckPage() {
     if (cards.some(card => !card.id)) {
       setError('All 20 card slots must be filled with valid card selections.')
       setLoading(false)
+      scrollToError()
       return
     }
 
