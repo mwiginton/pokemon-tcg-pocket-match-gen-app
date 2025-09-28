@@ -47,10 +47,10 @@ export default function RootLayout({
           <footer className={styles.footer} role="contentinfo">
             <div className={styles.footerContainer}>
               <span className={styles.footerText}>
-                This is a fan made app for Pokémon TCG Pocket. It is not
-                produced by, endorsed by, supported by, or affiliated with
-                The Pokémon Company, DeNA Co., Ltd., or Creatures, Inc.  
-                All Pokémon related images and names are © their respective owners.
+                This is an independent project and is not affiliated with, endorsed by, or supported by The Pokémon
+                Company, DeNA Co., Ltd., or Creatures, Inc.  
+                All Pokémon names, images, and related assets are © their
+                respective owners.
               </span>
 
               <nav className={styles.footerLinks} aria-label="Footer">
