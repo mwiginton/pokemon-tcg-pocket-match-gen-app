@@ -18,14 +18,21 @@ export default function SupportPage() {
 
         <ul style={{ textAlign: 'left', marginTop: '1rem', paddingLeft: '1.2rem' }}>
           <li style={{ marginBottom: '1rem' }}>
-            <strong>Questions or Issues:</strong>  
+            <strong>Questions or Issues: </strong>  
             Send me an email {' '}
-            <a href="mailto:michelle.wiginton00@gmail.com" style={{ color: '#2563eb', textDecoration: 'underline', fontWeight: 500 }}>
-                here
+            <a
+              href="mailto:michelle.wiginton00@gmail.com"
+              style={{
+                color: '#2563eb',
+                textDecoration: 'underline',
+                fontWeight: 500,
+              }}
+            >
+              here
             </a>
           </li>
           <li style={{ marginBottom: '1rem' }}>
-            <strong>Feedback & Suggestions:</strong>  
+            <strong>Feedback & Suggestions: </strong>  
             Share your ideas or just say thanks through{' '}
             <a
               href="https://buymeacoffee.com/michellewig"
@@ -37,12 +44,12 @@ export default function SupportPage() {
             .
           </li>
           <li style={{ marginBottom: '1rem' }}>
-            <strong>Updates:</strong>  
+            <strong>Updates: </strong>  
             Follow along with new features and announcements right here in the app.
           </li>
         </ul>
 
-        <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem' }}>
+        <div className={styles.buttonRow}>
           <Link href="/dashboard" className={`${buttonStyles.button} ${buttonStyles.primary}`}>
             Back to Dashboard
           </Link>

@@ -433,6 +433,49 @@
 
 @media (max-width: 640px) {
   .footerContainer {
-    padding-right: 84px; /* 48px button + ~36px breathing room */
+    padding-right: 84px;
+  }
+}
+
+.buttonRow {
+  margin-top: 2rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+@media (max-width: 640px) {
+  .buttonRow {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .buttonRow a,
+  .buttonRow button {
+    width: 100%;
+    font-size: 0.95rem;
+    padding: 0.85rem 1rem;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 420px;
+    padding: 1.25rem;
+  }
+
+  .card h1 {
+    font-size: 1.4rem;
+    margin-bottom: 0.75rem;
+    text-align: center;
+  }
+
+  .card p,
+  .card li {
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+
+  .page {
+    padding: 1.25rem 0.75rem;
   }
 }
