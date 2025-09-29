@@ -4,7 +4,6 @@ import styles from './landing.module.css'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Library, Dice3, BarChart3, ShieldCheck } from 'lucide-react'
-import layoutStyles from "@/styles/layout.module.css";
 
 export default function LandingPage() {
   const router = useRouter()
@@ -12,14 +11,24 @@ export default function LandingPage() {
   return (
     <div className={styles.page}>
       <main className={styles.main}>
-        <Image src="/logo.svg" alt="Logo" width={72} height={72} className={styles.logo} />
+        <Image
+          src="/logo.svg"
+          alt="Logo"
+          width={72}
+          height={72}
+          className={styles.logo}
+        />
         <h1 className={styles.title}>Pokémon TCG Pocket BattleLedger</h1>
         <p className={styles.subtitle}>
-          Track your decks. Generate random battle scenarios. Record wins and losses. All in one place.
+          Track your decks. Generate random battle scenarios. Record wins and
+          losses. All in one place.
         </p>
 
         <div className={styles.actions}>
-          <button className={styles.primary} onClick={() => router.push('/auth')}>
+          <button
+            className={styles.primary}
+            onClick={() => router.push('/auth')}
+          >
             Get Started
           </button>
         </div>
@@ -45,23 +54,6 @@ export default function LandingPage() {
             </li>
           </ul>
         </section>
-
-        <footer className={layoutStyles.footer} role="contentinfo">
-            <div className={layoutStyles.footerContainer}>
-              <span className={layoutStyles.footerText}>
-                This is an independent project and is not affiliated with, endorsed by, or supported by The Pokémon
-                Company, DeNA Co., Ltd., or Creatures, Inc.  
-                All Pokémon names, images, and related assets are © their
-                respective owners.
-              </span>
-
-              <nav className={layoutStyles.footerLinks} aria-label="Footer">
-                <a href="/support" className={layoutStyles.footerLink}>
-                  Contact / Support
-                </a>
-              </nav>
-            </div>
-          </footer>
       </main>
     </div>
   )
