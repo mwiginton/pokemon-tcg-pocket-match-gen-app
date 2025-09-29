@@ -4,6 +4,7 @@ import styles from './landing.module.css'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Library, Dice3, BarChart3, ShieldCheck } from 'lucide-react'
+import layoutStyles from "@/styles/layout.module.css";
 
 export default function LandingPage() {
   const router = useRouter()
@@ -45,9 +46,22 @@ export default function LandingPage() {
           </ul>
         </section>
 
-        <footer className={styles.footer}>
-          © {new Date().getFullYear()} Pokémon TCG Pocket BattleLedger. All rights reserved.
-        </footer>
+        <footer className={layoutStyles.footer} role="contentinfo">
+            <div className={layoutStyles.footerContainer}>
+              <span className={layoutStyles.footerText}>
+                This is an independent project and is not affiliated with, endorsed by, or supported by The Pokémon
+                Company, DeNA Co., Ltd., or Creatures, Inc.  
+                All Pokémon names, images, and related assets are © their
+                respective owners.
+              </span>
+
+              <nav className={layoutStyles.footerLinks} aria-label="Footer">
+                <a href="/support" className={layoutStyles.footerLink}>
+                  Contact / Support
+                </a>
+              </nav>
+            </div>
+          </footer>
       </main>
     </div>
   )

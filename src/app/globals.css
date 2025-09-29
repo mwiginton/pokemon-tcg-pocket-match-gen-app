@@ -12,15 +12,16 @@
 
 html,
 body {
-  height: 100%;              /* ensure full viewport height */
+  background-color: #f9f9f9;
+  height: 100%;
   max-width: 100vw;
   overflow-x: hidden;
 }
 
 body {
-  display: flex;             /* flex container */
-  flex-direction: column;    /* vertical layout */
-  min-height: 100vh;         /* guarantee full screen height */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;

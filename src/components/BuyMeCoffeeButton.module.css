@@ -1,7 +1,7 @@
 .floatingButton {
   position: fixed;
-  bottom: 2rem;
-  right: 1.5rem;
+  bottom: 1.25rem; /* slightly higher than before */
+  right: 2rem;
   z-index: 9999;
 
   display: flex;
@@ -16,9 +16,6 @@
   border-radius: 9999px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   transition: background-color 0.2s ease;
-}
-
-.floatingButton {
   width: 48px;
   height: 48px;
 }
@@ -38,6 +35,7 @@
     width: auto;
     gap: 0.5rem;
     font-size: 0.95rem;
+    bottom: 1.25rem;
   }
 
   .text {
