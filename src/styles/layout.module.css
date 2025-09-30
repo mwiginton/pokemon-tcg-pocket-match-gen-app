@@ -479,3 +479,135 @@
     padding: 1.25rem 0.75rem;
   }
 }
+
+/* Landing page styles */
+.landingpage {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f8f8f8;
+  padding: 2rem;
+}
+
+.landingmain {
+  text-align: center;
+  max-width: 640px;
+  background: #fff;
+  padding: 3rem;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.landinglogo {
+  margin-bottom: 1rem;
+}
+
+.landingtitle {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #222;
+}
+
+.landingsubtitle {
+  font-size: 1.1rem;
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+.landingactions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.landingprimary,
+.landingsecondary {
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+}
+
+.landingprimary {
+  background: linear-gradient(135deg, #ffcb05, #ff7f50);
+  color: #1a1a1a;
+  font-size: 1.1rem;
+  border-radius: 9999px; /* pill shape */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.landingprimary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+}
+
+.landingprimary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.landingsecondary {
+  background-color: #eaeaea;
+  color: #333;
+  border-radius: 8px;
+}
+
+.landingfeatures {
+  margin-top: 2rem;
+  text-align: left;
+}
+
+.landingfeatures h2 {
+  color: #111;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  font-size: 1.2rem;
+}
+
+.landingfeatures ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  color: #333;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.landingfeatures li {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  color: #444;
+}
+
+.landingfooter {
+  margin-top: 2.5rem;
+  font-size: 0.875rem;
+  color: #aaa;
+}
+
+.landingfeatures ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  color: #333;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.landingfeatures li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  color: #444;
+}
+
+.landingicon {
+  flex-shrink: 0;
+  color: #0070f3;
+}

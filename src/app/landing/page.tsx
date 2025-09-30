@@ -1,6 +1,6 @@
 'use client'
 
-import styles from './landing.module.css'
+import styles from '@/styles/layout.module.css'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Library, Dice3, BarChart3, ShieldCheck } from 'lucide-react'
@@ -10,46 +10,46 @@ export default function LandingPage() {
 
   return (
     <div className={styles.page}>
-      <main className={styles.main}>
+      <main className={styles.landingmain}>
         <Image
           src="/logo.svg"
           alt="Logo"
           width={72}
           height={72}
-          className={styles.logo}
+          className={styles.landinglogo}
         />
-        <h1 className={styles.title}>Pokémon TCG Pocket BattleLedger</h1>
-        <p className={styles.subtitle}>
+        <h1 className={styles.landingtitle}>Pokémon TCG Pocket BattleLedger</h1>
+        <p className={styles.landingsubtitle}>
           Track your decks. Generate random battle scenarios. Record wins and
           losses. All in one place.
         </p>
 
-        <div className={styles.actions}>
+        <div className={styles.landingactions}>
           <button
-            className={styles.primary}
+            className={styles.landingprimary}
             onClick={() => router.push('/auth')}
           >
             Get Started
           </button>
         </div>
 
-        <section className={styles.features}>
+        <section className={styles.landingfeatures}>
           <h2>What You Can Do</h2>
           <ul>
             <li>
-              <Library size={18} className={styles.icon} />
+              <Library size={18} className={styles.landingicon} />
               Log all your custom decks from Pokémon TCG Pocket
             </li>
             <li>
-              <Dice3 size={18} className={styles.icon} />
+              <Dice3 size={18} className={styles.landingicon} />
               Generate random solo battle scenarios
             </li>
             <li>
-              <BarChart3 size={18} className={styles.icon} />
+              <BarChart3 size={18} className={styles.landingicon} />
               Record match outcomes and track win rates
             </li>
             <li>
-              <ShieldCheck size={18} className={styles.icon} />
+              <ShieldCheck size={18} className={styles.landingicon} />
               Secure login with Google or Email
             </li>
           </ul>
