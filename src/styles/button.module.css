@@ -1,19 +1,27 @@
+/* === Base Button Styles === */
 .button {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 0.9rem 1rem;
+  padding: 0.8rem 1.5rem;
   font-size: 1rem;
   font-weight: 500;
   border-radius: 10px;
   border: none;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-  width: 100%;
   background-color: #f4f4f4;
   color: #333;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  width: auto; /* ✅ Natural width on desktop */
+  min-width: 140px; /* ✅ Prevents tiny buttons */
+}
+
+@media (max-width: 640px) {
+  .button {
+    width: 100%; /* ✅ Full width on mobile */
+  }
 }
 
 .button:hover {
@@ -21,6 +29,7 @@
   transform: translateY(-2px);
 }
 
+/* === Primary Variant === */
 .primary {
   background-color: #7c3aed;
   font-weight: 700;
@@ -40,6 +49,7 @@
   box-shadow: 0 3px 8px rgba(91, 33, 182, 0.35);
 }
 
+/* === Secondary / Sign Out === */
 .signOut {
   background-color: transparent;
   border: 2px solid #e63946;
@@ -52,6 +62,7 @@
   color: #fff;
 }
 
+/* === Compact Buttons (e.g., icons or inline actions) === */
 .buttonCompact {
   display: inline-flex;
   align-items: center;
@@ -66,7 +77,7 @@
   transition: transform 0.2s ease, background-color 0.2s ease;
   background-color: #f4f4f4;
   color: #333;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
   width: auto;
 }
 
@@ -87,6 +98,7 @@
   box-shadow: 0 4px 8px rgba(109, 40, 217, 0.45);
 }
 
+/* === Disabled States === */
 .button:disabled,
 .button[disabled] {
   background-color: #e5e7eb;
@@ -112,4 +124,28 @@
   box-shadow: none;
   transform: none;
   pointer-events: none;
+}
+
+/* === Floating Button Bar (Save / Cancel) === */
+.floatingButtonBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #ffffff;
+  border-top: 1px solid #e5e7eb;
+  padding: 1rem 1.5rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  z-index: 1000;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.08);
+  flex-wrap: wrap; /* ✅ Prevents weird stretching on wide screens */
+}
+
+@media (max-width: 640px) {
+  .floatingButtonBar {
+    flex-direction: column;
+    padding: 0.75rem 1rem;
+  }
 }
