@@ -1,13 +1,14 @@
-import { MetadataRoute } from "next";
+export async function GET() {
+  const content = `
+User-agent: *
+Allow: /
 
-export function GET(): MetadataRoute.Robots {
-  return {
-    rules: [
-      {
-        userAgent: "*",
-        allow: "/",
-      },
-    ],
-    sitemap: "https://tcgpbattleledger.com/sitemap.xml",
-  };
+Sitemap: https://tcgpbattleledger.com/sitemap.xml
+  `.trim()
+
+  return new Response(content, {
+    headers: {
+      'Content-Type': 'text/plain',
+    },
+  })
 }
