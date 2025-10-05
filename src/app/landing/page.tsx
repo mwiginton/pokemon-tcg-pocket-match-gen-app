@@ -12,7 +12,7 @@ export default function LandingPage() {
     <div className={styles.page}>
       <main className={styles.landingmain}>
         <Image
-          src="/logo.svg"
+          src="/logo.png"
           alt="Logo"
           width={72}
           height={72}

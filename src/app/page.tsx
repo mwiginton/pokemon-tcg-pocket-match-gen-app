@@ -29,7 +29,7 @@ export default function IndexRedirectPage() {
       <main className={styles.mainContent}>
         <div className={styles.card}>
           <Image
-            src="/logo.svg"
+            src="/logo.png"
             alt="Logo"
             width={64}
             height={64}

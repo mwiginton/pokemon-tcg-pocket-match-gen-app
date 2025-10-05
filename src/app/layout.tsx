@@ -15,22 +15,62 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TCG Pocket BattleLedger",
+  title: "Pokémon TCG Pocket BattleLedger – Deck Tracker & Battle Logger",
   description:
-    "Track decks, generate battle scenarios, and log wins/losses for Pokémon TCG Pocket.",
+    "Track your Pokémon TCG Pocket decks, generate random battle scenarios, and log wins/losses with detailed analytics. Built with Next.js and Supabase.",
   keywords: [
     "Pokémon TCG Pocket",
     "deck tracker",
-    "battle simulator",
-    "trading card game",
-    "deck logging",
+    "battle logger",
+    "Pokémon deck builder",
+    "Pokémon TCG app",
+    "TCG Pocket analytics",
+    "Next.js Supabase app",
   ],
+  authors: [{ name: "Michelle Wiginton" }],
+  creator: "Michelle Wiginton",
+  publisher: "BattleLedger",
+  openGraph: {
+    title: "Pokémon TCG Pocket BattleLedger",
+    description:
+      "A Next.js + Supabase web app to track decks, battles, and win rates for Pokémon TCG Pocket.",
+    url: "https://tcgpbattleledger.com/",
+    siteName: "TCG Pocket BattleLedger",
+    images: [
+      {
+        url: "/social-preview.png",
+        width: 1200,
+        height: 630,
+        alt: "Pokémon TCG Pocket BattleLedger deck tracking interface",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Pokémon TCG Pocket BattleLedger",
+    description:
+      "Track decks and battles for Pokémon TCG Pocket with BattleLedger.",
+    images: ["/social-preview.png"],
+    creator: "@mdwiginton",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  alternates: {
+    canonical: "https://tcgpbattleledger.com/",
+  },
+  themeColor: "#ffffff",
+  manifest: "/site.webmanifest",
+
   icons: {
     icon: [
-      { url: "/logo.svg", type: "image/svg+xml" },
-      { url: "/logo.png", sizes: "32x32", type: "image/png" },
+      { url: "/logo_1.svg", type: "image/svg+xml" },
     ],
-    apple: [{ url: "/logo.png", sizes: "180x180", type: "image/png" }],
+    shortcut: [{ url: "/logo_1.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/logo_1.svg", sizes: "180x180", type: "image/svg+xml" }],
   },
 };
 
@@ -39,18 +79,54 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href="/logo_1.svg" type="image/svg+xml" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              name: "Pokémon TCG Pocket BattleLedger",
+              url: "https://tcgpbattleledger.com/",
+              applicationCategory: [
+                "GameUtility",
+                "EntertainmentApplication",
+                "Pokémon TCG Pocket Tool",
+              ],
+              operatingSystem: "Web",
+              description:
+                "A web app that helps Pokémon TCG Pocket players track decks, log battles, and analyze win rates.",
+              author: {
+                "@type": "Person",
+                name: "Michelle Wiginton",
+              },
+              offers: {
+                "@type": "Offer",
+                price: "0",
+                priceCurrency: "USD",
+              },
+              publisher: {
+                "@type": "Organization",
+                name: "BattleLedger",
+                url: "https://tcgpbattleledger.com/",
+              },
+            }),
+          }}
+        />
+      </head>
+
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <div className={styles.pageWrapper}>
           <main className={styles.mainContent}>{children}</main>
 
-          {/* Global footer */}
           <footer className={styles.footer} role="contentinfo">
             <div className={styles.footerContainer}>
               <span className={styles.footerText}>
-                This is an independent project and is not affiliated with, endorsed by, or supported by The Pokémon
-                Company, DeNA Co., Ltd., or Creatures, Inc.  
-                All Pokémon names, images, and related assets are © their
-                respective owners.
+                This is an independent project and is not affiliated with,
+                endorsed by, or supported by The Pokémon Company, DeNA Co.,
+                Ltd., or Creatures, Inc. All Pokémon names, images, and related
+                assets are © their respective owners.
               </span>
 
               <nav className={styles.footerLinks} aria-label="Footer">
