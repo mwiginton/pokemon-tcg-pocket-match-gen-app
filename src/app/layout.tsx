@@ -134,6 +134,9 @@ export default function RootLayout({
                 <a href="/support" className={styles.footerLink}>
                   Contact / Support
                 </a>
+                <a href="/privacy" className={styles.footerLink}>
+                  Privacy Policy
+                </a>
               </nav>
             </div>
           </footer>
