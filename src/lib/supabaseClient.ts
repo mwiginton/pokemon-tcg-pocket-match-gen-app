@@ -1,6 +1,14 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseAuthAdapter } from '@neondatabase/neon-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const neonAuthUrl = process.env.NEXT_PUBLIC_NEON_AUTH_URL!
+const neonDataApiUrl = process.env.NEXT_PUBLIC_NEON_DATA_API_URL!
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient({
+  auth: {
+    url: neonAuthUrl,
+    adapter: SupabaseAuthAdapter(),
+  },
+  dataApi: {
+    url: neonDataApiUrl,
+  },
+})

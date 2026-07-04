@@ -33,6 +33,10 @@ type DeckCard = {
   } | null
 }
 
+type DeckCardQueryRow = Omit<DeckCard, 'cards'> & {
+  cards: DeckCard['cards'] | DeckCard['cards'][]
+}
+
 type DeckStats = {
   total_games: number
   wins: number
@@ -151,7 +155,12 @@ export default function DeckListPage() {
       return
     }
 
-    setExpandedDecks(prev => ({ ...prev, [deckId]: data || [] }))
+    const deckCards = ((data || []) as DeckCardQueryRow[]).map(card => ({
+      ...card,
+      cards: Array.isArray(card.cards) ? card.cards[0] ?? null : card.cards,
+    }))
+
+    setExpandedDecks(prev => ({ ...prev, [deckId]: deckCards }))
   }
 
   const handleDeleteDeck = async (deckId: string) => {
