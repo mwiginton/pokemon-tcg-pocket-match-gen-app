@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabaseClient'
+import { client } from '@/lib/neonClient'
 import styles from '@/styles/layout.module.css'
 import buttonStyles from '@/styles/button.module.css'
 import { Dice3, Loader2, Home, Trophy, XCircle } from 'lucide-react'
@@ -50,7 +50,7 @@ export default function RandomBattlePage() {
 
   useEffect(() => {
     const loadBattles = async () => {
-      const { data, error } = await supabase
+      const { data, error } = await client
         .from('solo_battles')
         .select('difficulty, expansion, deck_name')
 
@@ -77,7 +77,7 @@ export default function RandomBattlePage() {
   }
 
   const refreshDeckStats = async (deckId: string) => {
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from('deck_games')
       .select('deck_id, result')
       .eq('deck_id', deckId)
@@ -96,7 +96,7 @@ export default function RandomBattlePage() {
   }
 
   const loadDeckCards = async (deckId: string) => {
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from('deck_cards')
       .select('card_id, card_index, cards(name, pack)')
       .eq('deck_id', deckId)
@@ -126,11 +126,11 @@ export default function RandomBattlePage() {
     if (!match) return
     setIsRecording(true)
     try {
-      const { data: userData } = await supabase.auth.getUser()
+      const { data: userData } = await client.auth.getUser()
       const user = userData?.user
       if (!user) { setError('You must be logged in.'); return }
 
-      const { error } = await supabase.from('deck_games').insert({
+      const { error } = await client.from('deck_games').insert({
         deck_id: match.player_deck.id, result, user_id: user.id,
       })
 
@@ -143,11 +143,11 @@ export default function RandomBattlePage() {
 
   const generateMatch = async () => {
     setError(''); setMatch(null)
-    const { data: userData } = await supabase.auth.getUser()
+    const { data: userData } = await client.auth.getUser()
     const user = userData?.user
     if (!user) { setError('You must be logged in.'); return }
 
-    const { data: decks, error } = await supabase
+    const { data: decks, error } = await client
       .from('decks').select('id, deck_name').eq('user_id', user.id)
 
     if (error || !decks || decks.length === 0) { setError('No decks found for this user.'); return }

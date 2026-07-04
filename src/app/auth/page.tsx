@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabaseClient'
+import { client } from '@/lib/neonClient'
 import styles from './page.module.css'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -23,7 +23,7 @@ export default function AuthPage() {
 
   useEffect(() => {
     const getUser = async () => {
-      const { data } = await supabase.auth.getUser()
+      const { data } = await client.auth.getUser()
       if (data.user) {
         setUser(data.user)
         router.replace('/dashboard')
@@ -36,7 +36,7 @@ export default function AuthPage() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = client.auth.onAuthStateChange((_event, session) => {
       const currentUser = session?.user ?? null
       setUser(currentUser)
       if (currentUser) {
@@ -50,7 +50,7 @@ export default function AuthPage() {
   }, [router])
 
   const signOut = async () => {
-    await supabase.auth.signOut()
+    await client.auth.signOut()
     setUser(null)
     router.push('/')
   }
@@ -59,7 +59,7 @@ export default function AuthPage() {
     e.preventDefault()
     setLoading(true)
     setAuthError('')
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { error } = await client.auth.signInWithPassword({ email, password })
     if (error) {
       setAuthError(error.message)
     } else {
@@ -73,7 +73,7 @@ export default function AuthPage() {
     setLoading(true)
     setAuthError('')
 
-    const { data, error } = await supabase.auth.signUp({
+    const { data, error } = await client.auth.signUp({
       email,
       password,
       options: {

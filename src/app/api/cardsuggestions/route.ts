@@ -1,11 +1,11 @@
-import { supabase } from '@/lib/supabaseClient'
+import { client } from '@/lib/neonClient'
 import { NextResponse } from 'next/server'
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const query = searchParams.get('query') || ''
 
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from('cards')
     .select('id, name, pack')
     .filter('name', 'ilike', `%${query}%`)

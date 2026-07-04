@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabaseClient'
+import { client } from '@/lib/neonClient'
 import styles from './dashboard.module.css'
 import buttonStyles from '@/styles/button.module.css'
 import Link from 'next/link'
@@ -16,14 +16,14 @@ export default function Dashboard() {
 
   useEffect(() => {
     const fetchUserAndDecks = async () => {
-      const { data } = await supabase.auth.getUser()
+      const { data } = await client.auth.getUser()
       if (!data.user) {
         router.push('/')
         return
       }
       setUser(data.user)
 
-      const { count, error } = await supabase
+      const { count, error } = await client
         .from('decks')
         .select('id', { count: 'exact', head: true })
         .eq('user_id', data.user.id)
@@ -38,7 +38,7 @@ export default function Dashboard() {
   }, [router])
 
   const signOut = async () => {
-    await supabase.auth.signOut()
+    await client.auth.signOut()
     router.push('/')
   }
 

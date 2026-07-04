@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Pokémon TCG Pocket BattleLedger – Deck Tracker & Battle Logger",
   description:
-    "Track your Pokémon TCG Pocket decks, generate random battle scenarios, and log wins/losses with detailed analytics. Built with Next.js and Supabase.",
+    "Track your Pokémon TCG Pocket decks, generate random battle scenarios, and log wins/losses with detailed analytics. Built with Next.js and Neon.",
   keywords: [
     "Pokémon TCG Pocket",
     "deck tracker",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     "Pokémon deck builder",
     "Pokémon TCG app",
     "TCG Pocket analytics",
-    "Next.js Supabase app",
+    "Next.js Neon app",
   ],
   authors: [{ name: "Michelle Wiginton" }],
   creator: "Michelle Wiginton",
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Pokémon TCG Pocket BattleLedger",
     description:
-      "A Next.js + Supabase web app to track decks, battles, and win rates for Pokémon TCG Pocket.",
+      "A Next.js + Neon web app to track decks, battles, and win rates for Pokémon TCG Pocket.",
     url: "https://tcgpbattleledger.com/",
     siteName: "TCG Pocket BattleLedger",
     images: [

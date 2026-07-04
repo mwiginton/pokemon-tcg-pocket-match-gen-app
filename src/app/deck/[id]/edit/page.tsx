@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { supabase } from '@/lib/supabaseClient'
+import { client } from '@/lib/neonClient'
 import styles from '@/styles/layout.module.css'
 import buttonStyles from '@/styles/button.module.css'
 import CardAutocompleteInput from '@/components/CardAutocompleteInput'
@@ -30,14 +30,14 @@ export default function EditDeckPage() {
   useEffect(() => {
     const fetchDeck = async () => {
       setLoading(true)
-      const { data: userData } = await supabase.auth.getUser()
+      const { data: userData } = await client.auth.getUser()
       const user = userData?.user
       if (!user) {
         router.push('/')
         return
       }
 
-      const { data: deckData, error: deckError } = await supabase
+      const { data: deckData, error: deckError } = await client
         .from('decks')
         .select('*')
         .eq('id', deckId)
@@ -52,7 +52,7 @@ export default function EditDeckPage() {
 
       setDeckName(deckData.deck_name)
 
-      const { data: deckCards, error: cardsError } = await supabase
+      const { data: deckCards, error: cardsError } = await client
         .from('deck_cards')
         .select('card_id, cards(name, pack)')
         .eq('deck_id', deckId)
@@ -141,7 +141,7 @@ export default function EditDeckPage() {
     }
 
     setSaving(true)
-    const { data: userData } = await supabase.auth.getUser()
+    const { data: userData } = await client.auth.getUser()
     const user = userData?.user
     if (!user) {
       setError('Not authenticated.')
@@ -149,7 +149,7 @@ export default function EditDeckPage() {
       return
     }
 
-    const { error: deckError } = await supabase
+    const { error: deckError } = await client
       .from('decks')
       .update({ deck_name: deckName })
       .eq('id', deckId)
@@ -161,13 +161,13 @@ export default function EditDeckPage() {
       return
     }
 
-    await supabase.from('deck_cards').delete().eq('deck_id', deckId)
+    await client.from('deck_cards').delete().eq('deck_id', deckId)
     const deckCards = cards.map((card, index) => ({
       deck_id: deckId,
       card_id: card.id,
       card_index: index,
     }))
-    const { error: insertError } = await supabase.from('deck_cards').insert(deckCards)
+    const { error: insertError } = await client.from('deck_cards').insert(deckCards)
     if (insertError) {
       setError(insertError.message)
       setSaving(false)

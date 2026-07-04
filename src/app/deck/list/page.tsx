@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabaseClient'
+import { client } from '@/lib/neonClient'
 import Link from 'next/link'
 import styles from '@/styles/layout.module.css'
 import buttonStyles from '@/styles/button.module.css'
@@ -58,7 +58,7 @@ export default function DeckListPage() {
       setLoading(true)
       setError('')
 
-      const { data: userData } = await supabase.auth.getUser()
+      const { data: userData } = await client.auth.getUser()
       const user = userData?.user
       if (!user) {
         setError('You must be signed in.')
@@ -66,7 +66,7 @@ export default function DeckListPage() {
         return
       }
 
-      const { data: decksData, error: decksError } = await supabase
+      const { data: decksData, error: decksError } = await client
         .from('decks')
         .select('id, deck_name, created_at')
         .eq('user_id', user.id)
@@ -87,7 +87,7 @@ export default function DeckListPage() {
   }, [])
 
   const refreshDeckStats = async (deckIds: string[]) => {
-    const { data: gamesData, error: gamesError } = await supabase
+    const { data: gamesData, error: gamesError } = await client
       .from('deck_games')
       .select('deck_id, result')
       .in('deck_id', deckIds)
@@ -106,14 +106,14 @@ export default function DeckListPage() {
   }
 
   const recordGame = async (deckId: string, result: 'win' | 'loss') => {
-    const { data: userData } = await supabase.auth.getUser()
+    const { data: userData } = await client.auth.getUser()
     const user = userData?.user
     if (!user) {
       alert('You must be logged in.')
       return
     }
 
-    const { error } = await supabase.from('deck_games').insert({
+    const { error } = await client.from('deck_games').insert({
       deck_id: deckId,
       result,
       user_id: user.id,
@@ -127,7 +127,7 @@ export default function DeckListPage() {
   }
 
   const resetGameStats = async (deckId: string) => {
-    const { error } = await supabase.from('deck_games').delete().eq('deck_id', deckId)
+    const { error } = await client.from('deck_games').delete().eq('deck_id', deckId)
     if (error) {
       alert('Failed to reset stats: ' + error.message)
     } else {
@@ -144,7 +144,7 @@ export default function DeckListPage() {
       return
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from('deck_cards')
       .select('id, deck_id, card_id, card_index, cards(name, image)')
       .eq('deck_id', deckId)
@@ -164,13 +164,13 @@ export default function DeckListPage() {
   }
 
   const handleDeleteDeck = async (deckId: string) => {
-    const { error: gamesError } = await supabase.from('deck_games').delete().eq('deck_id', deckId)
+    const { error: gamesError } = await client.from('deck_games').delete().eq('deck_id', deckId)
     if (gamesError) {
       alert('Failed to delete related games: ' + gamesError.message)
       return
     }
 
-    const { error: deckError } = await supabase.from('decks').delete().eq('id', deckId)
+    const { error: deckError } = await client.from('decks').delete().eq('id', deckId)
     if (deckError) {
       alert('Failed to delete deck: ' + deckError.message)
       return

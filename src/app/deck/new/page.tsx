@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabaseClient'
+import { client } from '@/lib/neonClient'
 import styles from '@/styles/layout.module.css'
 import buttonStyles from '@/styles/button.module.css'
 import CardAutocompleteInput from '@/components/CardAutocompleteInput'
@@ -27,11 +27,11 @@ export default function NewDeckPage() {
 
   useEffect(() => {
     const fetchDeckCount = async () => {
-      const { data: userData } = await supabase.auth.getUser()
+      const { data: userData } = await client.auth.getUser()
       const user = userData?.user
       if (!user) return
 
-      const { count, error } = await supabase
+      const { count, error } = await client
         .from('decks')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id)
@@ -110,7 +110,7 @@ export default function NewDeckPage() {
       return
     }
 
-    const { data: userData, error: userError } = await supabase.auth.getUser()
+    const { data: userData, error: userError } = await client.auth.getUser()
     const user = userData?.user
     if (!user || userError) {
       setError('Not authenticated.')
@@ -118,7 +118,7 @@ export default function NewDeckPage() {
       return
     }
 
-    const { data: deckData, error: deckError } = await supabase
+    const { data: deckData, error: deckError } = await client
       .from('decks')
       .insert({
         user_id: user.id,
@@ -139,7 +139,7 @@ export default function NewDeckPage() {
       card_index: index,
     }))
 
-    const { error: cardsError } = await supabase
+    const { error: cardsError } = await client
       .from('deck_cards')
       .insert(deckCards)
 

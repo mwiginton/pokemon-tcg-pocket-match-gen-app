@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { supabase } from '@/lib/supabaseClient'
+import { client } from '@/lib/neonClient'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import styles from '@/styles/layout.module.css'
@@ -11,7 +11,7 @@ export default function IndexRedirectPage() {
 
   useEffect(() => {
     const checkSession = async () => {
-      const { data } = await supabase.auth.getSession()
+      const { data } = await client.auth.getSession()
       const session = data?.session
 
       if (session?.user) {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabaseClient'
+import { client } from '@/lib/neonClient'
 import styles from '@/styles/layout.module.css'
 
 type CardEntry = {
@@ -44,7 +44,7 @@ export default function CardAutocompleteInput({ index, value, onChange, disabled
       setSuggestions([])
       return
     }
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from('cards')
       .select('id, name, pack')
       .ilike('name', `%${query}%`)
