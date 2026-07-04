@@ -50,7 +50,7 @@ export default function LandingPage() {
             </li>
             <li>
               <ShieldCheck size={18} className={styles.landingicon} />
-              Secure login with Google or Email
+              Secure email and password login
             </li>
           </ul>
         </section>

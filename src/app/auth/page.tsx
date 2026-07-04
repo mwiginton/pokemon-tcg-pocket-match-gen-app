@@ -6,8 +6,12 @@ import styles from './page.module.css'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 
+type AuthUser = {
+  email?: string | null
+} | null
+
 export default function AuthPage() {
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<AuthUser>(null)
   const [loadingUser, setLoadingUser] = useState(true)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -44,15 +48,6 @@ export default function AuthPage() {
 
     return () => subscription.unsubscribe()
   }, [router])
-
-  const signInWithGoogle = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/dashboard`,
-      },
-    })
-  }
 
   const signOut = async () => {
     await supabase.auth.signOut()
@@ -200,7 +195,7 @@ export default function AuthPage() {
               <p style={{ fontSize: '14px', textAlign: 'center', color: '#555' }}>
                 {mode === 'signIn' ? (
                   <>
-                    Don't have an account?{' '}
+                    Don&apos;t have an account?{' '}
                     <button
                       type="button"
                       onClick={() => setMode('signUp')}
@@ -234,15 +229,6 @@ export default function AuthPage() {
                   </>
                 )}
               </p>
-
-              <div className={styles.divider}>
-                <span>or</span>
-              </div>
-
-              <button className={styles.googleButton} onClick={signInWithGoogle}>
-                <Image src="/google-icon.svg" alt="Google" width={20} height={20} />
-                Continue with Google
-              </button>
 
               {authError && <p className={styles.error}>{authError}</p>}
             </>

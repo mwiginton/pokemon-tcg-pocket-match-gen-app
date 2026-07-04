@@ -26,7 +26,7 @@ export default function PrivacyPolicyPage() {
         <h2>Information We Collect</h2>
         <p>
           We collect only the data necessary to provide and improve our services, such as
-          authentication details from your Google account, and deck or battle records you create.
+          your email address for authentication, and deck or battle records you create.
         </p>
 
         <h2>How We Use Your Data</h2>
@@ -37,15 +37,15 @@ export default function PrivacyPolicyPage() {
 
         <h2>Third-Party Services</h2>
         <p>
-          We use Supabase for authentication and data storage. Supabase may process data in
+          We use Neon for authentication and data storage. Neon may process data in
           accordance with its own privacy policy at{' '}
           <a
-            href="https://supabase.com/privacy"
+            href="https://neon.com/privacy-policy"
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: '#2563eb', textDecoration: 'underline' }}
           >
-            supabase.com/privacy
+            neon.com/privacy-policy
           </a>.
         </p>
 
