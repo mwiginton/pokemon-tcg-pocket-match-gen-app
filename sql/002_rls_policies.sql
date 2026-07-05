@@ -7,10 +7,10 @@ alter table public.decks enable row level security;
 alter table public.deck_cards enable row level security;
 alter table public.deck_games enable row level security;
 
-grant usage on schema public to anon, authenticated;
+grant usage on schema public to anonymous, authenticated;
 
-grant select on public.cards to anon, authenticated;
-grant select on public.solo_battles to anon, authenticated;
+grant select on public.cards to anonymous, authenticated;
+grant select on public.solo_battles to anonymous, authenticated;
 
 grant select, insert, update, delete on public.decks to authenticated;
 grant select, insert, update, delete on public.deck_cards to authenticated;
@@ -20,14 +20,14 @@ drop policy if exists "cards are publicly readable" on public.cards;
 create policy "cards are publicly readable"
   on public.cards
   for select
-  to anon, authenticated
+  to anonymous, authenticated
   using (true);
 
 drop policy if exists "solo battles are publicly readable" on public.solo_battles;
 create policy "solo battles are publicly readable"
   on public.solo_battles
   for select
-  to anon, authenticated
+  to anonymous, authenticated
   using (true);
 
 drop policy if exists "users can read own decks" on public.decks;

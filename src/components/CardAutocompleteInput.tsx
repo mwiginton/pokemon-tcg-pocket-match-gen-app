@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { client } from '@/lib/neonClient'
 import styles from '@/styles/layout.module.css'
 
 type CardEntry = {
@@ -40,18 +39,27 @@ export default function CardAutocompleteInput({ index, value, onChange, disabled
   }
 
   const fetchSuggestions = async (query: string) => {
-    if (!query.trim()) {
+    const trimmedQuery = query.trim()
+
+    if (!trimmedQuery) {
       setSuggestions([])
       return
     }
-    const { data, error } = await client
-      .from('cards')
-      .select('id, name, pack')
-      .ilike('name', `%${query}%`)
-      .limit(10)
 
-    if (!error && data) {
-      setSuggestions(data)
+    try {
+      const response = await fetch(
+        `/api/cardsuggestions?query=${encodeURIComponent(trimmedQuery)}`,
+      )
+
+      if (!response.ok) {
+        setSuggestions([])
+        return
+      }
+
+      const { data } = (await response.json()) as { data?: CardEntry[] }
+      setSuggestions(data ?? [])
+    } catch {
+      setSuggestions([])
     }
   }
 
