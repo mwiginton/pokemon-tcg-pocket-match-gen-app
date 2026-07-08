@@ -14,6 +14,7 @@ Run these files in order from the Neon SQL Editor:
 10. `010_seed_cards_celestial_guardians.sql`
 11. `011_seed_cards_wisdom_of_sea_and_sky.sql`
 12. `012_seed_cards_eevee_grove.sql`
+13. `013_seed_cards_deluxe_pack_ex.sql`
 
 The schema script creates the application tables and indexes. The RLS script enables row-level security, grants Data API roles access, and adds policies for Neon Auth users.
 
@@ -34,5 +35,7 @@ The Celestial Guardians seed script inserts or updates the `cards` lookup rows f
 The Wisdom of Sea and Sky seed script inserts or updates the `cards` lookup rows for all 241 Wisdom of Sea and Sky (`A4`) cards.
 
 The Eevee Grove seed script inserts or updates the `cards` lookup rows for all 107 Eevee Grove (`A3b`) cards.
+
+The Deluxe Pack: ex seed script inserts or updates the `cards` lookup rows for all 379 Deluxe Pack: ex (`A4b`) cards.
 
 Shared lookup tables (`cards` and `solo_battles`) are readable by both anonymous and authenticated users. User-owned tables (`decks`, `deck_cards`, and `deck_games`) are restricted to the current Neon Auth user via `auth.uid()`.
