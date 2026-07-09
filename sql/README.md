@@ -23,6 +23,24 @@ Run these files in order from the Neon SQL Editor:
 19. `019_seed_cards_pulsing_aura.sql`
 20. `020_seed_cards_paradox_drive.sql`
 21. `021_seed_cards_everyday_wonders.sql`
+22. `022_seed_solo_battles_genetic_apex.sql`
+23. `023_seed_solo_battles_mythical_island.sql`
+24. `024_seed_solo_battles_space_time_smackdown.sql`
+25. `025_seed_solo_battles_triumphant_light.sql`
+26. `026_seed_solo_battles_shining_revelry.sql`
+27. `027_seed_solo_battles_celestial_guardians.sql`
+28. `028_seed_solo_battles_extradimensional_crisis.sql`
+29. `029_seed_solo_battles_eevee_grove.sql`
+30. `030_seed_solo_battles_wisdom_of_sea_and_sky.sql`
+31. `031_seed_solo_battles_secluded_springs.sql`
+32. `032_seed_solo_battles_deluxe_pack_ex.sql`
+33. `033_seed_solo_battles_mega_rising.sql`
+34. `034_seed_solo_battles_crimson_blaze.sql`
+35. `035_seed_solo_battles_fantastical_parade.sql`
+36. `036_seed_solo_battles_paldean_wonders.sql`
+37. `037_seed_solo_battles_mega_shine.sql`
+38. `038_seed_solo_battles_pulsing_aura.sql`
+39. `039_seed_solo_battles_paradox_drive.sql`
 
 The schema script creates the application tables and indexes. The RLS script enables row-level security, grants Data API roles access, and adds policies for Neon Auth users.
 
@@ -61,5 +79,41 @@ The Pulsing Aura seed script inserts or updates the `cards` lookup rows for all 
 The Paradox Drive seed script inserts or updates the `cards` lookup rows for all 109 Paradox Drive (`B3a`) cards.
 
 The Everyday Wonders seed script inserts or updates the `cards` lookup rows for all 106 Everyday Wonders (`B3b`) cards.
+
+The Genetic Apex solo battles seed script replaces the `solo_battles` lookup rows for all 27 permanent Genetic Apex solo battles.
+
+The Mythical Island solo battles seed script replaces the `solo_battles` lookup rows for all 16 permanent Mythical Island solo battles.
+
+The Space-Time Smackdown solo battles seed script replaces the `solo_battles` lookup rows for all 25 permanent Space-Time Smackdown solo battles.
+
+The Triumphant Light solo battles seed script replaces the `solo_battles` lookup rows for all 18 permanent Triumphant Light solo battles.
+
+The Shining Revelry solo battles seed script replaces the `solo_battles` lookup rows for all 18 permanent Shining Revelry solo battles.
+
+The Celestial Guardians solo battles seed script replaces the `solo_battles` lookup rows for all 27 permanent Celestial Guardians solo battles.
+
+The Extradimensional Crisis solo battles seed script replaces the `solo_battles` lookup rows for all 18 permanent Extradimensional Crisis solo battles.
+
+The Eevee Grove solo battles seed script replaces the `solo_battles` lookup rows for all 19 permanent Eevee Grove solo battles.
+
+The Wisdom of Sea and Sky solo battles seed script replaces the `solo_battles` lookup rows for all 29 permanent Wisdom of Sea and Sky solo battles.
+
+The Secluded Springs solo battles seed script replaces the `solo_battles` lookup rows for all 21 permanent Secluded Springs solo battles.
+
+The Deluxe Pack: ex solo battles seed script replaces the `solo_battles` lookup rows for all 30 permanent Deluxe Pack: ex solo battles.
+
+The Mega Rising solo battles seed script replaces the `solo_battles` lookup rows for all 31 permanent Mega Rising solo battles.
+
+The Crimson Blaze solo battles seed script replaces the `solo_battles` lookup rows for all 18 permanent Crimson Blaze solo battles.
+
+The Fantastical Parade solo battles seed script replaces the `solo_battles` lookup rows for all 27 permanent Fantastical Parade solo battles.
+
+The Paldean Wonders solo battles seed script replaces the `solo_battles` lookup rows for all 18 permanent Paldean Wonders solo battles.
+
+The Mega Shine solo battles seed script replaces the `solo_battles` lookup rows for all 18 permanent Mega Shine solo battles.
+
+The Pulsing Aura solo battles seed script replaces the `solo_battles` lookup rows for all 29 permanent Pulsing Aura solo battles.
+
+The Paradox Drive solo battles seed script replaces the `solo_battles` lookup rows for all 16 permanent Paradox Drive solo battles.
 
 Shared lookup tables (`cards` and `solo_battles`) are readable by both anonymous and authenticated users. User-owned tables (`decks`, `deck_cards`, and `deck_games`) are restricted to the current Neon Auth user via `auth.uid()`.
