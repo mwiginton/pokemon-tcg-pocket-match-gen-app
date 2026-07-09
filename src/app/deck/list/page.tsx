@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { client } from '@/lib/neonClient'
+import { getAuthenticatedUser } from '@/lib/authUser'
 import Link from 'next/link'
 import styles from '@/styles/layout.module.css'
 import buttonStyles from '@/styles/button.module.css'
@@ -58,10 +59,9 @@ export default function DeckListPage() {
       setLoading(true)
       setError('')
 
-      const { data: userData } = await client.auth.getUser()
-      const user = userData?.user
+      const { user, error: authError } = await getAuthenticatedUser()
       if (!user) {
-        setError('You must be signed in.')
+        setError(authError || 'You must be signed in.')
         setLoading(false)
         return
       }
@@ -106,8 +106,7 @@ export default function DeckListPage() {
   }
 
   const recordGame = async (deckId: string, result: 'win' | 'loss') => {
-    const { data: userData } = await client.auth.getUser()
-    const user = userData?.user
+    const { user } = await getAuthenticatedUser()
     if (!user) {
       alert('You must be logged in.')
       return

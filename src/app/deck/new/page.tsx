@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { client } from '@/lib/neonClient'
+import { getAuthenticatedUser } from '@/lib/authUser'
 import styles from '@/styles/layout.module.css'
 import buttonStyles from '@/styles/button.module.css'
 import DeckCardBuilder, { DeckCardEntry } from '@/components/DeckCardBuilder'
@@ -22,8 +23,7 @@ export default function NewDeckPage() {
 
   useEffect(() => {
     const fetchDeckCount = async () => {
-      const { data: userData } = await client.auth.getUser()
-      const user = userData?.user
+      const { user } = await getAuthenticatedUser()
       if (!user) return
 
       const { count, error } = await client
@@ -102,10 +102,9 @@ export default function NewDeckPage() {
       return
     }
 
-    const { data: userData, error: userError } = await client.auth.getUser()
-    const user = userData?.user
-    if (!user || userError) {
-      setError('Not authenticated.')
+    const { user, error: authError } = await getAuthenticatedUser()
+    if (!user) {
+      setError(authError || 'Not authenticated.')
       setLoading(false)
       return
     }

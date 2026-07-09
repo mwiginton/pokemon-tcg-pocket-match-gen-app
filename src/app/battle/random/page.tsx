@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { client } from '@/lib/neonClient'
+import { getAuthenticatedUser } from '@/lib/authUser'
 import styles from '@/styles/layout.module.css'
 import buttonStyles from '@/styles/button.module.css'
 import { Dice3, Loader2, Home, Trophy, XCircle } from 'lucide-react'
@@ -9,6 +10,14 @@ import Link from 'next/link'
 
 type Deck = { id: string; deck_name: string }
 type CardEntry = { id: string; name: string; pack: string }
+type DeckCardQueryRow = {
+  card_id: string
+  card_index: number
+  cards:
+    | { name?: string | null; pack?: string | null }
+    | { name?: string | null; pack?: string | null }[]
+    | null
+}
 type MatchResult = {
   player_deck: Deck
   solo_battle: { difficulty: string; expansion: string; deck: string }
@@ -108,12 +117,16 @@ export default function RandomBattlePage() {
     }
 
     const formatted: CardEntry[] = Array(20).fill({ id: '', name: '', pack: '' })
-    data.forEach((dc: any) => {
+    const deckCards = data as DeckCardQueryRow[]
+
+    deckCards.forEach((dc) => {
+      const card = Array.isArray(dc.cards) ? dc.cards[0] : dc.cards
+
       if (dc.card_index < 20) {
         formatted[dc.card_index] = {
           id: dc.card_id,
-          name: dc.cards?.name || '',
-          pack: dc.cards?.pack || '',
+          name: card?.name || '',
+          pack: card?.pack || '',
         }
       }
     })
@@ -126,8 +139,7 @@ export default function RandomBattlePage() {
     if (!match) return
     setIsRecording(true)
     try {
-      const { data: userData } = await client.auth.getUser()
-      const user = userData?.user
+      const { user } = await getAuthenticatedUser()
       if (!user) { setError('You must be logged in.'); return }
 
       const { error } = await client.from('deck_games').insert({
@@ -143,8 +155,7 @@ export default function RandomBattlePage() {
 
   const generateMatch = async () => {
     setError(''); setMatch(null)
-    const { data: userData } = await client.auth.getUser()
-    const user = userData?.user
+    const { user } = await getAuthenticatedUser()
     if (!user) { setError('You must be logged in.'); return }
 
     const { data: decks, error } = await client

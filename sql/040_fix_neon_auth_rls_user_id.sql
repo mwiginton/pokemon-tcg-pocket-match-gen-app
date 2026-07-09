@@ -1,11 +1,8 @@
--- BattleLedger Neon RLS policies
--- Run this after 001_schema.sql in the Neon SQL Editor.
-
-alter table public.cards enable row level security;
-alter table public.solo_battles enable row level security;
-alter table public.decks enable row level security;
-alter table public.deck_cards enable row level security;
-alter table public.deck_games enable row level security;
+-- Fix user-owned RLS checks for Neon Data API JWTs.
+--
+-- The Data API exposes JWT claims through PostgREST request settings. This
+-- helper reads the authenticated JWT subject directly instead of depending on
+-- a provider-specific auth.uid() implementation.
 
 create or replace function public.current_neon_auth_user_id()
 returns uuid
@@ -25,29 +22,6 @@ as $$
   end
   from jwt;
 $$;
-
-grant usage on schema public to anonymous, authenticated;
-
-grant select on public.cards to anonymous, authenticated;
-grant select on public.solo_battles to anonymous, authenticated;
-
-grant select, insert, update, delete on public.decks to authenticated;
-grant select, insert, update, delete on public.deck_cards to authenticated;
-grant select, insert, update, delete on public.deck_games to authenticated;
-
-drop policy if exists "cards are publicly readable" on public.cards;
-create policy "cards are publicly readable"
-  on public.cards
-  for select
-  to anonymous, authenticated
-  using (true);
-
-drop policy if exists "solo battles are publicly readable" on public.solo_battles;
-create policy "solo battles are publicly readable"
-  on public.solo_battles
-  for select
-  to anonymous, authenticated
-  using (true);
 
 drop policy if exists "users can read own decks" on public.decks;
 create policy "users can read own decks"

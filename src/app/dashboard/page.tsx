@@ -4,6 +4,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { client } from '@/lib/neonClient'
+import { getAuthenticatedUser } from '@/lib/authUser'
 import styles from './dashboard.module.css'
 import buttonStyles from '@/styles/button.module.css'
 import {
@@ -72,15 +73,15 @@ export default function Dashboard() {
 
   useEffect(() => {
     const fetchDashboard = async () => {
-      const { data } = await client.auth.getUser()
-      if (!data.user) {
+      const { user: authenticatedUser } = await getAuthenticatedUser()
+      if (!authenticatedUser) {
         router.push('/')
         return
       }
 
       const currentUser = {
-        id: data.user.id,
-        email: data.user.email,
+        id: authenticatedUser.id,
+        email: authenticatedUser.email,
       }
 
       setUser(currentUser)
