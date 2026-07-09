@@ -5,18 +5,13 @@ import { useRouter } from 'next/navigation'
 import { client } from '@/lib/neonClient'
 import styles from '@/styles/layout.module.css'
 import buttonStyles from '@/styles/button.module.css'
-import CardAutocompleteInput from '@/components/CardAutocompleteInput'
-
-type CardEntry = {
-  id: string
-  name: string
-}
+import DeckCardBuilder, { DeckCardEntry } from '@/components/DeckCardBuilder'
 
 export default function NewDeckPage() {
   const router = useRouter()
 
   const [deckName, setDeckName] = useState('')
-  const [cards, setCards] = useState<CardEntry[]>(Array(20).fill({ id: '', name: '' }))
+  const [cards, setCards] = useState<DeckCardEntry[]>(Array(20).fill({ id: '', name: '' }))
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [deckCount, setDeckCount] = useState<number | null>(null)
@@ -48,7 +43,7 @@ export default function NewDeckPage() {
   }
 
   // Find cards appearing more than twice and mark their positions
-  const validateDuplicateCards = (cardsToCheck: CardEntry[]): Record<number, string> => {
+  const validateDuplicateCards = (cardsToCheck: DeckCardEntry[]): Record<number, string> => {
     const nameCounts: Record<string, number> = {}
     const violations: Record<number, string> = {}
 
@@ -71,11 +66,8 @@ export default function NewDeckPage() {
     return violations
   }
 
-  const handleCardSlotChange = (index: number, newCard: CardEntry) => {
-    const newCards = [...cards]
-    newCards[index] = newCard
+  const handleCardsChange = (newCards: DeckCardEntry[]) => {
     setCards(newCards)
-
     const validation = validateDuplicateCards(newCards)
     setDuplicateErrors(validation)
   }
@@ -160,7 +152,7 @@ export default function NewDeckPage() {
   const disableAll = loading || hasReachedLimit
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} ${styles.deckBuilderPage}`}>
       <div className={`${styles.card} ${hasReachedLimit ? styles.noPress : ''}`}>
         <h1 className={styles.header}>Create New Deck</h1>
 
@@ -190,26 +182,12 @@ export default function NewDeckPage() {
         <h2 className={styles.subheader}>Add 20 Cards</h2>
         {error && <p className={styles.errorText}>{error}</p>}
 
-        <div className={styles.cardGroup}>
-          {cards.map((card, index) => (
-            <div key={index} className={styles.cardInputRow}>
-              <label className={styles.label} htmlFor={`card-${index}`}>
-                Card {index + 1}
-              </label>
-              <CardAutocompleteInput
-                index={index}
-                value={card}
-                onChange={(newCard) => handleCardSlotChange(index, newCard)}
-                disabled={hasReachedLimit}
-              />
-              {duplicateErrors[index] && (
-                <p className={styles.errorText} style={{ marginTop: '4px' }}>
-                  {duplicateErrors[index]}
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
+        <DeckCardBuilder
+          cards={cards}
+          onCardsChange={handleCardsChange}
+          disabled={hasReachedLimit}
+          duplicateErrors={duplicateErrors}
+        />
       </div>
 
       {/* Floating action bar */}

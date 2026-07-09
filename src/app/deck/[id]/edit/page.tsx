@@ -5,12 +5,14 @@ import { useRouter, useParams } from 'next/navigation'
 import { client } from '@/lib/neonClient'
 import styles from '@/styles/layout.module.css'
 import buttonStyles from '@/styles/button.module.css'
-import CardAutocompleteInput from '@/components/CardAutocompleteInput'
+import DeckCardBuilder, { DeckCardEntry } from '@/components/DeckCardBuilder'
 
-type CardEntry = {
-  id: string
-  name: string
-  pack?: string
+type DeckCardQueryRow = {
+  card_id: string
+  cards:
+    | { name?: string | null; pack?: string | null }
+    | { name?: string | null; pack?: string | null }[]
+    | null
 }
 
 export default function EditDeckPage() {
@@ -19,7 +21,7 @@ export default function EditDeckPage() {
   const deckId = params?.id as string
 
   const [deckName, setDeckName] = useState('')
-  const [cards, setCards] = useState<CardEntry[]>(Array(20).fill({ id: '', name: '' }))
+  const [cards, setCards] = useState<DeckCardEntry[]>(Array(20).fill({ id: '', name: '' }))
   const [error, setError] = useState('')
   const [duplicateErrors, setDuplicateErrors] = useState<Record<number, string>>({})
   const [loading, setLoading] = useState(true)
@@ -64,11 +66,15 @@ export default function EditDeckPage() {
         return
       }
 
-      const formattedCards = deckCards.map((c: any) => ({
-        id: c.card_id,
-        name: c.cards?.name || '',
-        pack: c.cards?.pack || '',
-      }))
+      const formattedCards = ((deckCards ?? []) as DeckCardQueryRow[]).map((c) => {
+        const card = Array.isArray(c.cards) ? c.cards[0] : c.cards
+
+        return {
+          id: c.card_id,
+          name: card?.name || '',
+          pack: card?.pack || '',
+        }
+      })
 
       setCards([
         ...formattedCards,
@@ -81,7 +87,7 @@ export default function EditDeckPage() {
   }, [deckId, router])
 
   // --- duplicate validation (per-slot) ---
-  const validateDuplicateCards = (cardsToCheck: CardEntry[]): Record<number, string> => {
+  const validateDuplicateCards = (cardsToCheck: DeckCardEntry[]): Record<number, string> => {
     const nameCounts: Record<string, number> = {}
     const violations: Record<number, string> = {}
 
@@ -102,11 +108,8 @@ export default function EditDeckPage() {
     return violations
   }
 
-  const handleCardSlotChange = (index: number, newCard: CardEntry) => {
-    const updatedCards = [...cards]
-    updatedCards[index] = newCard
+  const handleCardsChange = (updatedCards: DeckCardEntry[]) => {
     setCards(updatedCards)
-
     const validation = validateDuplicateCards(updatedCards)
     setDuplicateErrors(validation)
   }
@@ -192,7 +195,7 @@ export default function EditDeckPage() {
   const disableSave = saving || Object.keys(duplicateErrors).length > 0
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} ${styles.deckBuilderPage}`}>
       <div className={styles.card}>
         <h1 className={styles.header}>Edit Deck</h1>
 
@@ -216,24 +219,12 @@ export default function EditDeckPage() {
         <h2 className={styles.subheader}>Update Cards</h2>
         {error && <p className={styles.errorText}>{error}</p>}
 
-        <div className={styles.cardGroup}>
-          {cards.map((card, index) => (
-            <div key={index} className={styles.cardInputRow}>
-              <label className={styles.label}>Card {index + 1}</label>
-              <CardAutocompleteInput
-                index={index}
-                value={card}
-                onChange={(newCard) => handleCardSlotChange(index, newCard)}
-                disabled={saving}
-              />
-              {duplicateErrors[index] && (
-                <p className={styles.errorText} style={{ marginTop: '4px' }}>
-                  {duplicateErrors[index]}
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
+        <DeckCardBuilder
+          cards={cards}
+          onCardsChange={handleCardsChange}
+          disabled={saving}
+          duplicateErrors={duplicateErrors}
+        />
       </div>
 
       {/* Floating Save / Cancel buttons */}

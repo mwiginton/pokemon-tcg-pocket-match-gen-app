@@ -143,6 +143,148 @@
   margin-top: 0.5rem;
 }
 
+.deckBuilderPage {
+  padding-bottom: 6rem;
+}
+
+.deckProgressPanel,
+.importPanel {
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.deckProgressHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.6rem;
+}
+
+.deckProgressTitle {
+  font-weight: 700;
+  color: #222;
+}
+
+.deckProgressCount {
+  flex-shrink: 0;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: #eef3fb;
+  color: #205493;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.deckProgressTrack {
+  height: 0.65rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e5e7eb;
+}
+
+.deckProgressFill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2563eb, #7c3aed);
+  transition: width 0.2s ease;
+}
+
+.importTextarea {
+  width: 100%;
+  min-height: 8rem;
+  resize: vertical;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  color: #333;
+  font: inherit;
+  line-height: 1.4;
+}
+
+.importTextarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+.importActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.importMessage {
+  margin-top: 0.75rem;
+  margin-bottom: 0;
+  color: #205493;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.importIssues {
+  margin: 0.75rem 0 0;
+  padding-left: 1.1rem;
+  color: #b45309;
+  font-size: 0.85rem;
+}
+
+.cardSlotHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.cardSlotControls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: start;
+}
+
+.copyBadge {
+  flex-shrink: 0;
+  min-width: 2rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: #eef6ff;
+  color: #205493;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.copyBadgeInvalid {
+  background: #ffecec;
+  color: #c52d2d;
+}
+
+.quickCopyButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  min-height: 38px;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid #bfd7f2;
+  border-radius: 6px;
+  background: #eef3fb;
+  color: #205493;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.quickCopyButton:hover {
+  background: #dbeafe;
+}
+
 .label {
   display: block;
   font-weight: 500;
@@ -400,6 +542,14 @@
     font-weight: 600;
     font-size: 0.95rem;
     border-radius: 6px;
+  }
+
+  .cardSlotControls {
+    grid-template-columns: 1fr;
+  }
+
+  .quickCopyButton {
+    width: 100%;
   }
 }
 
