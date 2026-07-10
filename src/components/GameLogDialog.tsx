@@ -8,6 +8,7 @@ import {
   Clock3,
   Flag,
   NotebookPen,
+  Shield,
   Sparkles,
   Swords,
   Trophy,
@@ -16,11 +17,13 @@ import {
 } from 'lucide-react'
 
 export type GameResult = 'win' | 'loss'
+export type MatchType = 'solo' | 'pvp'
 export type PlayerOrder = 'first' | 'second'
 export type SetupStatus = 'turn_2' | 'turn_3' | 'missed' | 'unknown'
 
 export type GameLogDetails = {
   result: GameResult
+  match_type: MatchType
   opponent_archetype: string | null
   player_order: PlayerOrder | null
   turns_played: number | null
@@ -33,6 +36,7 @@ export type GameLogDetails = {
 type GameLogDialogProps = {
   deckName: string
   result: GameResult
+  defaultMatchType?: MatchType
   defaultOpponent?: string
   cardOptions?: string[]
   isSaving?: boolean
@@ -70,12 +74,14 @@ const cleanText = (value: string) => {
 export default function GameLogDialog({
   deckName,
   result,
+  defaultMatchType = 'pvp',
   defaultOpponent = '',
   cardOptions = [],
   isSaving = false,
   onClose,
   onSubmit,
 }: GameLogDialogProps) {
+  const [matchType, setMatchType] = useState<MatchType>(defaultMatchType)
   const [opponentArchetype, setOpponentArchetype] = useState(defaultOpponent)
   const [playerOrder, setPlayerOrder] = useState<PlayerOrder | null>(null)
   const [turnsPlayed, setTurnsPlayed] = useState('')
@@ -94,6 +100,10 @@ export default function GameLogDialog({
   }, [defaultOpponent])
 
   useEffect(() => {
+    setMatchType(defaultMatchType)
+  }, [defaultMatchType])
+
+  useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose()
     }
@@ -106,6 +116,7 @@ export default function GameLogDialog({
     if (!includeDetails) {
       return {
         result,
+        match_type: matchType,
         opponent_archetype: null,
         player_order: null,
         turns_played: null,
@@ -120,6 +131,7 @@ export default function GameLogDialog({
 
     return {
       result,
+      match_type: matchType,
       opponent_archetype: cleanText(opponentArchetype),
       player_order: playerOrder,
       turns_played: Number.isFinite(parsedTurns) && parsedTurns > 0 ? parsedTurns : null,
@@ -157,6 +169,29 @@ export default function GameLogDialog({
         <div className={styles.resultSummary}>
           {result === 'win' ? <Trophy size={18} /> : <XCircle size={18} />}
           <span>{result === 'win' ? 'Win' : 'Loss'}</span>
+        </div>
+
+        <div className={styles.fieldBlock}>
+          <span className={styles.labelWithIcon}>
+            <Shield size={16} />
+            Match type
+          </span>
+          <div className={styles.segmentedControl}>
+            <button
+              type="button"
+              className={`${styles.choiceButton} ${matchType === 'solo' ? styles.choiceButtonActive : ''}`}
+              onClick={() => setMatchType('solo')}
+            >
+              Solo
+            </button>
+            <button
+              type="button"
+              className={`${styles.choiceButton} ${matchType === 'pvp' ? styles.choiceButtonActive : ''}`}
+              onClick={() => setMatchType('pvp')}
+            >
+              PvP
+            </button>
+          </div>
         </div>
 
         <div className={styles.formGrid}>

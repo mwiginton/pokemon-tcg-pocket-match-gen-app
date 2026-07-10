@@ -43,6 +43,8 @@ Run these files in order from the Neon SQL Editor:
 39. `039_seed_solo_battles_paradox_drive.sql`
 40. `040_fix_neon_auth_rls_user_id.sql`
 41. `041_add_deck_game_details.sql`
+42. `042_add_deck_game_match_type.sql`
+43. `043_ensure_deck_game_logging_columns.sql`
 
 The schema script creates the application tables and indexes. The RLS script enables row-level security, grants Data API roles access, and adds policies for Neon Auth users.
 
@@ -121,3 +123,7 @@ The Paradox Drive solo battles seed script replaces the `solo_battles` lookup ro
 Shared lookup tables (`cards` and `solo_battles`) are readable by both anonymous and authenticated users. User-owned tables (`decks`, `deck_cards`, and `deck_games`) are restricted to the current Neon Auth user via `public.current_neon_auth_user_id()`, which reads the Data API JWT subject from PostgREST request settings.
 
 The deck game details migration adds optional fields for opponent archetype, first/second turn order, turns played, close-game flag, setup timing, MVP card, and notes.
+
+The match type migration marks each deck game as either `solo` or `pvp`, defaulting existing records to `pvp`.
+
+If the app reports a missing `deck_games` column while saving a match, run `043_ensure_deck_game_logging_columns.sql`. It safely creates all richer match logging columns and constraints even if one of the previous match logging migrations was skipped.

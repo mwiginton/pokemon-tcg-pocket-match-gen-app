@@ -9,6 +9,7 @@ import buttonStyles from '@/styles/button.module.css'
 import GameLogDialog, {
   GameLogDetails,
   GameResult,
+  MatchType,
   PlayerOrder,
   SetupStatus,
 } from '@/components/GameLogDialog'
@@ -47,6 +48,10 @@ type DeckCardQueryRow = Omit<DeckCard, 'cards'> & {
 type DeckStats = {
   total_games: number
   wins: number
+  solo_games: number
+  solo_wins: number
+  pvp_games: number
+  pvp_wins: number
   close_games: number
   average_turns: number | null
   setup_by_turn_2: number
@@ -63,6 +68,7 @@ type DeckStats = {
 type DeckGameRow = {
   deck_id: string
   result: GameResult
+  match_type: MatchType | null
   opponent_archetype: string | null
   player_order: PlayerOrder | null
   turns_played: number | null
@@ -76,6 +82,10 @@ const maxDecks = 10
 const createEmptyStats = (): DeckStats => ({
   total_games: 0,
   wins: 0,
+  solo_games: 0,
+  solo_wins: 0,
+  pvp_games: 0,
+  pvp_wins: 0,
   close_games: 0,
   average_turns: null,
   setup_by_turn_2: 0,
@@ -91,6 +101,9 @@ const createEmptyStats = (): DeckStats => ({
 
 const getTopEntry = (counts: Record<string, number>) =>
   Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null
+
+const getWinRate = (wins: number, totalGames: number) =>
+  totalGames > 0 ? `${Math.round((wins / totalGames) * 100)}%` : 'No data'
 
 export default function DeckListPage() {
   const [decks, setDecks] = useState<Deck[]>([])
@@ -149,7 +162,7 @@ export default function DeckListPage() {
 
     const { data: gamesData, error: gamesError } = await client
       .from('deck_games')
-      .select('deck_id, result, opponent_archetype, player_order, turns_played, close_game, setup_status, mvp_card')
+      .select('deck_id, result, match_type, opponent_archetype, player_order, turns_played, close_game, setup_status, mvp_card')
       .in('deck_id', deckIds)
 
     if (gamesError) {
@@ -173,6 +186,14 @@ export default function DeckListPage() {
 
         stats.total_games++
         if (game.result === 'win') stats.wins++
+        const matchType = game.match_type ?? 'pvp'
+        if (matchType === 'solo') {
+          stats.solo_games++
+          if (game.result === 'win') stats.solo_wins++
+        } else {
+          stats.pvp_games++
+          if (game.result === 'win') stats.pvp_wins++
+        }
         if (game.close_game) stats.close_games++
 
         if (game.turns_played) {
@@ -262,6 +283,7 @@ export default function DeckListPage() {
       deck_id: gameLogTarget.deckId,
       result: details.result,
       user_id: user.id,
+      match_type: details.match_type,
       opponent_archetype: details.opponent_archetype,
       player_order: details.player_order,
       turns_played: details.turns_played,
@@ -395,8 +417,9 @@ export default function DeckListPage() {
           {decks.map((deck) => {
             const stats = deckStats[deck.id]
             const totalGames = stats?.total_games ?? 0
-            const wins = stats?.wins ?? 0
-            const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0
+            const overallWinRate = getWinRate(stats?.wins ?? 0, totalGames)
+            const soloWinRate = stats ? getWinRate(stats.solo_wins, stats.solo_games) : 'No data'
+            const pvpWinRate = stats ? getWinRate(stats.pvp_wins, stats.pvp_games) : 'No data'
             const averageTurns = stats?.average_turns ? `${stats.average_turns}` : 'No data'
             const setupLabel = stats && stats.setup_tracked > 0
               ? `${Math.round((stats.setup_by_turn_3 / stats.setup_tracked) * 100)}%`
@@ -446,12 +469,16 @@ export default function DeckListPage() {
                     <span className={styles.statMiniLabel}>Games played</span>
                   </div>
                   <div className={styles.statMini}>
-                    <span className={styles.statMiniValue}>{wins}</span>
-                    <span className={styles.statMiniLabel}>Wins</span>
+                    <span className={styles.statMiniValue}>{overallWinRate}</span>
+                    <span className={styles.statMiniLabel}>Overall win rate</span>
                   </div>
                   <div className={styles.statMini}>
-                    <span className={styles.statMiniValue}>{winRate}%</span>
-                    <span className={styles.statMiniLabel}>Win rate</span>
+                    <span className={styles.statMiniValue}>{soloWinRate}</span>
+                    <span className={styles.statMiniLabel}>Solo win rate</span>
+                  </div>
+                  <div className={styles.statMini}>
+                    <span className={styles.statMiniValue}>{pvpWinRate}</span>
+                    <span className={styles.statMiniLabel}>PvP win rate</span>
                   </div>
                 </div>
 
@@ -585,6 +612,7 @@ export default function DeckListPage() {
           <GameLogDialog
             deckName={gameLogTarget.deckName}
             result={gameLogTarget.result}
+            defaultMatchType="pvp"
             cardOptions={gameLogCardOptions}
             isSaving={isRecordingGame}
             onClose={() => setGameLogTarget(null)}

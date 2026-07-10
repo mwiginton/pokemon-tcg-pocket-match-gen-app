@@ -5,7 +5,7 @@ import { client } from '@/lib/neonClient'
 import { getAuthenticatedUser } from '@/lib/authUser'
 import styles from '@/styles/layout.module.css'
 import buttonStyles from '@/styles/button.module.css'
-import GameLogDialog, { GameLogDetails, GameResult } from '@/components/GameLogDialog'
+import GameLogDialog, { GameLogDetails, GameResult, MatchType } from '@/components/GameLogDialog'
 import { Dice3, Home, Loader2, Trophy, XCircle } from 'lucide-react'
 import Link from 'next/link'
 
@@ -24,12 +24,27 @@ type MatchResult = {
   solo_battle: { difficulty: string; expansion: string; deck: string }
 }
 type BattlesGrouped = Record<string, Record<string, string[]>>
+type DeckStats = {
+  total_games: number
+  wins: number
+  solo_games: number
+  solo_wins: number
+  pvp_games: number
+  pvp_wins: number
+}
+type DeckGameRow = {
+  result: GameResult
+  match_type: MatchType | null
+}
+
+const getWinRate = (wins: number, totalGames: number) =>
+  totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0
 
 export default function RandomBattlePage() {
   const [match, setMatch] = useState<MatchResult | null>(null)
   const [error, setError] = useState('')
   const [selectedDifficulties, setSelectedDifficulties] = useState<string[]>([])
-  const [deckStats, setDeckStats] = useState<Record<string, { total_games: number; wins: number }>>({})
+  const [deckStats, setDeckStats] = useState<Record<string, DeckStats>>({})
   const [deckCards, setDeckCards] = useState<CardEntry[]>([])
   const [showDeckModal, setShowDeckModal] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
@@ -80,7 +95,7 @@ export default function RandomBattlePage() {
   const refreshDeckStats = async (deckId: string) => {
     const { data, error } = await client
       .from('deck_games')
-      .select('deck_id, result')
+      .select('result, match_type')
       .eq('deck_id', deckId)
 
     if (error) {
@@ -88,10 +103,25 @@ export default function RandomBattlePage() {
       return
     }
 
-    const stats = { total_games: 0, wins: 0 }
-    data.forEach(({ result }) => {
+    const stats: DeckStats = {
+      total_games: 0,
+      wins: 0,
+      solo_games: 0,
+      solo_wins: 0,
+      pvp_games: 0,
+      pvp_wins: 0,
+    }
+
+    ;((data ?? []) as DeckGameRow[]).forEach(({ result, match_type }) => {
       stats.total_games++
       if (result === 'win') stats.wins++
+      if (match_type === 'solo') {
+        stats.solo_games++
+        if (result === 'win') stats.solo_wins++
+      } else {
+        stats.pvp_games++
+        if (result === 'win') stats.pvp_wins++
+      }
     })
 
     setDeckStats((prev) => ({ ...prev, [deckId]: stats }))
@@ -149,6 +179,7 @@ export default function RandomBattlePage() {
         deck_id: match.player_deck.id,
         result: details.result,
         user_id: user.id,
+        match_type: details.match_type,
         opponent_archetype: details.opponent_archetype,
         player_order: details.player_order,
         turns_played: details.turns_played,
@@ -213,9 +244,9 @@ export default function RandomBattlePage() {
   }
 
   const currentStats = match ? deckStats[match.player_deck.id] : null
-  const winRate = currentStats && currentStats.total_games > 0
-    ? Math.round((currentStats.wins / currentStats.total_games) * 100)
-    : 0
+  const winRate = currentStats ? getWinRate(currentStats.wins, currentStats.total_games) : 0
+  const soloWinRate = currentStats ? getWinRate(currentStats.solo_wins, currentStats.solo_games) : 0
+  const pvpWinRate = currentStats ? getWinRate(currentStats.pvp_wins, currentStats.pvp_games) : 0
 
   return (
     <div className={styles.page}>
@@ -323,12 +354,16 @@ export default function RandomBattlePage() {
                     <span className={styles.statMiniLabel}>Games played</span>
                   </div>
                   <div className={styles.statMini}>
-                    <span className={styles.statMiniValue}>{currentStats.wins}</span>
-                    <span className={styles.statMiniLabel}>Wins</span>
+                    <span className={styles.statMiniValue}>{winRate}%</span>
+                    <span className={styles.statMiniLabel}>Overall win rate</span>
                   </div>
                   <div className={styles.statMini}>
-                    <span className={styles.statMiniValue}>{winRate}%</span>
-                    <span className={styles.statMiniLabel}>Win rate</span>
+                    <span className={styles.statMiniValue}>{soloWinRate}%</span>
+                    <span className={styles.statMiniLabel}>Solo win rate</span>
+                  </div>
+                  <div className={styles.statMini}>
+                    <span className={styles.statMiniValue}>{pvpWinRate}%</span>
+                    <span className={styles.statMiniLabel}>PvP win rate</span>
                   </div>
                 </div>
               )}
@@ -369,6 +404,7 @@ export default function RandomBattlePage() {
           <GameLogDialog
             deckName={match.player_deck.deck_name}
             result={gameLogResult}
+            defaultMatchType="solo"
             defaultOpponent={match.solo_battle.deck}
             cardOptions={deckCards.map((card) => card.name).filter(Boolean)}
             isSaving={isRecording}

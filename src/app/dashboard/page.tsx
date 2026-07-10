@@ -34,6 +34,7 @@ type DeckGame = {
   deck_id: string
   result: 'win' | 'loss'
   created_at: string
+  match_type: 'solo' | 'pvp' | null
   opponent_archetype: string | null
   turns_played: number | null
   close_game: boolean | null
@@ -107,7 +108,7 @@ export default function Dashboard() {
 
       const { data: gamesData, error: gamesError } = await client
         .from('deck_games')
-        .select('deck_id, result, created_at, opponent_archetype, turns_played, close_game, mvp_card, notes')
+        .select('deck_id, result, created_at, match_type, opponent_archetype, turns_played, close_game, mvp_card, notes')
         .eq('user_id', currentUser.id)
         .order('created_at', { ascending: false })
 
@@ -137,6 +138,12 @@ export default function Dashboard() {
   const totalWins = games.filter((game) => game.result === 'win').length
   const totalLosses = totalGames - totalWins
   const overallWinRate = getWinRate(totalWins, totalGames)
+  const soloGames = games.filter((game) => game.match_type === 'solo')
+  const soloWins = soloGames.filter((game) => game.result === 'win').length
+  const soloWinRate = getWinRate(soloWins, soloGames.length)
+  const pvpGames = games.filter((game) => (game.match_type ?? 'pvp') === 'pvp')
+  const pvpWins = pvpGames.filter((game) => game.result === 'win').length
+  const pvpWinRate = getWinRate(pvpWins, pvpGames.length)
 
   const performanceByDeck = decks
     .map<DeckPerformance>((deck) => {
@@ -241,6 +248,18 @@ export default function Dashboard() {
                 <span className={styles.statLabel}>Overall win rate</span>
                 <span className={styles.statMeta}>{totalGames > 0 ? 'Across all decks' : 'No games yet'}</span>
               </div>
+              <div className={styles.statTile}>
+                <BarChart3 size={20} className={styles.statIcon} />
+                <span className={styles.statValue}>{soloWinRate}%</span>
+                <span className={styles.statLabel}>Solo win rate</span>
+                <span className={styles.statMeta}>{soloGames.length} solo {soloGames.length === 1 ? 'match' : 'matches'}</span>
+              </div>
+              <div className={styles.statTile}>
+                <BarChart3 size={20} className={styles.statIcon} />
+                <span className={styles.statValue}>{pvpWinRate}%</span>
+                <span className={styles.statLabel}>PvP win rate</span>
+                <span className={styles.statMeta}>{pvpGames.length} PvP {pvpGames.length === 1 ? 'match' : 'matches'}</span>
+              </div>
             </section>
 
             <section className={styles.nextActionPanel}>
@@ -302,6 +321,7 @@ export default function Dashboard() {
                         </span>
                         <span className={styles.recentDeck}>
                           {deckNames.get(game.deck_id) ?? 'Unknown deck'}
+                          <span className={styles.recentType}> {(game.match_type ?? 'pvp') === 'solo' ? 'Solo' : 'PvP'}</span>
                           {game.opponent_archetype && (
                             <span className={styles.recentDetail}> vs {game.opponent_archetype}</span>
                           )}

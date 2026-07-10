@@ -52,7 +52,7 @@
 }
 
 .statsGrid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   margin-bottom: 1rem;
 }
 
@@ -254,6 +254,18 @@
 .recentDetail {
   color: #4b5563;
   font-weight: 600;
+}
+
+.recentType {
+  display: inline-flex;
+  margin-left: 0.35rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  background: #eef3fb;
+  color: #205493;
+  font-size: 0.72rem;
+  font-weight: 800;
+  vertical-align: middle;
 }
 
 .recentSubdetail {
