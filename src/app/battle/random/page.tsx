@@ -5,7 +5,7 @@ import { client } from '@/lib/neonClient'
 import { getAuthenticatedUser } from '@/lib/authUser'
 import styles from '@/styles/layout.module.css'
 import buttonStyles from '@/styles/button.module.css'
-import { Dice3, Loader2, Home, Trophy, XCircle } from 'lucide-react'
+import { Dice3, Home, Loader2, Trophy, XCircle } from 'lucide-react'
 import Link from 'next/link'
 
 type Deck = { id: string; deck_name: string }
@@ -24,19 +24,6 @@ type MatchResult = {
 }
 type BattlesGrouped = Record<string, Record<string, string[]>>
 
-const recordBtnStyle = (bg: string, color: string, border: string) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '6px',
-  padding: '6px 10px',
-  background: bg,
-  color,
-  border: `1px solid ${border}`,
-  borderRadius: 6,
-  cursor: 'pointer',
-  fontSize: '0.9rem',
-} as const)
-
 export default function RandomBattlePage() {
   const [match, setMatch] = useState<MatchResult | null>(null)
   const [error, setError] = useState('')
@@ -49,10 +36,11 @@ export default function RandomBattlePage() {
 
   const closeDeckModal = () => setShowDeckModal(false)
 
-  // Allow ESC to close modal
   useEffect(() => {
     if (!showDeckModal) return
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeDeckModal() }
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeDeckModal()
+    }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [showDeckModal])
@@ -81,7 +69,9 @@ export default function RandomBattlePage() {
 
   const toggleDifficulty = (difficulty: string) => {
     setSelectedDifficulties((prev) =>
-      prev.includes(difficulty) ? prev.filter((d) => d !== difficulty) : [...prev, difficulty]
+      prev.includes(difficulty)
+        ? prev.filter((selected) => selected !== difficulty)
+        : [...prev, difficulty],
     )
   }
 
@@ -98,7 +88,8 @@ export default function RandomBattlePage() {
 
     const stats = { total_games: 0, wins: 0 }
     data.forEach(({ result }) => {
-      stats.total_games++; if (result === 'win') stats.wins++
+      stats.total_games++
+      if (result === 'win') stats.wins++
     })
 
     setDeckStats((prev) => ({ ...prev, [deckId]: stats }))
@@ -119,12 +110,12 @@ export default function RandomBattlePage() {
     const formatted: CardEntry[] = Array(20).fill({ id: '', name: '', pack: '' })
     const deckCards = data as DeckCardQueryRow[]
 
-    deckCards.forEach((dc) => {
-      const card = Array.isArray(dc.cards) ? dc.cards[0] : dc.cards
+    deckCards.forEach((deckCard) => {
+      const card = Array.isArray(deckCard.cards) ? deckCard.cards[0] : deckCard.cards
 
-      if (dc.card_index < 20) {
-        formatted[dc.card_index] = {
-          id: dc.card_id,
+      if (deckCard.card_index < 20) {
+        formatted[deckCard.card_index] = {
+          id: deckCard.card_id,
           name: card?.name || '',
           pack: card?.pack || '',
         }
@@ -140,10 +131,15 @@ export default function RandomBattlePage() {
     setIsRecording(true)
     try {
       const { user } = await getAuthenticatedUser()
-      if (!user) { setError('You must be logged in.'); return }
+      if (!user) {
+        setError('You must be logged in.')
+        return
+      }
 
       const { error } = await client.from('deck_games').insert({
-        deck_id: match.player_deck.id, result, user_id: user.id,
+        deck_id: match.player_deck.id,
+        result,
+        user_id: user.id,
       })
 
       if (error) setError('Error recording game: ' + error.message)
@@ -154,202 +150,193 @@ export default function RandomBattlePage() {
   }
 
   const generateMatch = async () => {
-    setError(''); setMatch(null)
+    setError('')
+    setMatch(null)
     const { user } = await getAuthenticatedUser()
-    if (!user) { setError('You must be logged in.'); return }
+    if (!user) {
+      setError('You must be logged in.')
+      return
+    }
 
     const { data: decks, error } = await client
-      .from('decks').select('id, deck_name').eq('user_id', user.id)
+      .from('decks')
+      .select('id, deck_name')
+      .eq('user_id', user.id)
 
-    if (error || !decks || decks.length === 0) { setError('No decks found for this user.'); return }
+    if (error || !decks || decks.length === 0) {
+      setError('No decks found for this user.')
+      return
+    }
 
-    const allowedDifficulties = selectedDifficulties.length > 0 ? selectedDifficulties : Object.keys(soloBattles)
-    if (allowedDifficulties.length === 0) { setError('No solo battles available.'); return }
+    const allowedDifficulties = selectedDifficulties.length > 0
+      ? selectedDifficulties
+      : Object.keys(soloBattles)
+    if (allowedDifficulties.length === 0) {
+      setError('No solo battles available.')
+      return
+    }
 
     const difficulty = allowedDifficulties[Math.floor(Math.random() * allowedDifficulties.length)]
     const expansions = Object.keys(soloBattles[difficulty] || {})
-    if (expansions.length === 0) { setError('No expansions available for this difficulty.'); return }
+    if (expansions.length === 0) {
+      setError('No expansions available for this difficulty.')
+      return
+    }
 
     const expansion = expansions[Math.floor(Math.random() * expansions.length)]
     const options = soloBattles[difficulty][expansion]
-    const enemy_deck = options[Math.floor(Math.random() * options.length)]
-    const player_deck = decks[Math.floor(Math.random() * decks.length)]
+    const enemyDeck = options[Math.floor(Math.random() * options.length)]
+    const playerDeck = decks[Math.floor(Math.random() * decks.length)]
 
-    setMatch({ player_deck, solo_battle: { difficulty, expansion, deck: enemy_deck } })
-    await refreshDeckStats(player_deck.id)
+    setMatch({ player_deck: playerDeck, solo_battle: { difficulty, expansion, deck: enemyDeck } })
+    await refreshDeckStats(playerDeck.id)
   }
+
+  const currentStats = match ? deckStats[match.player_deck.id] : null
+  const winRate = currentStats && currentStats.total_games > 0
+    ? Math.round((currentStats.wins / currentStats.total_games) * 100)
+    : 0
 
   return (
     <div className={styles.page}>
-      <div style={{ marginBottom: '1rem', textAlign: 'left' }}>
-        <Link
-          href="/dashboard"
-          className={styles.iconButton}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '6px 12px',
-            borderRadius: 6,
-            background: '#eef3fb',
-            border: '1px solid #a5c5f5',
-            color: '#205493',
-            fontWeight: 500,
-            textDecoration: 'none',
-          }}
-        >
-          <Home size={16} />
-          Back to Dashboard
-        </Link>
-      </div>
-
-      <div className={styles.card}>
-        {/* Header */}
-        <div className="headerWithDice">
-          <Dice3 size={22} className="diceIcon" />
-          <h1 className="headerText">Generate a Random Match</h1>
-        </div>
-
-        {/* Difficulty selection */}
-        <div style={{ marginBottom: '1rem' }}>
-          <strong>
-            Select Difficulties:
-            <span style={{ fontWeight: 'normal', color: '#666', fontSize: '0.85rem', marginLeft: 8 }}>
-              (optional)
-            </span>
-          </strong>
-
-          <div className="difficultyRow">
-            {Object.keys(soloBattles).map((difficulty) => {
-              const selected = selectedDifficulties.includes(difficulty)
-              return (
-                <button
-                  key={difficulty}
-                  onClick={() => toggleDifficulty(difficulty)}
-                  className={`${buttonStyles.buttonCompact} ${selected ? buttonStyles.primary : ''}`}
-                  type="button"
-                >
-                  {difficulty}
-                </button>
-              )
-            })}
+      <div className={styles.shell}>
+        <header className={styles.hero}>
+          <div className={styles.heroCopy}>
+            <Link href="/dashboard" className={styles.backLink}>
+              <Home size={16} />
+              Back to Dashboard
+            </Link>
+            <p className={styles.eyebrow}>Random battle</p>
+            <h1 className={styles.pageTitle}>Generate a random match</h1>
+            <p className={styles.pageIntro}>
+              Pick optional difficulties, roll a matchup, then log the result.
+            </p>
           </div>
-        </div>
+        </header>
 
-        <button
-          onClick={generateMatch}
-          className={`${buttonStyles.buttonCompact} ${buttonStyles.primary}`}
-          type="button"
-        >
-          Generate Match
-        </button>
-
-        {error && <p style={{ color: 'red', marginTop: 12 }}>{error}</p>}
-
-        {match && (
-          <div
-            style={{
-              marginTop: '2rem',
-              padding: '1.5rem',
-              borderRadius: '8px',
-              backgroundColor: '#f9f9f9',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
-            }}
-          >
-            <div style={{ marginBottom: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.2rem', marginBottom: '0.5rem', borderBottom: '1px solid #ddd', paddingBottom: '4px' }}>
-                Your Deck
-              </h2>
-              <p
-                style={{ fontWeight: 500, fontSize: '1rem', color: '#0070f3', textDecoration: 'underline', cursor: 'pointer' }}
-                onClick={() => loadDeckCards(match.player_deck.id)}
-              >
-                {match.player_deck.deck_name}
-              </p>
-            </div>
-
-            <div>
-              <h2 style={{ fontSize: '1.2rem', marginBottom: '0.5rem', borderBottom: '1px solid #ddd', paddingBottom: '4px' }}>
-                Solo Battle
-              </h2>
-              <div style={{ lineHeight: 1.8, fontSize: '0.95rem' }}>
-                <p><strong>Difficulty:</strong> {match.solo_battle.difficulty}</p>
-                <p><strong>Expansion:</strong> {match.solo_battle.expansion}</p>
-                <p><strong>Opponent:</strong> {match.solo_battle.deck}</p>
-              </div>
-            </div>
-
-            {/* Record buttons */}
-            <div className={styles.cardActions}>
-              <button
-                onClick={() => recordGame('win')}
-                disabled={isRecording}
-                type="button"
-                style={recordBtnStyle('#e6f9ec', '#1a7f37', '#b2e0c0')}
-              >
-                {isRecording ? <Loader2 className="spin" size={16} /> : <Trophy size={16} />}
-                Record Win
-              </button>
-
-              <button
-                onClick={() => recordGame('loss')}
-                disabled={isRecording}
-                type="button"
-                style={recordBtnStyle('#ffecec', '#c52d2d', '#f5baba')}
-              >
-                {isRecording ? <Loader2 className="spin" size={16} /> : <XCircle size={16} />}
-                Record Loss
-              </button>
-            </div>
-
-            {deckStats[match.player_deck.id] && (
-              <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#444' }}>
-                Games Played: {deckStats[match.player_deck.id].total_games}, Wins {deckStats[match.player_deck.id].wins}, Win Rate{' '}
-                {deckStats[match.player_deck.id].total_games > 0
-                  ? `${Math.round((deckStats[match.player_deck.id].wins / deckStats[match.player_deck.id].total_games) * 100)}%`
-                  : '0%'}
-              </p>
-            )}
+        <section className={styles.panel}>
+          <div className={styles.headerWithIcon}>
+            <Dice3 size={24} />
+            <h2 className={styles.headerText}>Match settings</h2>
           </div>
-        )}
 
-        {/* ✅ Deck Modal (Restored) */}
-        {showDeckModal && (
-          <div
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              background: 'rgba(0, 0, 0, 0.4)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 1000,
-            }}
-            onClick={closeDeckModal}
+          <div>
+            <p className={styles.label}>Select difficulties</p>
+            <p className={styles.helperText}>Leave all unchecked to include every loaded solo battle.</p>
+            <div className={styles.chipRow}>
+              {Object.keys(soloBattles).map((difficulty) => {
+                const selected = selectedDifficulties.includes(difficulty)
+                return (
+                  <button
+                    key={difficulty}
+                    onClick={() => toggleDifficulty(difficulty)}
+                    className={`${buttonStyles.buttonCompact} ${selected ? buttonStyles.primary : ''}`}
+                    type="button"
+                  >
+                    {difficulty}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          <button
+            onClick={generateMatch}
+            className={`${buttonStyles.button} ${buttonStyles.primary}`}
+            type="button"
           >
-            <div
-              className={styles.modalContent}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h2 style={{ textAlign: 'center', marginBottom: '1rem' }}>Deck Cards</h2>
-              {deckCards.map((card, i) => (
-                <div key={i} style={{ marginBottom: '0.5rem' }}>
-                  {card.name ? (
-                    <div className={styles.suggestionRow}>
-                      <span className={styles.cardName}>{card.name}</span>
-                      {card.pack && <span className={styles.cardPack}>({card.pack})</span>}
-                    </div>
-                  ) : (
-                    <span style={{ color: '#aaa' }}>Empty Slot</span>
-                  )}
+            <Dice3 size={18} />
+            Generate Match
+          </button>
+
+          {error && <p className={styles.errorText}>{error}</p>}
+
+          {match && (
+            <div className={styles.highlightPanel}>
+              <p className={styles.panelKicker}>Generated matchup</p>
+              <div className={styles.matchGrid}>
+                <div className={styles.matchSection}>
+                  <h2>Your Deck</h2>
+                  <button
+                    className={styles.inlineLink}
+                    onClick={() => loadDeckCards(match.player_deck.id)}
+                    type="button"
+                  >
+                    {match.player_deck.deck_name}
+                  </button>
                 </div>
-              ))}
+
+                <div className={styles.matchSection}>
+                  <h2>Solo Battle</h2>
+                  <p className={styles.metaText}><strong>Difficulty:</strong> {match.solo_battle.difficulty}</p>
+                  <p className={styles.metaText}><strong>Expansion:</strong> {match.solo_battle.expansion}</p>
+                  <p className={styles.metaText}><strong>Opponent:</strong> {match.solo_battle.deck}</p>
+                </div>
+              </div>
+
+              <div className={styles.cardActions}>
+                <button
+                  onClick={() => recordGame('win')}
+                  disabled={isRecording}
+                  type="button"
+                  className={`${styles.iconButton} ${styles.win}`}
+                >
+                  {isRecording ? <Loader2 className={styles.spin} size={16} /> : <Trophy size={16} />}
+                  Record Win
+                </button>
+
+                <button
+                  onClick={() => recordGame('loss')}
+                  disabled={isRecording}
+                  type="button"
+                  className={`${styles.iconButton} ${styles.loss}`}
+                >
+                  {isRecording ? <Loader2 className={styles.spin} size={16} /> : <XCircle size={16} />}
+                  Record Loss
+                </button>
+              </div>
+
+              {currentStats && (
+                <div className={styles.statStrip}>
+                  <div className={styles.statMini}>
+                    <span className={styles.statMiniValue}>{currentStats.total_games}</span>
+                    <span className={styles.statMiniLabel}>Games played</span>
+                  </div>
+                  <div className={styles.statMini}>
+                    <span className={styles.statMiniValue}>{currentStats.wins}</span>
+                    <span className={styles.statMiniLabel}>Wins</span>
+                  </div>
+                  <div className={styles.statMini}>
+                    <span className={styles.statMiniValue}>{winRate}%</span>
+                    <span className={styles.statMiniLabel}>Win rate</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+
+        {showDeckModal && (
+          <div className={styles.modalOverlay} onClick={closeDeckModal}>
+            <div className={styles.modalContent} onClick={(event) => event.stopPropagation()}>
+              <h2 className={styles.headerText}>Deck cards</h2>
+              <ol className={styles.cardList}>
+                {deckCards.map((card, index) => (
+                  <li key={`${card.id}-${index}`}>
+                    {card.name ? (
+                      <span className={styles.suggestionRow}>
+                        <span className={styles.cardName}>{card.name}</span>
+                        {card.pack && <span className={styles.cardPack}>({card.pack})</span>}
+                      </span>
+                    ) : (
+                      <span className={styles.metaText}>Empty Slot</span>
+                    )}
+                  </li>
+                ))}
+              </ol>
               <button
                 onClick={closeDeckModal}
-                className={`${buttonStyles.buttonCompact} ${buttonStyles.secondary}`}
+                className={buttonStyles.button}
                 style={{ marginTop: '1rem', width: '100%' }}
               >
                 Close
@@ -357,42 +344,6 @@ export default function RandomBattlePage() {
             </div>
           </div>
         )}
-
-        {/* Scoped styles */}
-        <style jsx>{`
-          .headerWithDice {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.6rem;
-            margin-bottom: 1.25rem;
-            text-align: center;
-            flex-wrap: wrap;
-          }
-          .diceIcon { color: #205493; }
-          .headerText { font-size: 1.6rem; font-weight: 600; color: #1f2937; }
-
-          .difficultyRow {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 0.4rem;
-            margin-top: 8px;
-            flex-wrap: nowrap;
-          }
-          .difficultyRow button {
-            flex: 1;
-            min-width: 0;
-            font-size: 0.8rem;
-            padding: 0.4rem 0.3rem;
-            white-space: nowrap;
-          }
-          @media (max-width: 480px) {
-            .headerText { font-size: 1.25rem; }
-            .difficultyRow { gap: 0.3rem; }
-            .difficultyRow button { flex: 1; font-size: 0.7rem; padding: 0.35rem 0.25rem; }
-          }
-        `}</style>
       </div>
     </div>
   )

@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { client } from '@/lib/neonClient'
 import { getAuthenticatedUser } from '@/lib/authUser'
 import styles from '@/styles/layout.module.css'
 import buttonStyles from '@/styles/button.module.css'
 import DeckCardBuilder, { DeckCardEntry } from '@/components/DeckCardBuilder'
+import { Home } from 'lucide-react'
 
 export default function NewDeckPage() {
   const router = useRouter()
@@ -152,8 +154,20 @@ export default function NewDeckPage() {
 
   return (
     <div className={`${styles.page} ${styles.deckBuilderPage}`}>
-      <div className={`${styles.card} ${hasReachedLimit ? styles.noPress : ''}`}>
-        <h1 className={styles.header}>Create New Deck</h1>
+      <div className={styles.shell}>
+        <header className={styles.hero}>
+          <div className={styles.heroCopy}>
+            <Link href="/dashboard" className={styles.backLink}>
+              <Home size={16} />
+              Back to Dashboard
+            </Link>
+            <p className={styles.eyebrow}>Deck builder</p>
+            <h1 className={styles.pageTitle}>Create new deck</h1>
+            <p className={styles.pageIntro}>Build a 20-card list and save it to your library.</p>
+          </div>
+        </header>
+
+        <div className={`${styles.card} ${hasReachedLimit ? styles.noPress : ''}`}>
 
         {hasReachedLimit && (
           <p className={styles.errorText}>
@@ -187,6 +201,7 @@ export default function NewDeckPage() {
           disabled={hasReachedLimit}
           duplicateErrors={duplicateErrors}
         />
+      </div>
       </div>
 
       {/* Floating action bar */}

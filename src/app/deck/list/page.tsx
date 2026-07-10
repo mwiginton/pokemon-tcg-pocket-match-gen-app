@@ -7,14 +7,14 @@ import Link from 'next/link'
 import styles from '@/styles/layout.module.css'
 import buttonStyles from '@/styles/button.module.css'
 import {
-  Pencil,
-  Trash2,
   BookMarked,
+  Home,
+  Pencil,
+  PlusCircle,
+  RotateCcw,
+  Trash2,
   Trophy,
   XCircle,
-  RotateCcw,
-  Home,
-  PlusCircle
 } from 'lucide-react'
 
 type Deck = {
@@ -43,6 +43,8 @@ type DeckStats = {
   wins: number
 }
 
+const maxDecks = 10
+
 export default function DeckListPage() {
   const [decks, setDecks] = useState<Deck[]>([])
   const [deckStats, setDeckStats] = useState<Record<string, DeckStats>>({})
@@ -52,7 +54,6 @@ export default function DeckListPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [confirmResetId, setConfirmResetId] = useState<string | null>(null)
   const [selectedCardImage, setSelectedCardImage] = useState<string | null>(null)
-  const maxDecks = 10
 
   useEffect(() => {
     const fetchDecksAndStats = async () => {
@@ -79,7 +80,7 @@ export default function DeckListPage() {
       }
 
       setDecks(decksData)
-      await refreshDeckStats(decksData.map(d => d.id))
+      await refreshDeckStats(decksData.map((deck) => deck.id))
       setLoading(false)
     }
 
@@ -87,6 +88,11 @@ export default function DeckListPage() {
   }, [])
 
   const refreshDeckStats = async (deckIds: string[]) => {
+    if (deckIds.length === 0) {
+      setDeckStats({})
+      return
+    }
+
     const { data: gamesData, error: gamesError } = await client
       .from('deck_games')
       .select('deck_id, result')
@@ -96,12 +102,12 @@ export default function DeckListPage() {
       setError(gamesError.message)
     } else {
       const statsMap: Record<string, DeckStats> = {}
-      deckIds.forEach(id => (statsMap[id] = { total_games: 0, wins: 0 }))
+      deckIds.forEach((id) => (statsMap[id] = { total_games: 0, wins: 0 }))
       gamesData?.forEach(({ deck_id, result }) => {
         statsMap[deck_id].total_games++
         if (result === 'win') statsMap[deck_id].wins++
       })
-      setDeckStats(prev => ({ ...prev, ...statsMap }))
+      setDeckStats((prev) => ({ ...prev, ...statsMap }))
     }
   }
 
@@ -154,12 +160,12 @@ export default function DeckListPage() {
       return
     }
 
-    const deckCards = ((data || []) as DeckCardQueryRow[]).map(card => ({
+    const deckCards = ((data || []) as DeckCardQueryRow[]).map((card) => ({
       ...card,
       cards: Array.isArray(card.cards) ? card.cards[0] ?? null : card.cards,
     }))
 
-    setExpandedDecks(prev => ({ ...prev, [deckId]: deckCards }))
+    setExpandedDecks((prev) => ({ ...prev, [deckId]: deckCards }))
   }
 
   const handleDeleteDeck = async (deckId: string) => {
@@ -175,8 +181,8 @@ export default function DeckListPage() {
       return
     }
 
-    setDecks(prev => prev.filter(d => d.id !== deckId))
-    setExpandedDecks(prev => {
+    setDecks((prev) => prev.filter((deck) => deck.id !== deckId))
+    setExpandedDecks((prev) => {
       const copy = { ...prev }
       delete copy[deckId]
       return copy
@@ -186,272 +192,217 @@ export default function DeckListPage() {
 
   return (
     <div className={styles.page}>
-      <div style={{ marginBottom: '1rem', textAlign: 'left' }}>
-        <Link
-          href="/dashboard"
-          className={styles.iconButton}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '6px 12px',
-            borderRadius: 6,
-            background: '#eef3fb',
-            border: '1px solid #a5c5f5',
-            color: '#205493',
-            fontWeight: 500,
-            textDecoration: 'none',
-          }}
-        >
-          <Home size={16} />
-          Back to Dashboard
-        </Link>
-      </div>
+      <div className={styles.shell}>
+        <header className={styles.hero}>
+          <div className={styles.heroCopy}>
+            <Link href="/dashboard" className={styles.backLink}>
+              <Home size={16} />
+              Back to Dashboard
+            </Link>
+            <p className={styles.eyebrow}>Deck library</p>
+            <h1 className={styles.pageTitle}>Your saved decks</h1>
+            {!loading && (
+              <p className={styles.pageIntro}>
+                {decks.length} of {maxDecks} deck slots used.
+              </p>
+            )}
+          </div>
+          <Link
+            href={decks.length >= maxDecks ? '/deck/list' : '/deck/new'}
+            className={`${buttonStyles.button} ${decks.length >= maxDecks ? '' : buttonStyles.primary}`}
+          >
+            <PlusCircle size={18} />
+            <span>{decks.length >= maxDecks ? 'Deck Limit Reached' : 'Create New Deck'}</span>
+          </Link>
+        </header>
 
-      <div className={styles.card}>
-        <div className={styles.headerWithIcon}>
-          <BookMarked size={28} strokeWidth={2} />
-          <h1 className={styles.headerText}>Your Saved Decks</h1>
-        </div>
+        {error && <p className={styles.errorText}>{error}</p>}
 
-        {/* Deck usage indicator */}
-        {!loading && (
-          <p className={styles.deckUsage}>
-            Decks: <strong>{decks.length}</strong> / <strong>{maxDecks}</strong>
-          </p>
-        )}
+        <section className={styles.panel}>
+          <div className={styles.panelHeader}>
+            <div className={styles.headerWithIcon}>
+              <BookMarked size={24} strokeWidth={2} />
+              <h2 className={styles.headerText}>Deck overview</h2>
+            </div>
+          </div>
 
-        {loading && <p>Loading...</p>}
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+          {loading && <p className={styles.emptyText}>Loading decks...</p>}
 
-        {decks.length === 0 && !loading && (
-          <div style={{ textAlign: 'center', marginTop: '1.25rem' }}>
-            <p style={{ fontSize: '1rem', color: '#333', marginBottom: '1rem' }}>
-              No decks found.
-            </p>
-            <Link href="/deck/new">
-              <button
+          {decks.length === 0 && !loading && (
+            <div className={styles.softPanel}>
+              <p className={styles.emptyText}>No decks found.</p>
+              <Link
+                href="/deck/new"
                 className={`${buttonStyles.button} ${buttonStyles.primary}`}
-                style={{ marginTop: '0.5rem' }}
               >
                 <PlusCircle size={18} />
                 <span>Create New Deck</span>
-              </button>
-            </Link>
-          </div>
-        )}
-      </div>
+              </Link>
+            </div>
+          )}
+        </section>
 
-      {decks.map((deck) => {
-        const stats = deckStats[deck.id]
-        const winRate =
-          stats && stats.total_games > 0
-            ? Math.round((stats.wins / stats.total_games) * 100)
-            : 0
+        <section className={styles.deckList} aria-label="Saved decks">
+          {decks.map((deck) => {
+            const stats = deckStats[deck.id]
+            const totalGames = stats?.total_games ?? 0
+            const wins = stats?.wins ?? 0
+            const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0
 
-        return (
-          <div key={deck.id} className={styles.card}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2>{deck.deck_name}</h2>
-              <div className={styles.buttonGroup}>
-                <Link href={`/deck/${deck.id}/edit`} className={`${styles.iconButton} ${styles.iconButtonEdit}`}>
-                  <Pencil size={16} />
-                  <span>Edit</span>
-                </Link>
+            return (
+              <article key={deck.id} className={`${styles.card} ${styles.wideCard}`}>
+                <div className={styles.deckCardHeader}>
+                  <div>
+                    <h2 className={styles.deckTitle}>{deck.deck_name}</h2>
+                    <p className={styles.metaText}>
+                      Created {new Date(deck.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className={styles.buttonGroup}>
+                    <Link
+                      href={`/deck/${deck.id}/edit`}
+                      className={`${styles.iconButton} ${styles.iconButtonEdit}`}
+                    >
+                      <Pencil size={16} />
+                      <span>Edit</span>
+                    </Link>
+                    <button
+                      onClick={() => setConfirmDeleteId(deck.id)}
+                      className={`${styles.iconButton} ${styles.iconButtonDelete}`}
+                    >
+                      <Trash2 size={16} />
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className={styles.statStrip}>
+                  <div className={styles.statMini}>
+                    <span className={styles.statMiniValue}>{totalGames}</span>
+                    <span className={styles.statMiniLabel}>Games played</span>
+                  </div>
+                  <div className={styles.statMini}>
+                    <span className={styles.statMiniValue}>{wins}</span>
+                    <span className={styles.statMiniLabel}>Wins</span>
+                  </div>
+                  <div className={styles.statMini}>
+                    <span className={styles.statMiniValue}>{winRate}%</span>
+                    <span className={styles.statMiniLabel}>Win rate</span>
+                  </div>
+                </div>
+
+                <div className={styles.cardActions}>
+                  <button
+                    onClick={() => recordGame(deck.id, 'win')}
+                    className={`${styles.iconButton} ${styles.win}`}
+                  >
+                    <Trophy size={16} />
+                    Record Win
+                  </button>
+                  <button
+                    onClick={() => recordGame(deck.id, 'loss')}
+                    className={`${styles.iconButton} ${styles.loss}`}
+                  >
+                    <XCircle size={16} />
+                    Record Loss
+                  </button>
+                  <button
+                    onClick={() => setConfirmResetId(deck.id)}
+                    className={styles.backLink}
+                  >
+                    <RotateCcw size={16} />
+                    Reset Stats
+                  </button>
+                  <button
+                    onClick={() => toggleDeckCards(deck.id)}
+                    className={styles.backLink}
+                  >
+                    {expandedDecks[deck.id] ? 'Hide Cards' : 'View Cards'}
+                  </button>
+                </div>
+
+                {expandedDecks[deck.id] && (
+                  <ol className={styles.cardList}>
+                    {expandedDecks[deck.id].map((card) => (
+                      <li key={card.id}>
+                        <button
+                          type="button"
+                          onClick={() => card.cards?.image && setSelectedCardImage(card.cards.image)}
+                          className={styles.inlineLink}
+                          disabled={!card.cards?.image}
+                        >
+                          {card.cards?.name ?? '(Unknown Card)'}
+                        </button>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+              </article>
+            )
+          })}
+        </section>
+
+        {confirmDeleteId && (
+          <div className={styles.modalOverlay}>
+            <div className={styles.modalDialog}>
+              <h2 className={styles.headerText}>Delete this deck?</h2>
+              <p className={styles.pageIntro}>This also removes the deck&apos;s recorded games.</p>
+              <div className={styles.modalActions}>
                 <button
-                  onClick={() => setConfirmDeleteId(deck.id)}
-                  className={`${styles.iconButton} ${styles.iconButtonDelete}`}
+                  onClick={() => setConfirmDeleteId(null)}
+                  className={buttonStyles.button}
                 >
-                  <Trash2 size={16} />
-                  <span>Delete</span>
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleDeleteDeck(confirmDeleteId)}
+                  className={`${buttonStyles.button} ${buttonStyles.primary}`}
+                >
+                  Yes, delete
                 </button>
               </div>
             </div>
+          </div>
+        )}
 
-            <p style={{ fontSize: '0.9rem', color: '#666' }}>
-              Created: {new Date(deck.created_at).toLocaleDateString()}
-            </p>
+        {confirmResetId && (
+          <div className={styles.modalOverlay}>
+            <div className={styles.modalDialog}>
+              <h2 className={styles.headerText}>Reset deck stats?</h2>
+              <p className={styles.pageIntro}>All recorded games for this deck will be removed.</p>
+              <div className={styles.modalActions}>
+                <button
+                  onClick={() => setConfirmResetId(null)}
+                  className={buttonStyles.button}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => resetGameStats(confirmResetId)}
+                  className={`${buttonStyles.button} ${buttonStyles.primary}`}
+                >
+                  Yes, reset
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
-            {stats && (
-              <p style={{ fontSize: '0.85rem', color: '#444' }}>
-                Games Played: {stats.total_games}, Wins: {stats.wins}, Win Rate: {winRate}%
-              </p>
-            )}
-
-            <div className={styles.cardActions}>
-              <button onClick={() => recordGame(deck.id, 'win')} style={recordBtnStyle('#e6f9ec', '#1a7f37', '#b2e0c0')}>
-                <Trophy size={16} /> Record Win
-              </button>
-              <button onClick={() => recordGame(deck.id, 'loss')} style={recordBtnStyle('#ffecec', '#c52d2d', '#f5baba')}>
-                <XCircle size={16} /> Record Loss
-              </button>
-              <button onClick={() => setConfirmResetId(deck.id)} style={recordBtnStyle('#eef3fb', '#205493', '#bfd7f2')}>
-                <RotateCcw size={16} /> Reset Stats
+        {selectedCardImage && (
+          <div className={styles.modalOverlay} onClick={() => setSelectedCardImage(null)}>
+            <div className={styles.modalContent} onClick={(event) => event.stopPropagation()}>
+              <img src={selectedCardImage} alt="Card" style={{ maxWidth: '100%' }} />
+              <button
+                onClick={() => setSelectedCardImage(null)}
+                className={buttonStyles.button}
+                style={{ marginTop: '1rem', width: '100%' }}
+              >
+                Close
               </button>
             </div>
-
-            <button
-              onClick={() => toggleDeckCards(deck.id)}
-              style={{
-                marginTop: '1rem',
-                padding: '6px 12px',
-                background: '#eaf2ff',
-                color: '#205493',
-                border: '1px solid #a5c5f5',
-                borderRadius: 6,
-                cursor: 'pointer',
-                fontWeight: 500,
-                fontSize: '0.9rem',
-              }}
-            >
-              {expandedDecks[deck.id] ? 'Hide Cards' : 'View Cards'}
-            </button>
-
-            {expandedDecks[deck.id] && (
-              <ol style={{ columns: 2, paddingLeft: 20, marginTop: '1rem' }}>
-                {expandedDecks[deck.id].map((card) => (
-                  <li
-                    key={card.id}
-                    onClick={() => card.cards?.image && setSelectedCardImage(card.cards.image)}
-                    style={{
-                      cursor: card.cards?.image ? 'pointer' : 'default',
-                      textDecoration: card.cards?.image ? 'underline' : 'none',
-                      marginBottom: '0.5rem',
-                    }}
-                  >
-                    {card.cards?.name ?? '(Unknown Card)'}
-                  </li>
-                ))}
-              </ol>
-            )}
           </div>
-        )
-      })}
-
-      {/* Modals */}
-      {confirmDeleteId && (
-        <div style={modalStyle}>
-          <p style={{ marginBottom: 12, fontWeight: 'bold', fontSize: '1rem', color: '#222' }}>
-            Are you sure you want to delete this deck?
-          </p>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-            <button
-              onClick={() => handleDeleteDeck(confirmDeleteId)}
-              style={{ ...confirmBtnStyle, background: 'red', color: 'white' }}
-            >
-              Yes, delete
-            </button>
-            <button
-              onClick={() => setConfirmDeleteId(null)}
-              style={{ ...confirmBtnStyle, background: '#ccc', color: '#000' }}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-
-      {confirmResetId && (
-        <div style={modalStyle}>
-          <p style={{ marginBottom: 12, fontWeight: 'bold', fontSize: '1rem', color: '#222' }}>
-            Reset all recorded games for this deck?
-          </p>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-            <button
-              onClick={() => resetGameStats(confirmResetId)}
-              style={{ ...confirmBtnStyle, background: '#205493', color: 'white' }}
-            >
-              Yes, reset
-            </button>
-            <button
-              onClick={() => setConfirmResetId(null)}
-              style={{ ...confirmBtnStyle, background: '#ccc', color: '#000' }}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-
-      {selectedCardImage && (
-        <div
-          onClick={() => setSelectedCardImage(null)}
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100vw',
-            height: '100vh',
-            backgroundColor: 'rgba(0,0,0,0.7)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 1100,
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: '#fff',
-              padding: '1rem',
-              borderRadius: 8,
-              maxWidth: '90vw',
-              maxHeight: '90vh',
-              overflow: 'auto',
-            }}
-          >
-            <img src={selectedCardImage} alt="Card" style={{ maxWidth: '100%' }} />
-            <button
-              onClick={() => setSelectedCardImage(null)}
-              style={{
-                display: 'block',
-                margin: '1rem auto 0',
-                padding: '6px 12px',
-                background: '#333',
-                color: '#fff',
-                borderRadius: 4,
-                cursor: 'pointer',
-              }}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
-}
-
-const recordBtnStyle = (bg: string, color: string, border: string) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '6px',
-  padding: '6px 10px',
-  background: bg,
-  color: color,
-  border: `1px solid ${border}`,
-  borderRadius: 6,
-  cursor: 'pointer',
-  fontSize: '0.9rem',
-})
-
-const modalStyle = {
-  position: 'fixed' as const,
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  background: '#fff',
-  border: '1px solid #ccc',
-  borderRadius: 8,
-  padding: '1rem 1.5rem',
-  boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-  zIndex: 1000,
-  minWidth: 300,
-}
-
-const confirmBtnStyle = {
-  border: 'none',
-  padding: '6px 12px',
-  borderRadius: 4,
-  cursor: 'pointer',
 }

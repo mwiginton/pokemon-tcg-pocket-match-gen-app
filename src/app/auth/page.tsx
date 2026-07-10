@@ -100,6 +100,7 @@ export default function AuthPage() {
         <main className={styles.main}>
           <div className={styles.card}>
             <Image src="/logo.svg" alt="Logo" width={64} height={64} className={styles.logo} />
+            <p className={styles.eyebrow}>BattleLedger</p>
             <h1 className={styles.title}>Loading your session...</h1>
             <div className={styles.spinner}></div>
           </div>
@@ -115,8 +116,9 @@ export default function AuthPage() {
         <main className={styles.main}>
           <div className={styles.card}>
             <Image src="/logo.svg" alt="Logo" width={64} height={64} className={styles.logo} />
+            <p className={styles.eyebrow}>Account setup</p>
             <h1 className={styles.title}>Check your email</h1>
-            <p style={{ textAlign: 'center', marginTop: '1rem', color: '#444' }}>
+            <p className={styles.bodyText}>
               A confirmation link has been sent to <strong>{email}</strong>.<br />
               Click the link in your inbox to verify your account before signing in.
             </p>
@@ -125,15 +127,7 @@ export default function AuthPage() {
                 setConfirmationSent(false)
                 setMode('signIn')
               }}
-              style={{
-                marginTop: '1.5rem',
-                backgroundColor: '#0070f3',
-                color: '#fff',
-                padding: '0.75rem 1rem',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-              }}
+              className={styles.primaryButton}
             >
               Back to Sign In
             </button>
@@ -149,6 +143,7 @@ export default function AuthPage() {
       <main className={styles.main}>
         <div className={styles.card}>
           <Image src="/logo.svg" alt="Logo" width={64} height={64} className={styles.logo} />
+          <p className={styles.eyebrow}>BattleLedger account</p>
           <h1 className={styles.title}>
             {user
               ? `Welcome, ${user.email}`
@@ -192,20 +187,14 @@ export default function AuthPage() {
                 </button>
               </form>
 
-              <p style={{ fontSize: '14px', textAlign: 'center', color: '#555' }}>
+              <p className={styles.switchText}>
                 {mode === 'signIn' ? (
                   <>
                     Don&apos;t have an account?{' '}
                     <button
                       type="button"
                       onClick={() => setMode('signUp')}
-                      style={{
-                        color: '#0070f3',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontWeight: 500,
-                      }}
+                      className={styles.linkButton}
                     >
                       Sign up
                     </button>
@@ -216,13 +205,7 @@ export default function AuthPage() {
                     <button
                       type="button"
                       onClick={() => setMode('signIn')}
-                      style={{
-                        color: '#0070f3',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontWeight: 500,
-                      }}
+                      className={styles.linkButton}
                     >
                       Sign in
                     </button>

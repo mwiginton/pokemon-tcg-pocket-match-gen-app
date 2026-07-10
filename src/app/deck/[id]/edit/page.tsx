@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
+import Link from 'next/link'
 import { client } from '@/lib/neonClient'
 import { getAuthenticatedUser } from '@/lib/authUser'
 import styles from '@/styles/layout.module.css'
 import buttonStyles from '@/styles/button.module.css'
 import DeckCardBuilder, { DeckCardEntry } from '@/components/DeckCardBuilder'
+import { Home } from 'lucide-react'
 
 type DeckCardQueryRow = {
   card_id: string
@@ -184,8 +186,10 @@ export default function EditDeckPage() {
   if (loading) {
     return (
       <div className={styles.page}>
-        <div className={styles.card}>
-          <p>Loading deck...</p>
+        <div className={styles.shell}>
+          <div className={styles.panel}>
+            <p className={styles.emptyText}>Loading deck...</p>
+          </div>
         </div>
       </div>
     )
@@ -195,8 +199,20 @@ export default function EditDeckPage() {
 
   return (
     <div className={`${styles.page} ${styles.deckBuilderPage}`}>
-      <div className={styles.card}>
-        <h1 className={styles.header}>Edit Deck</h1>
+      <div className={styles.shell}>
+        <header className={styles.hero}>
+          <div className={styles.heroCopy}>
+            <Link href="/deck/list" className={styles.backLink}>
+              <Home size={16} />
+              Back to Decks
+            </Link>
+            <p className={styles.eyebrow}>Deck builder</p>
+            <h1 className={styles.pageTitle}>Edit deck</h1>
+            <p className={styles.pageIntro}>Update your deck name or revise the 20-card list.</p>
+          </div>
+        </header>
+
+        <div className={styles.card}>
 
         <label htmlFor="deckName" className={styles.label}>Deck Name</label>
         <input
@@ -224,6 +240,7 @@ export default function EditDeckPage() {
           disabled={saving}
           duplicateErrors={duplicateErrors}
         />
+      </div>
       </div>
 
       {/* Floating Save / Cancel buttons */}
