@@ -619,6 +619,41 @@
   gap: 0.75rem;
 }
 
+.insightGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0.65rem;
+}
+
+.insightMini {
+  min-width: 0;
+  padding: 0.65rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.insightMiniValue,
+.insightMiniLabel {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.insightMiniValue {
+  color: #111827;
+  font-size: 0.98rem;
+  font-weight: 800;
+}
+
+.insightMiniLabel {
+  margin-top: 0.2rem;
+  color: #6b7280;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
 .statMini {
   padding: 0.75rem;
 }
@@ -721,6 +756,160 @@
 .modalDialog {
   width: min(100%, 420px);
   padding: 1.25rem;
+}
+
+.modalDialogWide {
+  width: min(100%, 760px);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.iconOnlyButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #374151;
+  cursor: pointer;
+}
+
+.iconOnlyButton:hover {
+  background: #f8fbff;
+}
+
+.resultSummary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  background: #fafafa;
+  color: #111827;
+  font-weight: 800;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.fieldBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.labelWithIcon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #374151;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.segmentedControl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  min-height: 42px;
+}
+
+.choiceButton {
+  min-height: 38px;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #374151;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.choiceButton:hover {
+  background: #f8fbff;
+}
+
+.choiceButtonActive {
+  border-color: #2563eb;
+  background: #eef6ff;
+  color: #205493;
+}
+
+.checkPanel {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 72px;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.checkPanel input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: #2563eb;
+}
+
+.checkPanel strong,
+.checkPanel small {
+  display: block;
+}
+
+.checkPanel strong {
+  color: #111827;
+  font-size: 0.95rem;
+}
+
+.checkPanel small {
+  margin-top: 0.15rem;
+  color: #6b7280;
+  line-height: 1.35;
+}
+
+.checkPanelActive {
+  border-color: #2563eb;
+  background: #f8fbff;
+}
+
+.textarea {
+  width: 100%;
+  resize: vertical;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: #333333;
+  font: inherit;
+  line-height: 1.4;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
 }
 
 .modalActions {
@@ -854,6 +1043,8 @@
   }
 
   .statStrip,
+  .insightGrid,
+  .formGrid,
   .matchGrid,
   .landingfeatures {
     grid-template-columns: 1fr;

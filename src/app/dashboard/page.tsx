@@ -34,6 +34,11 @@ type DeckGame = {
   deck_id: string
   result: 'win' | 'loss'
   created_at: string
+  opponent_archetype: string | null
+  turns_played: number | null
+  close_game: boolean | null
+  mvp_card: string | null
+  notes: string | null
 }
 
 type DeckPerformance = {
@@ -102,7 +107,7 @@ export default function Dashboard() {
 
       const { data: gamesData, error: gamesError } = await client
         .from('deck_games')
-        .select('deck_id, result, created_at')
+        .select('deck_id, result, created_at, opponent_archetype, turns_played, close_game, mvp_card, notes')
         .eq('user_id', currentUser.id)
         .order('created_at', { ascending: false })
 
@@ -295,7 +300,21 @@ export default function Dashboard() {
                         <span className={`${styles.resultPill} ${game.result === 'win' ? styles.win : styles.loss}`}>
                           {game.result}
                         </span>
-                        <span className={styles.recentDeck}>{deckNames.get(game.deck_id) ?? 'Unknown deck'}</span>
+                        <span className={styles.recentDeck}>
+                          {deckNames.get(game.deck_id) ?? 'Unknown deck'}
+                          {game.opponent_archetype && (
+                            <span className={styles.recentDetail}> vs {game.opponent_archetype}</span>
+                          )}
+                          {(game.turns_played || game.mvp_card || game.close_game) && (
+                            <span className={styles.recentSubdetail}>
+                              {game.turns_played ? `${game.turns_played} turns` : ''}
+                              {game.turns_played && (game.mvp_card || game.close_game) ? ' | ' : ''}
+                              {game.mvp_card ? `MVP: ${game.mvp_card}` : ''}
+                              {game.mvp_card && game.close_game ? ' | ' : ''}
+                              {game.close_game ? 'close' : ''}
+                            </span>
+                          )}
+                        </span>
                         <span className={styles.recentDate}>{formatDate(game.created_at)}</span>
                       </li>
                     ))}

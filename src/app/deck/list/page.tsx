@@ -6,6 +6,12 @@ import { getAuthenticatedUser } from '@/lib/authUser'
 import Link from 'next/link'
 import styles from '@/styles/layout.module.css'
 import buttonStyles from '@/styles/button.module.css'
+import GameLogDialog, {
+  GameLogDetails,
+  GameResult,
+  PlayerOrder,
+  SetupStatus,
+} from '@/components/GameLogDialog'
 import {
   BookMarked,
   Home,
@@ -41,9 +47,50 @@ type DeckCardQueryRow = Omit<DeckCard, 'cards'> & {
 type DeckStats = {
   total_games: number
   wins: number
+  close_games: number
+  average_turns: number | null
+  setup_by_turn_2: number
+  setup_by_turn_3: number
+  setup_tracked: number
+  first_games: number
+  first_wins: number
+  second_games: number
+  second_wins: number
+  top_opponent: string | null
+  top_mvp: string | null
+}
+
+type DeckGameRow = {
+  deck_id: string
+  result: GameResult
+  opponent_archetype: string | null
+  player_order: PlayerOrder | null
+  turns_played: number | null
+  close_game: boolean | null
+  setup_status: SetupStatus | null
+  mvp_card: string | null
 }
 
 const maxDecks = 10
+
+const createEmptyStats = (): DeckStats => ({
+  total_games: 0,
+  wins: 0,
+  close_games: 0,
+  average_turns: null,
+  setup_by_turn_2: 0,
+  setup_by_turn_3: 0,
+  setup_tracked: 0,
+  first_games: 0,
+  first_wins: 0,
+  second_games: 0,
+  second_wins: 0,
+  top_opponent: null,
+  top_mvp: null,
+})
+
+const getTopEntry = (counts: Record<string, number>) =>
+  Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null
 
 export default function DeckListPage() {
   const [decks, setDecks] = useState<Deck[]>([])
@@ -54,6 +101,13 @@ export default function DeckListPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [confirmResetId, setConfirmResetId] = useState<string | null>(null)
   const [selectedCardImage, setSelectedCardImage] = useState<string | null>(null)
+  const [gameLogTarget, setGameLogTarget] = useState<{
+    deckId: string
+    deckName: string
+    result: GameResult
+  } | null>(null)
+  const [gameLogCardOptions, setGameLogCardOptions] = useState<string[]>([])
+  const [isRecordingGame, setIsRecordingGame] = useState(false)
 
   useEffect(() => {
     const fetchDecksAndStats = async () => {
@@ -95,39 +149,134 @@ export default function DeckListPage() {
 
     const { data: gamesData, error: gamesError } = await client
       .from('deck_games')
-      .select('deck_id, result')
+      .select('deck_id, result, opponent_archetype, player_order, turns_played, close_game, setup_status, mvp_card')
       .in('deck_id', deckIds)
 
     if (gamesError) {
       setError(gamesError.message)
     } else {
       const statsMap: Record<string, DeckStats> = {}
-      deckIds.forEach((id) => (statsMap[id] = { total_games: 0, wins: 0 }))
-      gamesData?.forEach(({ deck_id, result }) => {
-        statsMap[deck_id].total_games++
-        if (result === 'win') statsMap[deck_id].wins++
+      const turnTotals: Record<string, { total: number; count: number }> = {}
+      const opponentCounts: Record<string, Record<string, number>> = {}
+      const mvpCounts: Record<string, Record<string, number>> = {}
+
+      deckIds.forEach((id) => {
+        statsMap[id] = createEmptyStats()
+        turnTotals[id] = { total: 0, count: 0 }
+        opponentCounts[id] = {}
+        mvpCounts[id] = {}
       })
+
+      ;((gamesData ?? []) as DeckGameRow[]).forEach((game) => {
+        const stats = statsMap[game.deck_id]
+        if (!stats) return
+
+        stats.total_games++
+        if (game.result === 'win') stats.wins++
+        if (game.close_game) stats.close_games++
+
+        if (game.turns_played) {
+          turnTotals[game.deck_id].total += game.turns_played
+          turnTotals[game.deck_id].count++
+        }
+
+        if (game.setup_status && game.setup_status !== 'unknown') {
+          stats.setup_tracked++
+          if (game.setup_status === 'turn_2') stats.setup_by_turn_2++
+          if (game.setup_status === 'turn_2' || game.setup_status === 'turn_3') {
+            stats.setup_by_turn_3++
+          }
+        }
+
+        if (game.player_order === 'first') {
+          stats.first_games++
+          if (game.result === 'win') stats.first_wins++
+        }
+
+        if (game.player_order === 'second') {
+          stats.second_games++
+          if (game.result === 'win') stats.second_wins++
+        }
+
+        if (game.opponent_archetype) {
+          opponentCounts[game.deck_id][game.opponent_archetype] =
+            (opponentCounts[game.deck_id][game.opponent_archetype] ?? 0) + 1
+        }
+
+        if (game.mvp_card) {
+          mvpCounts[game.deck_id][game.mvp_card] =
+            (mvpCounts[game.deck_id][game.mvp_card] ?? 0) + 1
+        }
+      })
+
+      deckIds.forEach((id) => {
+        const turns = turnTotals[id]
+        statsMap[id].average_turns =
+          turns.count > 0 ? Math.round((turns.total / turns.count) * 10) / 10 : null
+        statsMap[id].top_opponent = getTopEntry(opponentCounts[id])
+        statsMap[id].top_mvp = getTopEntry(mvpCounts[id])
+      })
+
       setDeckStats((prev) => ({ ...prev, ...statsMap }))
     }
   }
 
-  const recordGame = async (deckId: string, result: 'win' | 'loss') => {
+  const loadDeckCardNames = async (deckId: string) => {
+    const { data, error } = await client
+      .from('deck_cards')
+      .select('cards(name)')
+      .eq('deck_id', deckId)
+      .order('card_index', { ascending: true })
+
+    if (error) {
+      setGameLogCardOptions([])
+      return
+    }
+
+    const names = ((data || []) as { cards: { name?: string | null } | { name?: string | null }[] | null }[])
+      .map((entry) => {
+        const card = Array.isArray(entry.cards) ? entry.cards[0] : entry.cards
+        return card?.name ?? ''
+      })
+      .filter(Boolean)
+
+    setGameLogCardOptions(names)
+  }
+
+  const openGameLogger = async (deck: Deck, result: GameResult) => {
+    setGameLogTarget({ deckId: deck.id, deckName: deck.deck_name, result })
+    setGameLogCardOptions([])
+    await loadDeckCardNames(deck.id)
+  }
+
+  const recordGame = async (details: GameLogDetails) => {
+    if (!gameLogTarget) return
     const { user } = await getAuthenticatedUser()
     if (!user) {
       alert('You must be logged in.')
       return
     }
 
+    setIsRecordingGame(true)
     const { error } = await client.from('deck_games').insert({
-      deck_id: deckId,
-      result,
+      deck_id: gameLogTarget.deckId,
+      result: details.result,
       user_id: user.id,
+      opponent_archetype: details.opponent_archetype,
+      player_order: details.player_order,
+      turns_played: details.turns_played,
+      close_game: details.close_game,
+      setup_status: details.setup_status,
+      mvp_card: details.mvp_card,
+      notes: details.notes,
     })
+    setIsRecordingGame(false)
 
     if (error) {
       alert('Error recording game: ' + error.message)
     } else {
-      await refreshDeckStats([deckId])
+      await refreshDeckStats([gameLogTarget.deckId])
+      setGameLogTarget(null)
     }
   }
 
@@ -248,6 +397,21 @@ export default function DeckListPage() {
             const totalGames = stats?.total_games ?? 0
             const wins = stats?.wins ?? 0
             const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0
+            const averageTurns = stats?.average_turns ? `${stats.average_turns}` : 'No data'
+            const setupLabel = stats && stats.setup_tracked > 0
+              ? `${Math.round((stats.setup_by_turn_3 / stats.setup_tracked) * 100)}%`
+              : 'No data'
+            const closeGameLabel = stats && stats.close_games > 0 ? `${stats.close_games}` : 'None'
+            const turnOrderLabel = stats
+              ? [
+                  stats.first_games > 0
+                    ? `1st ${Math.round((stats.first_wins / stats.first_games) * 100)}%`
+                    : null,
+                  stats.second_games > 0
+                    ? `2nd ${Math.round((stats.second_wins / stats.second_games) * 100)}%`
+                    : null,
+                ].filter(Boolean).join(' / ') || 'No data'
+              : 'No data'
 
             return (
               <article key={deck.id} className={`${styles.card} ${styles.wideCard}`}>
@@ -291,16 +455,45 @@ export default function DeckListPage() {
                   </div>
                 </div>
 
+                {totalGames > 0 && (
+                  <div className={styles.insightGrid} aria-label={`${deck.deck_name} match details`}>
+                    <div className={styles.insightMini}>
+                      <span className={styles.insightMiniValue}>{averageTurns}</span>
+                      <span className={styles.insightMiniLabel}>Avg turns</span>
+                    </div>
+                    <div className={styles.insightMini}>
+                      <span className={styles.insightMiniValue}>{closeGameLabel}</span>
+                      <span className={styles.insightMiniLabel}>Close games</span>
+                    </div>
+                    <div className={styles.insightMini}>
+                      <span className={styles.insightMiniValue}>{setupLabel}</span>
+                      <span className={styles.insightMiniLabel}>Setup by T3</span>
+                    </div>
+                    <div className={styles.insightMini}>
+                      <span className={styles.insightMiniValue}>{turnOrderLabel}</span>
+                      <span className={styles.insightMiniLabel}>First/second</span>
+                    </div>
+                    <div className={styles.insightMini}>
+                      <span className={styles.insightMiniValue}>{stats?.top_opponent ?? 'No data'}</span>
+                      <span className={styles.insightMiniLabel}>Common opponent</span>
+                    </div>
+                    <div className={styles.insightMini}>
+                      <span className={styles.insightMiniValue}>{stats?.top_mvp ?? 'No data'}</span>
+                      <span className={styles.insightMiniLabel}>Top MVP</span>
+                    </div>
+                  </div>
+                )}
+
                 <div className={styles.cardActions}>
                   <button
-                    onClick={() => recordGame(deck.id, 'win')}
+                    onClick={() => openGameLogger(deck, 'win')}
                     className={`${styles.iconButton} ${styles.win}`}
                   >
                     <Trophy size={16} />
                     Record Win
                   </button>
                   <button
-                    onClick={() => recordGame(deck.id, 'loss')}
+                    onClick={() => openGameLogger(deck, 'loss')}
                     className={`${styles.iconButton} ${styles.loss}`}
                   >
                     <XCircle size={16} />
@@ -386,6 +579,17 @@ export default function DeckListPage() {
               </div>
             </div>
           </div>
+        )}
+
+        {gameLogTarget && (
+          <GameLogDialog
+            deckName={gameLogTarget.deckName}
+            result={gameLogTarget.result}
+            cardOptions={gameLogCardOptions}
+            isSaving={isRecordingGame}
+            onClose={() => setGameLogTarget(null)}
+            onSubmit={recordGame}
+          />
         )}
 
         {selectedCardImage && (

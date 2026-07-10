@@ -42,6 +42,7 @@ Run these files in order from the Neon SQL Editor:
 38. `038_seed_solo_battles_pulsing_aura.sql`
 39. `039_seed_solo_battles_paradox_drive.sql`
 40. `040_fix_neon_auth_rls_user_id.sql`
+41. `041_add_deck_game_details.sql`
 
 The schema script creates the application tables and indexes. The RLS script enables row-level security, grants Data API roles access, and adds policies for Neon Auth users.
 
@@ -118,3 +119,5 @@ The Pulsing Aura solo battles seed script replaces the `solo_battles` lookup row
 The Paradox Drive solo battles seed script replaces the `solo_battles` lookup rows for all 16 permanent Paradox Drive solo battles.
 
 Shared lookup tables (`cards` and `solo_battles`) are readable by both anonymous and authenticated users. User-owned tables (`decks`, `deck_cards`, and `deck_games`) are restricted to the current Neon Auth user via `public.current_neon_auth_user_id()`, which reads the Data API JWT subject from PostgREST request settings.
+
+The deck game details migration adds optional fields for opponent archetype, first/second turn order, turns played, close-game flag, setup timing, MVP card, and notes.

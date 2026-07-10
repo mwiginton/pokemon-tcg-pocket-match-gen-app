@@ -5,6 +5,7 @@ import { client } from '@/lib/neonClient'
 import { getAuthenticatedUser } from '@/lib/authUser'
 import styles from '@/styles/layout.module.css'
 import buttonStyles from '@/styles/button.module.css'
+import GameLogDialog, { GameLogDetails, GameResult } from '@/components/GameLogDialog'
 import { Dice3, Home, Loader2, Trophy, XCircle } from 'lucide-react'
 import Link from 'next/link'
 
@@ -33,6 +34,7 @@ export default function RandomBattlePage() {
   const [showDeckModal, setShowDeckModal] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
   const [soloBattles, setSoloBattles] = useState<BattlesGrouped>({})
+  const [gameLogResult, setGameLogResult] = useState<GameResult | null>(null)
 
   const closeDeckModal = () => setShowDeckModal(false)
 
@@ -95,7 +97,7 @@ export default function RandomBattlePage() {
     setDeckStats((prev) => ({ ...prev, [deckId]: stats }))
   }
 
-  const loadDeckCards = async (deckId: string) => {
+  const loadDeckCards = async (deckId: string, openModal = true) => {
     const { data, error } = await client
       .from('deck_cards')
       .select('card_id, card_index, cards(name, pack)')
@@ -123,10 +125,17 @@ export default function RandomBattlePage() {
     })
 
     setDeckCards(formatted)
-    setShowDeckModal(true)
+    if (openModal) setShowDeckModal(true)
+    return formatted
   }
 
-  const recordGame = async (result: 'win' | 'loss') => {
+  const openGameLogger = async (result: GameResult) => {
+    if (!match) return
+    setGameLogResult(result)
+    await loadDeckCards(match.player_deck.id, false)
+  }
+
+  const recordGame = async (details: GameLogDetails) => {
     if (!match) return
     setIsRecording(true)
     try {
@@ -138,12 +147,23 @@ export default function RandomBattlePage() {
 
       const { error } = await client.from('deck_games').insert({
         deck_id: match.player_deck.id,
-        result,
+        result: details.result,
         user_id: user.id,
+        opponent_archetype: details.opponent_archetype,
+        player_order: details.player_order,
+        turns_played: details.turns_played,
+        close_game: details.close_game,
+        setup_status: details.setup_status,
+        mvp_card: details.mvp_card,
+        notes: details.notes,
       })
 
-      if (error) setError('Error recording game: ' + error.message)
-      else await refreshDeckStats(match.player_deck.id)
+      if (error) {
+        setError('Error recording game: ' + error.message)
+      } else {
+        await refreshDeckStats(match.player_deck.id)
+        setGameLogResult(null)
+      }
     } finally {
       setIsRecording(false)
     }
@@ -276,7 +296,7 @@ export default function RandomBattlePage() {
 
               <div className={styles.cardActions}>
                 <button
-                  onClick={() => recordGame('win')}
+                  onClick={() => openGameLogger('win')}
                   disabled={isRecording}
                   type="button"
                   className={`${styles.iconButton} ${styles.win}`}
@@ -286,7 +306,7 @@ export default function RandomBattlePage() {
                 </button>
 
                 <button
-                  onClick={() => recordGame('loss')}
+                  onClick={() => openGameLogger('loss')}
                   disabled={isRecording}
                   type="button"
                   className={`${styles.iconButton} ${styles.loss}`}
@@ -343,6 +363,18 @@ export default function RandomBattlePage() {
               </button>
             </div>
           </div>
+        )}
+
+        {match && gameLogResult && (
+          <GameLogDialog
+            deckName={match.player_deck.deck_name}
+            result={gameLogResult}
+            defaultOpponent={match.solo_battle.deck}
+            cardOptions={deckCards.map((card) => card.name).filter(Boolean)}
+            isSaving={isRecording}
+            onClose={() => setGameLogResult(null)}
+            onSubmit={recordGame}
+          />
         )}
       </div>
     </div>

@@ -37,6 +37,13 @@ create table if not exists public.deck_games (
   deck_id uuid not null references public.decks(id) on delete cascade,
   user_id uuid not null,
   result text not null check (result in ('win', 'loss')),
+  opponent_archetype text,
+  player_order text check (player_order in ('first', 'second')),
+  turns_played integer check (turns_played is null or turns_played > 0),
+  close_game boolean not null default false,
+  setup_status text check (setup_status in ('turn_2', 'turn_3', 'missed', 'unknown')),
+  mvp_card text,
+  notes text,
   created_at timestamptz not null default now()
 );
 
@@ -55,8 +62,14 @@ create index if not exists deck_cards_deck_id_card_index_idx
 create index if not exists deck_games_deck_id_idx
   on public.deck_games(deck_id);
 
+create index if not exists deck_games_deck_id_created_at_idx
+  on public.deck_games(deck_id, created_at desc);
+
 create index if not exists deck_games_user_id_idx
   on public.deck_games(user_id);
+
+create index if not exists deck_games_opponent_archetype_idx
+  on public.deck_games(opponent_archetype);
 
 create index if not exists cards_name_idx
   on public.cards(name);
