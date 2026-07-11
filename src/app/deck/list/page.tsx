@@ -14,6 +14,7 @@ import GameLogDialog, {
 } from '@/components/GameLogDialog'
 import {
   BookMarked,
+  ChevronDown,
   Home,
   Pencil,
   PlusCircle,
@@ -91,6 +92,7 @@ const getWinRate = (wins: number, totalGames: number) =>
 export default function DeckListPage() {
   const [decks, setDecks] = useState<Deck[]>([])
   const [deckStats, setDeckStats] = useState<Record<string, DeckStats>>({})
+  const [expandedDeckDetails, setExpandedDeckDetails] = useState<Record<string, boolean>>({})
   const [expandedDecks, setExpandedDecks] = useState<Record<string, DeckCard[]>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -295,6 +297,13 @@ export default function DeckListPage() {
     setExpandedDecks((prev) => ({ ...prev, [deckId]: deckCards }))
   }
 
+  const toggleDeckDetails = (deckId: string) => {
+    setExpandedDeckDetails((prev) => ({
+      ...prev,
+      [deckId]: !prev[deckId],
+    }))
+  }
+
   const handleDeleteDeck = async (deckId: string) => {
     const { error: gamesError } = await client.from('deck_games').delete().eq('deck_id', deckId)
     if (gamesError) {
@@ -314,11 +323,16 @@ export default function DeckListPage() {
       delete copy[deckId]
       return copy
     })
+    setExpandedDeckDetails((prev) => {
+      const copy = { ...prev }
+      delete copy[deckId]
+      return copy
+    })
     setConfirmDeleteId(null)
   }
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} ${styles.deckListPage}`}>
       <div className={styles.shell}>
         <header className={styles.hero}>
           <div className={styles.heroCopy}>
@@ -345,7 +359,11 @@ export default function DeckListPage() {
 
         {error && <p className={styles.errorText}>{error}</p>}
 
-        <section className={styles.panel}>
+        <section
+          className={`${styles.panel} ${styles.deckOverviewPanel} ${
+            !loading && decks.length > 0 ? styles.deckOverviewPanelCompact : ''
+          }`}
+        >
           <div className={styles.panelHeader}>
             <div className={styles.headerWithIcon}>
               <BookMarked size={24} strokeWidth={2} />
@@ -376,6 +394,9 @@ export default function DeckListPage() {
             const overallWinRate = getWinRate(stats?.wins ?? 0, totalGames)
             const soloWinRate = stats ? getWinRate(stats.solo_wins, stats.solo_games) : 'No data'
             const pvpWinRate = stats ? getWinRate(stats.pvp_wins, stats.pvp_games) : 'No data'
+            const isDeckExpanded = expandedDeckDetails[deck.id] ?? false
+            const deckDetailsId = `deck-details-${deck.id}`
+            const deckTitleId = `deck-title-${deck.id}`
             const turnOrderLabel = stats
               ? [
                   stats.first_games > 0
@@ -388,109 +409,142 @@ export default function DeckListPage() {
               : 'No data'
 
             return (
-              <article key={deck.id} className={`${styles.card} ${styles.wideCard}`}>
-                <div className={styles.deckCardHeader}>
-                  <div>
-                    <h2 className={styles.deckTitle}>{deck.deck_name}</h2>
-                    <p className={styles.metaText}>
-                      Created {new Date(deck.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className={styles.buttonGroup}>
-                    <Link
-                      href={`/deck/${deck.id}/edit`}
-                      className={`${styles.iconButton} ${styles.iconButtonEdit}`}
-                    >
-                      <Pencil size={16} />
-                      <span>Edit</span>
-                    </Link>
-                    <button
-                      onClick={() => setConfirmDeleteId(deck.id)}
-                      className={`${styles.iconButton} ${styles.iconButtonDelete}`}
-                    >
-                      <Trash2 size={16} />
-                      <span>Delete</span>
-                    </button>
-                  </div>
-                </div>
+              <article key={deck.id} className={`${styles.card} ${styles.wideCard} ${styles.deckLibraryCard}`}>
+                <button
+                  type="button"
+                  className={styles.deckSummaryButton}
+                  onClick={() => toggleDeckDetails(deck.id)}
+                  aria-expanded={isDeckExpanded}
+                  aria-controls={deckDetailsId}
+                  aria-label={`${isDeckExpanded ? 'Collapse' : 'Expand'} ${deck.deck_name}. ${totalGames} games, ${overallWinRate} overall win rate.`}
+                >
+                  <span className={styles.deckSummaryMain}>
+                    <span className={styles.deckSummaryCopy}>
+                      <span id={deckTitleId} className={styles.deckTitleText} role="heading" aria-level={2}>
+                        {deck.deck_name}
+                      </span>
+                      <span className={styles.metaText}>
+                        Created {new Date(deck.created_at).toLocaleDateString()}
+                      </span>
+                    </span>
+                    <span className={styles.deckSummaryStats} aria-hidden="true">
+                      <span className={styles.deckSummaryMetric}>
+                        <strong>{totalGames}</strong>
+                        <span>games</span>
+                      </span>
+                      <span className={styles.deckSummaryMetric}>
+                        <strong>{overallWinRate}</strong>
+                        <span>win rate</span>
+                      </span>
+                    </span>
+                  </span>
+                  <span className={styles.deckSummaryToggle}>
+                    <span>{isDeckExpanded ? 'Hide details' : 'Show details'}</span>
+                    <ChevronDown
+                      size={18}
+                      className={`${styles.chevronIcon} ${isDeckExpanded ? styles.chevronIconOpen : ''}`}
+                    />
+                  </span>
+                </button>
 
-                <div className={styles.statStrip}>
-                  <div className={styles.statMini}>
-                    <span className={styles.statMiniValue}>{totalGames}</span>
-                    <span className={styles.statMiniLabel}>Games played</span>
-                  </div>
-                  <div className={styles.statMini}>
-                    <span className={styles.statMiniValue}>{overallWinRate}</span>
-                    <span className={styles.statMiniLabel}>Overall win rate</span>
-                  </div>
-                  <div className={styles.statMini}>
-                    <span className={styles.statMiniValue}>{soloWinRate}</span>
-                    <span className={styles.statMiniLabel}>Solo win rate</span>
-                  </div>
-                  <div className={styles.statMini}>
-                    <span className={styles.statMiniValue}>{pvpWinRate}</span>
-                    <span className={styles.statMiniLabel}>PvP win rate</span>
-                  </div>
-                </div>
-
-                {totalGames > 0 && (
-                  <div className={styles.insightGrid} aria-label={`${deck.deck_name} match details`}>
-                    <div className={styles.insightMini}>
-                      <span className={styles.insightMiniValue}>{turnOrderLabel}</span>
-                      <span className={styles.insightMiniLabel}>First/second</span>
+                {isDeckExpanded && (
+                  <div id={deckDetailsId} className={styles.deckDetailsPanel}>
+                    <div className={styles.buttonGroup}>
+                      <Link
+                        href={`/deck/${deck.id}/edit`}
+                        className={`${styles.iconButton} ${styles.iconButtonEdit}`}
+                      >
+                        <Pencil size={16} />
+                        <span>Edit</span>
+                      </Link>
+                      <button
+                        onClick={() => setConfirmDeleteId(deck.id)}
+                        className={`${styles.iconButton} ${styles.iconButtonDelete}`}
+                      >
+                        <Trash2 size={16} />
+                        <span>Delete</span>
+                      </button>
                     </div>
-                    <div className={styles.insightMini}>
-                      <span className={styles.insightMiniValue}>{stats?.top_opponent ?? 'No data'}</span>
-                      <span className={styles.insightMiniLabel}>Common opponent</span>
+
+                    <div className={styles.statStrip}>
+                      <div className={styles.statMini}>
+                        <span className={styles.statMiniValue}>{totalGames}</span>
+                        <span className={styles.statMiniLabel}>Games played</span>
+                      </div>
+                      <div className={styles.statMini}>
+                        <span className={styles.statMiniValue}>{overallWinRate}</span>
+                        <span className={styles.statMiniLabel}>Overall win rate</span>
+                      </div>
+                      <div className={styles.statMini}>
+                        <span className={styles.statMiniValue}>{soloWinRate}</span>
+                        <span className={styles.statMiniLabel}>Solo win rate</span>
+                      </div>
+                      <div className={styles.statMini}>
+                        <span className={styles.statMiniValue}>{pvpWinRate}</span>
+                        <span className={styles.statMiniLabel}>PvP win rate</span>
+                      </div>
                     </div>
+
+                    {totalGames > 0 && (
+                      <div className={styles.insightGrid} aria-label={`${deck.deck_name} match details`}>
+                        <div className={styles.insightMini}>
+                          <span className={styles.insightMiniValue}>{turnOrderLabel}</span>
+                          <span className={styles.insightMiniLabel}>First/second</span>
+                        </div>
+                        <div className={styles.insightMini}>
+                          <span className={styles.insightMiniValue}>{stats?.top_opponent ?? 'No data'}</span>
+                          <span className={styles.insightMiniLabel}>Common opponent</span>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className={styles.cardActions}>
+                      <button
+                        onClick={() => openGameLogger(deck, 'win')}
+                        className={`${styles.iconButton} ${styles.win}`}
+                      >
+                        <Trophy size={16} />
+                        Record Win
+                      </button>
+                      <button
+                        onClick={() => openGameLogger(deck, 'loss')}
+                        className={`${styles.iconButton} ${styles.loss}`}
+                      >
+                        <XCircle size={16} />
+                        Record Loss
+                      </button>
+                      <button
+                        onClick={() => setConfirmResetId(deck.id)}
+                        className={styles.backLink}
+                      >
+                        <RotateCcw size={16} />
+                        Reset Stats
+                      </button>
+                      <button
+                        onClick={() => toggleDeckCards(deck.id)}
+                        className={styles.backLink}
+                      >
+                        {expandedDecks[deck.id] ? 'Hide Cards' : 'View Cards'}
+                      </button>
+                    </div>
+
+                    {expandedDecks[deck.id] && (
+                      <ol className={styles.cardList}>
+                        {expandedDecks[deck.id].map((card) => (
+                          <li key={card.id}>
+                            <button
+                              type="button"
+                              onClick={() => card.cards?.image && setSelectedCardImage(card.cards.image)}
+                              className={styles.inlineLink}
+                              disabled={!card.cards?.image}
+                            >
+                              {card.cards?.name ?? '(Unknown Card)'}
+                            </button>
+                          </li>
+                        ))}
+                      </ol>
+                    )}
                   </div>
-                )}
-
-                <div className={styles.cardActions}>
-                  <button
-                    onClick={() => openGameLogger(deck, 'win')}
-                    className={`${styles.iconButton} ${styles.win}`}
-                  >
-                    <Trophy size={16} />
-                    Record Win
-                  </button>
-                  <button
-                    onClick={() => openGameLogger(deck, 'loss')}
-                    className={`${styles.iconButton} ${styles.loss}`}
-                  >
-                    <XCircle size={16} />
-                    Record Loss
-                  </button>
-                  <button
-                    onClick={() => setConfirmResetId(deck.id)}
-                    className={styles.backLink}
-                  >
-                    <RotateCcw size={16} />
-                    Reset Stats
-                  </button>
-                  <button
-                    onClick={() => toggleDeckCards(deck.id)}
-                    className={styles.backLink}
-                  >
-                    {expandedDecks[deck.id] ? 'Hide Cards' : 'View Cards'}
-                  </button>
-                </div>
-
-                {expandedDecks[deck.id] && (
-                  <ol className={styles.cardList}>
-                    {expandedDecks[deck.id].map((card) => (
-                      <li key={card.id}>
-                        <button
-                          type="button"
-                          onClick={() => card.cards?.image && setSelectedCardImage(card.cards.image)}
-                          className={styles.inlineLink}
-                          disabled={!card.cards?.image}
-                        >
-                          {card.cards?.name ?? '(Unknown Card)'}
-                        </button>
-                      </li>
-                    ))}
-                  </ol>
                 )}
               </article>
             )

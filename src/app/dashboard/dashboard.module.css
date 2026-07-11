@@ -66,6 +66,10 @@
   margin-top: 1rem;
 }
 
+.mobileQuickActions {
+  display: none;
+}
+
 .statTile,
 .panel,
 .nextActionPanel {
@@ -313,17 +317,97 @@
   }
 }
 
+@media (max-width: 640px) {
+  .mobileQuickActions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .mobileQuickActions a {
+    min-height: 40px;
+    padding: 0.45rem 0.35rem;
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+
+  .mobileQuickActions svg {
+    flex-shrink: 0;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .quickActions {
+    display: none;
+  }
+}
+
 @media (max-width: 520px) {
   .page {
     padding: 1rem;
+  }
+
+  .hero {
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
   }
 
   .header {
     font-size: 1.65rem;
   }
 
+  .userEmail {
+    font-size: 0.85rem;
+  }
+
   .statTile {
     min-height: auto;
+    gap: 0.45rem;
+    padding: 0.8rem;
+  }
+
+  .statValue {
+    font-size: 1.6rem;
+  }
+
+  .statLabel {
+    font-size: 0.82rem;
+    line-height: 1.15;
+  }
+
+  .statMeta {
+    font-size: 0.76rem;
+    line-height: 1.25;
+  }
+
+  .nextActionPanel,
+  .panel {
+    padding: 1rem;
+  }
+
+  .nextActionCopy h2 {
+    font-size: 1.1rem;
+  }
+
+  .nextActionCopy p,
+  .performanceCard p,
+  .emptyText {
+    font-size: 0.9rem;
+  }
+
+  .twoColumnGrid {
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+  }
+
+  .performanceCard {
+    padding: 0.75rem;
   }
 
   .recentItem {

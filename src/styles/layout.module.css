@@ -599,6 +599,15 @@
   width: 100%;
 }
 
+.deckOverviewPanel {
+  scroll-margin-top: 1rem;
+}
+
+.deckLibraryCard {
+  gap: 0;
+  overflow: hidden;
+}
+
 .deckCardHeader {
   display: flex;
   align-items: flex-start;
@@ -611,6 +620,114 @@
   color: #111827;
   font-size: 1.25rem;
   line-height: 1.2;
+}
+
+.deckSummaryButton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.deckSummaryButton:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.28);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+
+.deckSummaryButton:hover .deckTitleText {
+  color: #2563eb;
+}
+
+.deckSummaryMain {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.deckSummaryCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.deckTitleText {
+  overflow: hidden;
+  color: #111827;
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+}
+
+.deckSummaryStats {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.deckSummaryMetric {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  min-height: 34px;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fafafa;
+  color: #6b7280;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.deckSummaryMetric strong {
+  color: #111827;
+  font-size: 0.98rem;
+  line-height: 1;
+}
+
+.deckSummaryToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+  color: #205493;
+  font-size: 0.85rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.chevronIcon {
+  transition: transform 0.18s ease;
+}
+
+.chevronIconOpen {
+  transform: rotate(180deg);
+}
+
+.deckDetailsPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eef2f7;
 }
 
 .statStrip {
@@ -1061,6 +1178,26 @@
     padding: 1.25rem 0.75rem;
   }
 
+  .deckListPage .hero {
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .deckListPage .hero .backLink {
+    align-self: flex-start;
+    padding: 0.35rem 0.55rem;
+    font-size: 0.82rem;
+  }
+
+  .deckOverviewPanelCompact {
+    display: none;
+  }
+
+  .deckListPage .deckList {
+    gap: 0.75rem;
+  }
+
   .card,
   .panel {
     padding: 1rem;
@@ -1068,8 +1205,118 @@
     width: 100%;
   }
 
+  .deckLibraryCard {
+    gap: 0;
+    padding: 0.85rem;
+    margin-top: 0;
+  }
+
+  .deckSummaryButton {
+    align-items: stretch;
+    gap: 0.65rem;
+  }
+
+  .deckSummaryMain {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .deckSummaryStats {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .deckSummaryMetric {
+    flex: 1;
+    justify-content: center;
+    min-width: 0;
+    min-height: 32px;
+    padding: 0.3rem 0.45rem;
+    font-size: 0.72rem;
+  }
+
+  .deckSummaryMetric strong {
+    font-size: 0.9rem;
+  }
+
+  .deckSummaryToggle {
+    align-self: center;
+    font-size: 0.78rem;
+  }
+
+  .deckDetailsPanel {
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+  }
+
+  .deckLibraryCard .deckCardHeader {
+    gap: 0.65rem;
+  }
+
+  .deckLibraryCard .buttonGroup {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    gap: 0.5rem;
+  }
+
+  .deckLibraryCard .buttonGroup a,
+  .deckLibraryCard .buttonGroup button {
+    min-height: 38px;
+    padding: 0.45rem 0.55rem;
+  }
+
+  .deckLibraryCard .deckTitle {
+    font-size: 1.08rem;
+  }
+
+  .deckTitleText {
+    font-size: 1.08rem;
+  }
+
   .headerText {
     font-size: 1.25rem;
+  }
+
+  .deckLibraryCard .statStrip,
+  .deckLibraryCard .insightGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .deckLibraryCard .statMini,
+  .deckLibraryCard .insightMini {
+    padding: 0.6rem;
+  }
+
+  .deckLibraryCard .statMiniValue {
+    font-size: 1.15rem;
+  }
+
+  .deckLibraryCard .statMiniLabel,
+  .deckLibraryCard .insightMiniLabel {
+    font-size: 0.72rem;
+    line-height: 1.2;
+  }
+
+  .deckLibraryCard .insightMiniValue {
+    font-size: 0.86rem;
+  }
+
+  .deckLibraryCard .cardActions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin-top: 0;
+  }
+
+  .deckLibraryCard .cardActions button {
+    width: 100%;
+    min-height: 38px;
+    padding: 0.45rem 0.5rem;
+    font-size: 0.78rem;
   }
 
   .card p,
@@ -1118,14 +1365,7 @@
     columns: 1;
   }
 
-  .cardActions {
-    flex-wrap: nowrap;
-    justify-content: space-between;
-  }
-
-  .cardActions button {
-    flex: 1;
-    font-size: 0.8rem;
-    padding: 8px;
+  .deckLibraryCard .cardActions {
+    grid-template-columns: 1fr 1fr;
   }
 }

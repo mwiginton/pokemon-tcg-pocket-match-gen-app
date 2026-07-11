@@ -229,6 +229,24 @@ export default function Dashboard() {
           </div>
         ) : (
           <>
+            <nav className={styles.mobileQuickActions} aria-label="Dashboard shortcuts">
+              <Link
+                href={deckCount >= maxDecks ? '/deck/list' : '/deck/new'}
+                className={`${buttonStyles.buttonCompact} ${deckCount >= maxDecks ? '' : buttonStyles.primary}`}
+              >
+                <PlusCircle size={16} />
+                <span>{deckCount >= maxDecks ? 'Decks' : 'New Deck'}</span>
+              </Link>
+              <Link href="/deck/list" className={buttonStyles.buttonCompact}>
+                <Library size={16} />
+                <span>My Decks</span>
+              </Link>
+              <Link href="/battle/random" className={buttonStyles.buttonCompact}>
+                <Dice3 size={16} />
+                <span>Match</span>
+              </Link>
+            </nav>
+
             <section className={styles.statsGrid} aria-label="Account overview">
               <div className={styles.statTile}>
                 <Library size={20} className={styles.statIcon} />
