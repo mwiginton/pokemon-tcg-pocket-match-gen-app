@@ -11,7 +11,6 @@ import GameLogDialog, {
   GameResult,
   MatchType,
   PlayerOrder,
-  SetupStatus,
 } from '@/components/GameLogDialog'
 import {
   BookMarked,
@@ -52,17 +51,11 @@ type DeckStats = {
   solo_wins: number
   pvp_games: number
   pvp_wins: number
-  close_games: number
-  average_turns: number | null
-  setup_by_turn_2: number
-  setup_by_turn_3: number
-  setup_tracked: number
   first_games: number
   first_wins: number
   second_games: number
   second_wins: number
   top_opponent: string | null
-  top_mvp: string | null
 }
 
 type DeckGameRow = {
@@ -71,10 +64,6 @@ type DeckGameRow = {
   match_type: MatchType | null
   opponent_archetype: string | null
   player_order: PlayerOrder | null
-  turns_played: number | null
-  close_game: boolean | null
-  setup_status: SetupStatus | null
-  mvp_card: string | null
 }
 
 const maxDecks = 10
@@ -86,17 +75,11 @@ const createEmptyStats = (): DeckStats => ({
   solo_wins: 0,
   pvp_games: 0,
   pvp_wins: 0,
-  close_games: 0,
-  average_turns: null,
-  setup_by_turn_2: 0,
-  setup_by_turn_3: 0,
-  setup_tracked: 0,
   first_games: 0,
   first_wins: 0,
   second_games: 0,
   second_wins: 0,
   top_opponent: null,
-  top_mvp: null,
 })
 
 const getTopEntry = (counts: Record<string, number>) =>
@@ -162,22 +145,18 @@ export default function DeckListPage() {
 
     const { data: gamesData, error: gamesError } = await client
       .from('deck_games')
-      .select('deck_id, result, match_type, opponent_archetype, player_order, turns_played, close_game, setup_status, mvp_card')
+      .select('deck_id, result, match_type, opponent_archetype, player_order')
       .in('deck_id', deckIds)
 
     if (gamesError) {
       setError(gamesError.message)
     } else {
       const statsMap: Record<string, DeckStats> = {}
-      const turnTotals: Record<string, { total: number; count: number }> = {}
       const opponentCounts: Record<string, Record<string, number>> = {}
-      const mvpCounts: Record<string, Record<string, number>> = {}
 
       deckIds.forEach((id) => {
         statsMap[id] = createEmptyStats()
-        turnTotals[id] = { total: 0, count: 0 }
         opponentCounts[id] = {}
-        mvpCounts[id] = {}
       })
 
       ;((gamesData ?? []) as DeckGameRow[]).forEach((game) => {
@@ -194,20 +173,6 @@ export default function DeckListPage() {
           stats.pvp_games++
           if (game.result === 'win') stats.pvp_wins++
         }
-        if (game.close_game) stats.close_games++
-
-        if (game.turns_played) {
-          turnTotals[game.deck_id].total += game.turns_played
-          turnTotals[game.deck_id].count++
-        }
-
-        if (game.setup_status && game.setup_status !== 'unknown') {
-          stats.setup_tracked++
-          if (game.setup_status === 'turn_2') stats.setup_by_turn_2++
-          if (game.setup_status === 'turn_2' || game.setup_status === 'turn_3') {
-            stats.setup_by_turn_3++
-          }
-        }
 
         if (game.player_order === 'first') {
           stats.first_games++
@@ -223,19 +188,10 @@ export default function DeckListPage() {
           opponentCounts[game.deck_id][game.opponent_archetype] =
             (opponentCounts[game.deck_id][game.opponent_archetype] ?? 0) + 1
         }
-
-        if (game.mvp_card) {
-          mvpCounts[game.deck_id][game.mvp_card] =
-            (mvpCounts[game.deck_id][game.mvp_card] ?? 0) + 1
-        }
       })
 
       deckIds.forEach((id) => {
-        const turns = turnTotals[id]
-        statsMap[id].average_turns =
-          turns.count > 0 ? Math.round((turns.total / turns.count) * 10) / 10 : null
         statsMap[id].top_opponent = getTopEntry(opponentCounts[id])
-        statsMap[id].top_mvp = getTopEntry(mvpCounts[id])
       })
 
       setDeckStats((prev) => ({ ...prev, ...statsMap }))
@@ -420,11 +376,6 @@ export default function DeckListPage() {
             const overallWinRate = getWinRate(stats?.wins ?? 0, totalGames)
             const soloWinRate = stats ? getWinRate(stats.solo_wins, stats.solo_games) : 'No data'
             const pvpWinRate = stats ? getWinRate(stats.pvp_wins, stats.pvp_games) : 'No data'
-            const averageTurns = stats?.average_turns ? `${stats.average_turns}` : 'No data'
-            const setupLabel = stats && stats.setup_tracked > 0
-              ? `${Math.round((stats.setup_by_turn_3 / stats.setup_tracked) * 100)}%`
-              : 'No data'
-            const closeGameLabel = stats && stats.close_games > 0 ? `${stats.close_games}` : 'None'
             const turnOrderLabel = stats
               ? [
                   stats.first_games > 0
@@ -485,28 +436,12 @@ export default function DeckListPage() {
                 {totalGames > 0 && (
                   <div className={styles.insightGrid} aria-label={`${deck.deck_name} match details`}>
                     <div className={styles.insightMini}>
-                      <span className={styles.insightMiniValue}>{averageTurns}</span>
-                      <span className={styles.insightMiniLabel}>Avg turns</span>
-                    </div>
-                    <div className={styles.insightMini}>
-                      <span className={styles.insightMiniValue}>{closeGameLabel}</span>
-                      <span className={styles.insightMiniLabel}>Close games</span>
-                    </div>
-                    <div className={styles.insightMini}>
-                      <span className={styles.insightMiniValue}>{setupLabel}</span>
-                      <span className={styles.insightMiniLabel}>Setup by T3</span>
-                    </div>
-                    <div className={styles.insightMini}>
                       <span className={styles.insightMiniValue}>{turnOrderLabel}</span>
                       <span className={styles.insightMiniLabel}>First/second</span>
                     </div>
                     <div className={styles.insightMini}>
                       <span className={styles.insightMiniValue}>{stats?.top_opponent ?? 'No data'}</span>
                       <span className={styles.insightMiniLabel}>Common opponent</span>
-                    </div>
-                    <div className={styles.insightMini}>
-                      <span className={styles.insightMiniValue}>{stats?.top_mvp ?? 'No data'}</span>
-                      <span className={styles.insightMiniLabel}>Top MVP</span>
                     </div>
                   </div>
                 )}
