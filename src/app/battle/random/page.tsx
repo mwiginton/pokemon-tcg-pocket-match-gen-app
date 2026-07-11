@@ -404,7 +404,6 @@ export default function RandomBattlePage() {
           <GameLogDialog
             deckName={match.player_deck.deck_name}
             result={gameLogResult}
-            defaultMatchType="solo"
             defaultOpponent={match.solo_battle.deck}
             cardOptions={deckCards.map((card) => card.name).filter(Boolean)}
             isSaving={isRecording}

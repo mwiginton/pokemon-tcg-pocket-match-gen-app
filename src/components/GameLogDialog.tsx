@@ -74,14 +74,14 @@ const cleanText = (value: string) => {
 export default function GameLogDialog({
   deckName,
   result,
-  defaultMatchType = 'pvp',
+  defaultMatchType,
   defaultOpponent = '',
   cardOptions = [],
   isSaving = false,
   onClose,
   onSubmit,
 }: GameLogDialogProps) {
-  const [matchType, setMatchType] = useState<MatchType>(defaultMatchType)
+  const [matchType, setMatchType] = useState<MatchType | null>(defaultMatchType ?? null)
   const [opponentArchetype, setOpponentArchetype] = useState(defaultOpponent)
   const [playerOrder, setPlayerOrder] = useState<PlayerOrder | null>(null)
   const [turnsPlayed, setTurnsPlayed] = useState('')
@@ -100,7 +100,7 @@ export default function GameLogDialog({
   }, [defaultOpponent])
 
   useEffect(() => {
-    setMatchType(defaultMatchType)
+    setMatchType(defaultMatchType ?? null)
   }, [defaultMatchType])
 
   useEffect(() => {
@@ -112,11 +112,11 @@ export default function GameLogDialog({
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
-  const buildPayload = (includeDetails: boolean): GameLogDetails => {
+  const buildPayload = (includeDetails: boolean, selectedMatchType: MatchType): GameLogDetails => {
     if (!includeDetails) {
       return {
         result,
-        match_type: matchType,
+        match_type: selectedMatchType,
         opponent_archetype: null,
         player_order: null,
         turns_played: null,
@@ -131,7 +131,7 @@ export default function GameLogDialog({
 
     return {
       result,
-      match_type: matchType,
+      match_type: selectedMatchType,
       opponent_archetype: cleanText(opponentArchetype),
       player_order: playerOrder,
       turns_played: Number.isFinite(parsedTurns) && parsedTurns > 0 ? parsedTurns : null,
@@ -142,8 +142,15 @@ export default function GameLogDialog({
     }
   }
 
-  const submitDetails = () => onSubmit(buildPayload(true))
-  const submitBasicResult = () => onSubmit(buildPayload(false))
+  const submitDetails = () => {
+    if (!matchType) return
+    onSubmit(buildPayload(true, matchType))
+  }
+  const submitBasicResult = () => {
+    if (!matchType) return
+    onSubmit(buildPayload(false, matchType))
+  }
+  const disableSubmit = isSaving || !matchType
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
@@ -175,10 +182,13 @@ export default function GameLogDialog({
           <span className={styles.labelWithIcon}>
             <Shield size={16} />
             Match type
+            <span className={styles.requiredText}>Required</span>
           </span>
-          <div className={styles.segmentedControl}>
+          <div className={styles.segmentedControl} role="radiogroup" aria-label="Match type">
             <button
               type="button"
+              role="radio"
+              aria-checked={matchType === 'solo'}
               className={`${styles.choiceButton} ${matchType === 'solo' ? styles.choiceButtonActive : ''}`}
               onClick={() => setMatchType('solo')}
             >
@@ -186,6 +196,8 @@ export default function GameLogDialog({
             </button>
             <button
               type="button"
+              role="radio"
+              aria-checked={matchType === 'pvp'}
               className={`${styles.choiceButton} ${matchType === 'pvp' ? styles.choiceButtonActive : ''}`}
               onClick={() => setMatchType('pvp')}
             >
@@ -332,7 +344,7 @@ export default function GameLogDialog({
             type="button"
             onClick={submitBasicResult}
             className={buttonStyles.button}
-            disabled={isSaving}
+            disabled={disableSubmit}
           >
             Save result only
           </button>
@@ -340,7 +352,7 @@ export default function GameLogDialog({
             type="button"
             onClick={submitDetails}
             className={`${buttonStyles.button} ${buttonStyles.primary}`}
-            disabled={isSaving}
+            disabled={disableSubmit}
           >
             {isSaving ? 'Saving...' : 'Save match'}
           </button>

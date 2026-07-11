@@ -391,6 +391,8 @@ export default function DeckListPage() {
           {decks.map((deck) => {
             const stats = deckStats[deck.id]
             const totalGames = stats?.total_games ?? 0
+            const soloGames = stats?.solo_games ?? 0
+            const pvpGames = stats?.pvp_games ?? 0
             const overallWinRate = getWinRate(stats?.wins ?? 0, totalGames)
             const soloWinRate = stats ? getWinRate(stats.solo_wins, stats.solo_games) : 'No data'
             const pvpWinRate = stats ? getWinRate(stats.pvp_wins, stats.pvp_games) : 'No data'
@@ -469,15 +471,23 @@ export default function DeckListPage() {
                     <div className={styles.statStrip}>
                       <div className={styles.statMini}>
                         <span className={styles.statMiniValue}>{totalGames}</span>
-                        <span className={styles.statMiniLabel}>Games played</span>
+                        <span className={styles.statMiniLabel}>Total matches</span>
                       </div>
                       <div className={styles.statMini}>
                         <span className={styles.statMiniValue}>{overallWinRate}</span>
                         <span className={styles.statMiniLabel}>Overall win rate</span>
                       </div>
                       <div className={styles.statMini}>
+                        <span className={styles.statMiniValue}>{soloGames}</span>
+                        <span className={styles.statMiniLabel}>Solo matches</span>
+                      </div>
+                      <div className={styles.statMini}>
                         <span className={styles.statMiniValue}>{soloWinRate}</span>
                         <span className={styles.statMiniLabel}>Solo win rate</span>
+                      </div>
+                      <div className={styles.statMini}>
+                        <span className={styles.statMiniValue}>{pvpGames}</span>
+                        <span className={styles.statMiniLabel}>PvP matches</span>
                       </div>
                       <div className={styles.statMini}>
                         <span className={styles.statMiniValue}>{pvpWinRate}</span>
@@ -601,7 +611,6 @@ export default function DeckListPage() {
           <GameLogDialog
             deckName={gameLogTarget.deckName}
             result={gameLogTarget.result}
-            defaultMatchType="pvp"
             cardOptions={gameLogCardOptions}
             isSaving={isRecordingGame}
             onClose={() => setGameLogTarget(null)}
