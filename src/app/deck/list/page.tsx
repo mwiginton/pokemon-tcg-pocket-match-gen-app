@@ -15,6 +15,7 @@ import GameLogDialog, {
 import {
   BookMarked,
   ChevronDown,
+  CircleEqual,
   Home,
   Pencil,
   PlusCircle,
@@ -48,10 +49,13 @@ type DeckCardQueryRow = Omit<DeckCard, 'cards'> & {
 type DeckStats = {
   total_games: number
   wins: number
+  ties: number
   solo_games: number
   solo_wins: number
+  solo_ties: number
   pvp_games: number
   pvp_wins: number
+  pvp_ties: number
   first_games: number
   first_wins: number
   second_games: number
@@ -72,10 +76,13 @@ const maxDecks = 10
 const createEmptyStats = (): DeckStats => ({
   total_games: 0,
   wins: 0,
+  ties: 0,
   solo_games: 0,
   solo_wins: 0,
+  solo_ties: 0,
   pvp_games: 0,
   pvp_wins: 0,
+  pvp_ties: 0,
   first_games: 0,
   first_wins: 0,
   second_games: 0,
@@ -167,13 +174,16 @@ export default function DeckListPage() {
 
         stats.total_games++
         if (game.result === 'win') stats.wins++
+        if (game.result === 'tie') stats.ties++
         const matchType = game.match_type ?? 'pvp'
         if (matchType === 'solo') {
           stats.solo_games++
           if (game.result === 'win') stats.solo_wins++
+          if (game.result === 'tie') stats.solo_ties++
         } else {
           stats.pvp_games++
           if (game.result === 'win') stats.pvp_wins++
+          if (game.result === 'tie') stats.pvp_ties++
         }
 
         if (game.player_order === 'first') {
@@ -393,6 +403,7 @@ export default function DeckListPage() {
             const totalGames = stats?.total_games ?? 0
             const soloGames = stats?.solo_games ?? 0
             const pvpGames = stats?.pvp_games ?? 0
+            const totalTies = stats?.ties ?? 0
             const overallWinRate = getWinRate(stats?.wins ?? 0, totalGames)
             const soloWinRate = stats ? getWinRate(stats.solo_wins, stats.solo_games) : 'No data'
             const pvpWinRate = stats ? getWinRate(stats.pvp_wins, stats.pvp_games) : 'No data'
@@ -478,6 +489,10 @@ export default function DeckListPage() {
                         <span className={styles.statMiniLabel}>Overall win rate</span>
                       </div>
                       <div className={styles.statMini}>
+                        <span className={styles.statMiniValue}>{totalTies}</span>
+                        <span className={styles.statMiniLabel}>Ties</span>
+                      </div>
+                      <div className={styles.statMini}>
                         <span className={styles.statMiniValue}>{soloGames}</span>
                         <span className={styles.statMiniLabel}>Solo matches</span>
                       </div>
@@ -522,6 +537,13 @@ export default function DeckListPage() {
                       >
                         <XCircle size={16} />
                         Record Loss
+                      </button>
+                      <button
+                        onClick={() => openGameLogger(deck, 'tie')}
+                        className={`${styles.iconButton} ${styles.tie}`}
+                      >
+                        <CircleEqual size={16} />
+                        Record Tie
                       </button>
                       <button
                         onClick={() => setConfirmResetId(deck.id)}

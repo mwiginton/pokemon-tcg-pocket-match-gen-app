@@ -859,6 +859,11 @@
   color: #c52d2d;
 }
 
+.tie {
+  background: #fff7db;
+  color: #946200;
+}
+
 .modalOverlay {
   position: fixed;
   inset: 0;

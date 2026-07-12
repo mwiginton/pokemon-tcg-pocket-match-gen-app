@@ -32,7 +32,7 @@ type Deck = {
 
 type DeckGame = {
   deck_id: string
-  result: 'win' | 'loss'
+  result: 'win' | 'loss' | 'tie'
   created_at: string
   match_type: 'solo' | 'pvp' | null
   opponent_archetype: string | null
@@ -48,6 +48,7 @@ type DeckPerformance = {
   totalGames: number
   wins: number
   losses: number
+  ties: number
   winRate: number
 }
 
@@ -136,7 +137,8 @@ export default function Dashboard() {
   const deckNames = new Map(decks.map((deck) => [deck.id, deck.deck_name]))
   const totalGames = games.length
   const totalWins = games.filter((game) => game.result === 'win').length
-  const totalLosses = totalGames - totalWins
+  const totalTies = games.filter((game) => game.result === 'tie').length
+  const totalLosses = totalGames - totalWins - totalTies
   const overallWinRate = getWinRate(totalWins, totalGames)
   const soloGames = games.filter((game) => game.match_type === 'solo')
   const soloWins = soloGames.filter((game) => game.result === 'win').length
@@ -149,6 +151,7 @@ export default function Dashboard() {
     .map<DeckPerformance>((deck) => {
       const deckGames = games.filter((game) => game.deck_id === deck.id)
       const wins = deckGames.filter((game) => game.result === 'win').length
+      const ties = deckGames.filter((game) => game.result === 'tie').length
       const total = deckGames.length
 
       return {
@@ -156,7 +159,8 @@ export default function Dashboard() {
         deckName: deck.deck_name,
         totalGames: total,
         wins,
-        losses: total - wins,
+        losses: total - wins - ties,
+        ties,
         winRate: getWinRate(wins, total),
       }
     })
@@ -184,7 +188,7 @@ export default function Dashboard() {
       ? {
           href: '/battle/random',
           label: 'Start your first match',
-          detail: 'Generate a matchup and record your first win or loss.',
+          detail: 'Generate a matchup and record your first win, loss, or tie.',
           icon: 'dice',
         }
       : {
@@ -258,7 +262,7 @@ export default function Dashboard() {
                 <Activity size={20} className={styles.statIcon} />
                 <span className={styles.statValue}>{totalGames}</span>
                 <span className={styles.statLabel}>Matches logged</span>
-                <span className={styles.statMeta}>{totalWins} wins, {totalLosses} losses</span>
+                <span className={styles.statMeta}>{totalWins} wins, {totalLosses} losses, {totalTies} ties</span>
               </div>
               <div className={styles.statTile}>
                 <BarChart3 size={20} className={styles.statIcon} />
@@ -334,7 +338,15 @@ export default function Dashboard() {
                   <ul className={styles.recentList}>
                     {games.slice(0, 5).map((game, index) => (
                       <li key={`${game.deck_id}-${game.created_at}-${index}`} className={styles.recentItem}>
-                        <span className={`${styles.resultPill} ${game.result === 'win' ? styles.win : styles.loss}`}>
+                        <span
+                          className={`${styles.resultPill} ${
+                            game.result === 'win'
+                              ? styles.win
+                              : game.result === 'loss'
+                              ? styles.loss
+                              : styles.tie
+                          }`}
+                        >
                           {game.result}
                         </span>
                         <span className={styles.recentDeck}>
@@ -414,6 +426,8 @@ function PerformanceCard({
         <h3>{deck.deckName}</h3>
         <p>
           {deck.winRate}% win rate across {deck.totalGames} {deck.totalGames === 1 ? 'match' : 'matches'}
+          {' '}
+          ({deck.wins}W / {deck.losses}L / {deck.ties}T)
         </p>
       </div>
     </div>

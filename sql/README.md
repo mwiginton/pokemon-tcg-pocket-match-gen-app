@@ -45,6 +45,7 @@ Run these files in order from the Neon SQL Editor:
 41. `041_add_deck_game_details.sql`
 42. `042_add_deck_game_match_type.sql`
 43. `043_ensure_deck_game_logging_columns.sql`
+44. `044_allow_tie_game_results.sql`
 
 The schema script creates the application tables and indexes. The RLS script enables row-level security, grants Data API roles access, and adds policies for Neon Auth users.
 
@@ -125,5 +126,7 @@ Shared lookup tables (`cards` and `solo_battles`) are readable by both anonymous
 The deck game details migration adds optional fields for opponent archetype, first/second turn order, turns played, close-game flag, setup timing, MVP card, and notes.
 
 The match type migration marks each deck game as either `solo` or `pvp`, defaulting existing records to `pvp`.
+
+The tie result migration allows logged games to be recorded as `win`, `loss`, or `tie`.
 
 If the app reports a missing `deck_games` column while saving a match, run `043_ensure_deck_game_logging_columns.sql`. It safely creates all richer match logging columns and constraints even if one of the previous match logging migrations was skipped.

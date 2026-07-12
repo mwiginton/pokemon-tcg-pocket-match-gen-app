@@ -16,8 +16,8 @@ export default function LandingPage() {
             <p className={styles.eyebrow}>BattleLedger</p>
             <h1 className={styles.landingtitle}>Pokemon TCG Pocket BattleLedger</h1>
             <p className={styles.landingsubtitle}>
-              Track your decks. Generate random battle scenarios. Record wins and
-              losses. All in one place.
+              Track your decks. Generate random battle scenarios. Record wins,
+              losses, and ties. All in one place.
             </p>
 
             <div className={styles.landingactions}>

@@ -6,7 +6,7 @@ import { getAuthenticatedUser } from '@/lib/authUser'
 import styles from '@/styles/layout.module.css'
 import buttonStyles from '@/styles/button.module.css'
 import GameLogDialog, { GameLogDetails, GameResult, MatchType } from '@/components/GameLogDialog'
-import { Dice3, Home, Loader2, Trophy, XCircle } from 'lucide-react'
+import { CircleEqual, Dice3, Home, Loader2, Trophy, XCircle } from 'lucide-react'
 import Link from 'next/link'
 
 type Deck = { id: string; deck_name: string }
@@ -27,10 +27,13 @@ type BattlesGrouped = Record<string, Record<string, string[]>>
 type DeckStats = {
   total_games: number
   wins: number
+  ties: number
   solo_games: number
   solo_wins: number
+  solo_ties: number
   pvp_games: number
   pvp_wins: number
+  pvp_ties: number
 }
 type DeckGameRow = {
   result: GameResult
@@ -106,21 +109,27 @@ export default function RandomBattlePage() {
     const stats: DeckStats = {
       total_games: 0,
       wins: 0,
+      ties: 0,
       solo_games: 0,
       solo_wins: 0,
+      solo_ties: 0,
       pvp_games: 0,
       pvp_wins: 0,
+      pvp_ties: 0,
     }
 
     ;((data ?? []) as DeckGameRow[]).forEach(({ result, match_type }) => {
       stats.total_games++
       if (result === 'win') stats.wins++
+      if (result === 'tie') stats.ties++
       if (match_type === 'solo') {
         stats.solo_games++
         if (result === 'win') stats.solo_wins++
+        if (result === 'tie') stats.solo_ties++
       } else {
         stats.pvp_games++
         if (result === 'win') stats.pvp_wins++
+        if (result === 'tie') stats.pvp_ties++
       }
     })
 
@@ -345,6 +354,16 @@ export default function RandomBattlePage() {
                   {isRecording ? <Loader2 className={styles.spin} size={16} /> : <XCircle size={16} />}
                   Record Loss
                 </button>
+
+                <button
+                  onClick={() => openGameLogger('tie')}
+                  disabled={isRecording}
+                  type="button"
+                  className={`${styles.iconButton} ${styles.tie}`}
+                >
+                  {isRecording ? <Loader2 className={styles.spin} size={16} /> : <CircleEqual size={16} />}
+                  Record Tie
+                </button>
               </div>
 
               {currentStats && (
@@ -356,6 +375,10 @@ export default function RandomBattlePage() {
                   <div className={styles.statMini}>
                     <span className={styles.statMiniValue}>{winRate}%</span>
                     <span className={styles.statMiniLabel}>Overall win rate</span>
+                  </div>
+                  <div className={styles.statMini}>
+                    <span className={styles.statMiniValue}>{currentStats.ties}</span>
+                    <span className={styles.statMiniLabel}>Ties</span>
                   </div>
                   <div className={styles.statMini}>
                     <span className={styles.statMiniValue}>{soloWinRate}%</span>

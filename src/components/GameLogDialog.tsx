@@ -5,6 +5,7 @@ import styles from '@/styles/layout.module.css'
 import buttonStyles from '@/styles/button.module.css'
 import {
   CheckCircle2,
+  CircleEqual,
   Clock3,
   Flag,
   NotebookPen,
@@ -16,7 +17,7 @@ import {
   XCircle,
 } from 'lucide-react'
 
-export type GameResult = 'win' | 'loss'
+export type GameResult = 'win' | 'loss' | 'tie'
 export type MatchType = 'solo' | 'pvp'
 export type PlayerOrder = 'first' | 'second'
 export type SetupStatus = 'turn_2' | 'turn_3' | 'missed' | 'unknown'
@@ -71,6 +72,12 @@ const cleanText = (value: string) => {
   return trimmed.length > 0 ? trimmed : null
 }
 
+const resultMeta = {
+  win: { label: 'Win', icon: Trophy },
+  loss: { label: 'Loss', icon: XCircle },
+  tie: { label: 'Tie', icon: CircleEqual },
+} satisfies Record<GameResult, { label: string; icon: typeof Trophy }>
+
 export default function GameLogDialog({
   deckName,
   result,
@@ -81,6 +88,7 @@ export default function GameLogDialog({
   onClose,
   onSubmit,
 }: GameLogDialogProps) {
+  const ResultIcon = resultMeta[result].icon
   const [matchType, setMatchType] = useState<MatchType | null>(defaultMatchType ?? null)
   const [opponentArchetype, setOpponentArchetype] = useState(defaultOpponent)
   const [playerOrder, setPlayerOrder] = useState<PlayerOrder | null>(null)
@@ -174,8 +182,8 @@ export default function GameLogDialog({
         </div>
 
         <div className={styles.resultSummary}>
-          {result === 'win' ? <Trophy size={18} /> : <XCircle size={18} />}
-          <span>{result === 'win' ? 'Win' : 'Loss'}</span>
+          <ResultIcon size={18} />
+          <span>{resultMeta[result].label}</span>
         </div>
 
         <div className={styles.fieldBlock}>

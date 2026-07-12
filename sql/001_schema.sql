@@ -36,7 +36,7 @@ create table if not exists public.deck_games (
   id uuid primary key default gen_random_uuid(),
   deck_id uuid not null references public.decks(id) on delete cascade,
   user_id uuid not null,
-  result text not null check (result in ('win', 'loss')),
+  result text not null check (result in ('win', 'loss', 'tie')),
   match_type text not null default 'pvp' check (match_type in ('solo', 'pvp')),
   opponent_archetype text,
   player_order text check (player_order in ('first', 'second')),

@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Pokémon TCG Pocket BattleLedger – Deck Tracker & Battle Logger",
   description:
-    "Track your Pokémon TCG Pocket decks, generate random battle scenarios, and log wins/losses with detailed analytics. Built with Next.js and Neon.",
+    "Track your Pokémon TCG Pocket decks, generate random battle scenarios, and log wins, losses, and ties with detailed analytics. Built with Next.js and Neon.",
   keywords: [
     "Pokémon TCG Pocket",
     "deck tracker",
