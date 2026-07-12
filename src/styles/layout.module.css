@@ -965,6 +965,55 @@
   min-height: 42px;
 }
 
+.statsPeriodToolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-top: 0.25rem;
+}
+
+.periodSelectGroup {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.periodSelectLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #374151;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.periodSelect {
+  min-height: 38px;
+  padding: 0.45rem 2rem 0.45rem 0.65rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #111827;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.periodSelect:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+}
+
+.periodHelperText {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
 .choiceButton {
   min-height: 38px;
   padding: 0.45rem 0.75rem;
@@ -1202,12 +1251,25 @@
     font-size: 0.82rem;
   }
 
-  .deckOverviewPanelCompact {
-    display: none;
-  }
-
   .deckListPage .deckList {
     gap: 0.75rem;
+  }
+
+  .statsPeriodToolbar,
+  .periodSelectGroup {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .statsPeriodToolbar .segmentedControl {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .periodSelectLabel,
+  .periodSelect {
+    width: 100%;
   }
 
   .card,

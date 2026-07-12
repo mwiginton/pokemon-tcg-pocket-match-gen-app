@@ -1,10 +1,19 @@
 'use client'
 
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { client } from '@/lib/neonClient'
 import { getAuthenticatedUser } from '@/lib/authUser'
+import {
+  formatStatsMonthLabel,
+  gameMatchesStatsPeriod,
+  getAvailableMonths,
+  getAvailableYears,
+  getEffectiveStatsPeriod,
+  getStatsPeriodLabel,
+  type StatsPeriod,
+} from '@/lib/statsPeriod'
 import styles from './dashboard.module.css'
 import buttonStyles from '@/styles/button.module.css'
 import {
@@ -74,6 +83,11 @@ export default function Dashboard() {
   const [user, setUser] = useState<DashboardUser | null>(null)
   const [decks, setDecks] = useState<Deck[]>([])
   const [games, setGames] = useState<DeckGame[]>([])
+  const [statsPeriod, setStatsPeriod] = useState<StatsPeriod>({
+    mode: 'all',
+    year: '',
+    month: '',
+  })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
   const router = useRouter()
@@ -133,23 +147,47 @@ export default function Dashboard() {
     router.push('/')
   }
 
+  const availableYears = useMemo(() => getAvailableYears(games), [games])
+  const selectedYear = statsPeriod.year || availableYears[0] || ''
+  const availableMonths = useMemo(
+    () => getAvailableMonths(games, statsPeriod.mode === 'month' ? selectedYear : undefined),
+    [games, selectedYear, statsPeriod.mode],
+  )
+  const effectiveStatsPeriod = useMemo(
+    () => getEffectiveStatsPeriod(statsPeriod, availableYears, availableMonths),
+    [availableMonths, availableYears, statsPeriod],
+  )
+  const statsPeriodLabel = getStatsPeriodLabel(effectiveStatsPeriod)
+  const scopedGames = useMemo(
+    () => games.filter((game) => gameMatchesStatsPeriod(game.created_at, effectiveStatsPeriod)),
+    [effectiveStatsPeriod, games],
+  )
+  const setStatsPeriodMode = (mode: StatsPeriod['mode']) => {
+    setStatsPeriod((prev) => ({
+      mode,
+      year: prev.year || availableYears[0] || '',
+      month: prev.month || availableMonths[0] || '',
+    }))
+  }
+
   const deckCount = decks.length
   const deckNames = new Map(decks.map((deck) => [deck.id, deck.deck_name]))
-  const totalGames = games.length
-  const totalWins = games.filter((game) => game.result === 'win').length
-  const totalTies = games.filter((game) => game.result === 'tie').length
+  const totalGames = scopedGames.length
+  const totalWins = scopedGames.filter((game) => game.result === 'win').length
+  const totalTies = scopedGames.filter((game) => game.result === 'tie').length
   const totalLosses = totalGames - totalWins - totalTies
   const overallWinRate = getWinRate(totalWins, totalGames)
-  const soloGames = games.filter((game) => game.match_type === 'solo')
+  const soloGames = scopedGames.filter((game) => game.match_type === 'solo')
   const soloWins = soloGames.filter((game) => game.result === 'win').length
   const soloWinRate = getWinRate(soloWins, soloGames.length)
-  const pvpGames = games.filter((game) => (game.match_type ?? 'pvp') === 'pvp')
+  const pvpGames = scopedGames.filter((game) => (game.match_type ?? 'pvp') === 'pvp')
   const pvpWins = pvpGames.filter((game) => game.result === 'win').length
   const pvpWinRate = getWinRate(pvpWins, pvpGames.length)
+  const allTimeGames = games.length
 
   const performanceByDeck = decks
     .map<DeckPerformance>((deck) => {
-      const deckGames = games.filter((game) => game.deck_id === deck.id)
+      const deckGames = scopedGames.filter((game) => game.deck_id === deck.id)
       const wins = deckGames.filter((game) => game.result === 'win').length
       const ties = deckGames.filter((game) => game.result === 'tie').length
       const total = deckGames.length
@@ -184,7 +222,7 @@ export default function Dashboard() {
           detail: 'Add 20 cards so BattleLedger can start tracking results.',
           icon: 'plus',
         }
-      : totalGames === 0
+      : allTimeGames === 0
       ? {
           href: '/battle/random',
           label: 'Start your first match',
@@ -251,6 +289,93 @@ export default function Dashboard() {
               </Link>
             </nav>
 
+            {games.length > 0 && (
+              <section className={styles.periodPanel} aria-label="Win rate period">
+                <div className={styles.periodHeader}>
+                  <div>
+                    <p className={styles.panelKicker}>Win rate period</p>
+                    <h2>Showing {statsPeriodLabel}</h2>
+                  </div>
+                  <div className={styles.segmentedControl}>
+                    <button
+                      type="button"
+                      className={`${styles.choiceButton} ${
+                        effectiveStatsPeriod.mode === 'all' ? styles.choiceButtonActive : ''
+                      }`}
+                      onClick={() => setStatsPeriodMode('all')}
+                      aria-pressed={effectiveStatsPeriod.mode === 'all'}
+                    >
+                      All time
+                    </button>
+                    <button
+                      type="button"
+                      className={`${styles.choiceButton} ${
+                        effectiveStatsPeriod.mode === 'year' ? styles.choiceButtonActive : ''
+                      }`}
+                      onClick={() => setStatsPeriodMode('year')}
+                      aria-pressed={effectiveStatsPeriod.mode === 'year'}
+                    >
+                      Year
+                    </button>
+                    <button
+                      type="button"
+                      className={`${styles.choiceButton} ${
+                        effectiveStatsPeriod.mode === 'month' ? styles.choiceButtonActive : ''
+                      }`}
+                      onClick={() => setStatsPeriodMode('month')}
+                      aria-pressed={effectiveStatsPeriod.mode === 'month'}
+                    >
+                      Month
+                    </button>
+                  </div>
+                </div>
+
+                {effectiveStatsPeriod.mode !== 'all' && (
+                  <div className={styles.periodSelectGroup}>
+                    <label className={styles.periodSelectLabel}>
+                      <span>Year</span>
+                      <select
+                        className={styles.periodSelect}
+                        value={effectiveStatsPeriod.year}
+                        onChange={(event) =>
+                          setStatsPeriod((prev) => ({
+                            ...prev,
+                            year: event.target.value,
+                            month: '',
+                          }))
+                        }
+                      >
+                        {availableYears.map((year) => (
+                          <option key={year} value={year}>
+                            {year}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    {effectiveStatsPeriod.mode === 'month' && (
+                      <label className={styles.periodSelectLabel}>
+                        <span>Month</span>
+                        <select
+                          className={styles.periodSelect}
+                          value={effectiveStatsPeriod.month}
+                          onChange={(event) =>
+                            setStatsPeriod((prev) => ({ ...prev, month: event.target.value }))
+                          }
+                        >
+                          {availableMonths.map((month) => (
+                            <option key={month} value={month}>
+                              {formatStatsMonthLabel(month).replace(/ \d{4}$/, '')}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    )}
+                  </div>
+                )}
+              </section>
+            )}
+
             <section className={styles.statsGrid} aria-label="Account overview">
               <div className={styles.statTile}>
                 <Library size={20} className={styles.statIcon} />
@@ -268,7 +393,7 @@ export default function Dashboard() {
                 <BarChart3 size={20} className={styles.statIcon} />
                 <span className={styles.statValue}>{overallWinRate}%</span>
                 <span className={styles.statLabel}>Overall win rate</span>
-                <span className={styles.statMeta}>{totalGames > 0 ? 'Across all decks' : 'No games yet'}</span>
+                <span className={styles.statMeta}>{totalGames > 0 ? `Across ${statsPeriodLabel}` : 'No games in period'}</span>
               </div>
               <div className={styles.statTile}>
                 <BarChart3 size={20} className={styles.statIcon} />
@@ -332,11 +457,11 @@ export default function Dashboard() {
                   <Link href="/battle/random">Log match</Link>
                 </div>
 
-                {games.length === 0 ? (
-                  <p className={styles.emptyText}>No matches logged yet.</p>
+                {scopedGames.length === 0 ? (
+                  <p className={styles.emptyText}>No matches in this period.</p>
                 ) : (
                   <ul className={styles.recentList}>
-                    {games.slice(0, 5).map((game, index) => (
+                    {scopedGames.slice(0, 5).map((game, index) => (
                       <li key={`${game.deck_id}-${game.created_at}-${index}`} className={styles.recentItem}>
                         <span
                           className={`${styles.resultPill} ${

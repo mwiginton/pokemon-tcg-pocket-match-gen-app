@@ -1,8 +1,16 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { client } from '@/lib/neonClient'
 import { getAuthenticatedUser } from '@/lib/authUser'
+import {
+  gameMatchesStatsPeriod,
+  getAvailableMonths,
+  getAvailableYears,
+  getEffectiveStatsPeriod,
+  getStatsPeriodLabel,
+  type StatsPeriod,
+} from '@/lib/statsPeriod'
 import Link from 'next/link'
 import styles from '@/styles/layout.module.css'
 import buttonStyles from '@/styles/button.module.css'
@@ -69,6 +77,7 @@ type DeckGameRow = {
   match_type: MatchType | null
   opponent_archetype: string | null
   player_order: PlayerOrder | null
+  created_at: string
 }
 
 const maxDecks = 10
@@ -98,7 +107,12 @@ const getWinRate = (wins: number, totalGames: number) =>
 
 export default function DeckListPage() {
   const [decks, setDecks] = useState<Deck[]>([])
-  const [deckStats, setDeckStats] = useState<Record<string, DeckStats>>({})
+  const [deckGames, setDeckGames] = useState<DeckGameRow[]>([])
+  const [statsPeriod, setStatsPeriod] = useState<StatsPeriod>({
+    mode: 'all',
+    year: '',
+    month: '',
+  })
   const [expandedDeckDetails, setExpandedDeckDetails] = useState<Record<string, boolean>>({})
   const [expandedDecks, setExpandedDecks] = useState<Record<string, DeckCard[]>>({})
   const [loading, setLoading] = useState(true)
@@ -113,6 +127,69 @@ export default function DeckListPage() {
   } | null>(null)
   const [gameLogCardOptions, setGameLogCardOptions] = useState<string[]>([])
   const [isRecordingGame, setIsRecordingGame] = useState(false)
+
+  const availableYears = useMemo(() => getAvailableYears(deckGames), [deckGames])
+  const selectedYear = statsPeriod.year || availableYears[0] || ''
+  const availableMonths = useMemo(
+    () => getAvailableMonths(deckGames, statsPeriod.mode === 'month' ? selectedYear : undefined),
+    [deckGames, selectedYear, statsPeriod.mode],
+  )
+  const effectiveStatsPeriod = useMemo(
+    () => getEffectiveStatsPeriod(statsPeriod, availableYears, availableMonths),
+    [availableMonths, availableYears, statsPeriod],
+  )
+  const statsPeriodLabel = getStatsPeriodLabel(effectiveStatsPeriod)
+  const deckStats = useMemo(() => {
+    const statsMap: Record<string, DeckStats> = {}
+    const opponentCounts: Record<string, Record<string, number>> = {}
+
+    decks.forEach((deck) => {
+      statsMap[deck.id] = createEmptyStats()
+      opponentCounts[deck.id] = {}
+    })
+
+    deckGames
+      .filter((game) => gameMatchesStatsPeriod(game.created_at, effectiveStatsPeriod))
+      .forEach((game) => {
+        const stats = statsMap[game.deck_id]
+        if (!stats) return
+
+        stats.total_games++
+        if (game.result === 'win') stats.wins++
+        if (game.result === 'tie') stats.ties++
+        const matchType = game.match_type ?? 'pvp'
+        if (matchType === 'solo') {
+          stats.solo_games++
+          if (game.result === 'win') stats.solo_wins++
+          if (game.result === 'tie') stats.solo_ties++
+        } else {
+          stats.pvp_games++
+          if (game.result === 'win') stats.pvp_wins++
+          if (game.result === 'tie') stats.pvp_ties++
+        }
+
+        if (game.player_order === 'first') {
+          stats.first_games++
+          if (game.result === 'win') stats.first_wins++
+        }
+
+        if (game.player_order === 'second') {
+          stats.second_games++
+          if (game.result === 'win') stats.second_wins++
+        }
+
+        if (game.opponent_archetype) {
+          opponentCounts[game.deck_id][game.opponent_archetype] =
+            (opponentCounts[game.deck_id][game.opponent_archetype] ?? 0) + 1
+        }
+      })
+
+    decks.forEach((deck) => {
+      statsMap[deck.id].top_opponent = getTopEntry(opponentCounts[deck.id])
+    })
+
+    return statsMap
+  }, [deckGames, decks, effectiveStatsPeriod])
 
   useEffect(() => {
     const fetchDecksAndStats = async () => {
@@ -148,65 +225,23 @@ export default function DeckListPage() {
 
   const refreshDeckStats = async (deckIds: string[]) => {
     if (deckIds.length === 0) {
-      setDeckStats({})
+      setDeckGames([])
       return
     }
 
     const { data: gamesData, error: gamesError } = await client
       .from('deck_games')
-      .select('deck_id, result, match_type, opponent_archetype, player_order')
+      .select('deck_id, result, match_type, opponent_archetype, player_order, created_at')
       .in('deck_id', deckIds)
 
     if (gamesError) {
       setError(gamesError.message)
     } else {
-      const statsMap: Record<string, DeckStats> = {}
-      const opponentCounts: Record<string, Record<string, number>> = {}
-
-      deckIds.forEach((id) => {
-        statsMap[id] = createEmptyStats()
-        opponentCounts[id] = {}
-      })
-
-      ;((gamesData ?? []) as DeckGameRow[]).forEach((game) => {
-        const stats = statsMap[game.deck_id]
-        if (!stats) return
-
-        stats.total_games++
-        if (game.result === 'win') stats.wins++
-        if (game.result === 'tie') stats.ties++
-        const matchType = game.match_type ?? 'pvp'
-        if (matchType === 'solo') {
-          stats.solo_games++
-          if (game.result === 'win') stats.solo_wins++
-          if (game.result === 'tie') stats.solo_ties++
-        } else {
-          stats.pvp_games++
-          if (game.result === 'win') stats.pvp_wins++
-          if (game.result === 'tie') stats.pvp_ties++
-        }
-
-        if (game.player_order === 'first') {
-          stats.first_games++
-          if (game.result === 'win') stats.first_wins++
-        }
-
-        if (game.player_order === 'second') {
-          stats.second_games++
-          if (game.result === 'win') stats.second_wins++
-        }
-
-        if (game.opponent_archetype) {
-          opponentCounts[game.deck_id][game.opponent_archetype] =
-            (opponentCounts[game.deck_id][game.opponent_archetype] ?? 0) + 1
-        }
-      })
-
-      deckIds.forEach((id) => {
-        statsMap[id].top_opponent = getTopEntry(opponentCounts[id])
-      })
-
-      setDeckStats((prev) => ({ ...prev, ...statsMap }))
+      const refreshedDeckIds = new Set(deckIds)
+      setDeckGames((prev) => [
+        ...prev.filter((game) => !refreshedDeckIds.has(game.deck_id)),
+        ...((gamesData ?? []) as DeckGameRow[]),
+      ])
     }
   }
 
@@ -341,6 +376,14 @@ export default function DeckListPage() {
     setConfirmDeleteId(null)
   }
 
+  const setStatsPeriodMode = (mode: StatsPeriod['mode']) => {
+    setStatsPeriod((prev) => ({
+      mode,
+      year: prev.year || availableYears[0] || '',
+      month: prev.month || availableMonths[0] || '',
+    }))
+  }
+
   return (
     <div className={`${styles.page} ${styles.deckListPage}`}>
       <div className={styles.shell}>
@@ -380,6 +423,93 @@ export default function DeckListPage() {
               <h2 className={styles.headerText}>Deck overview</h2>
             </div>
           </div>
+
+          {!loading && decks.length > 0 && (
+            <div className={styles.statsPeriodToolbar} aria-label="Win rate period">
+              <div className={styles.segmentedControl}>
+                <button
+                  type="button"
+                  className={`${styles.choiceButton} ${
+                    effectiveStatsPeriod.mode === 'all' ? styles.choiceButtonActive : ''
+                  }`}
+                  onClick={() => setStatsPeriodMode('all')}
+                  aria-pressed={effectiveStatsPeriod.mode === 'all'}
+                >
+                  All time
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.choiceButton} ${
+                    effectiveStatsPeriod.mode === 'year' ? styles.choiceButtonActive : ''
+                  }`}
+                  onClick={() => setStatsPeriodMode('year')}
+                  disabled={availableYears.length === 0}
+                  aria-pressed={effectiveStatsPeriod.mode === 'year'}
+                >
+                  Year
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.choiceButton} ${
+                    effectiveStatsPeriod.mode === 'month' ? styles.choiceButtonActive : ''
+                  }`}
+                  onClick={() => setStatsPeriodMode('month')}
+                  disabled={availableMonths.length === 0}
+                  aria-pressed={effectiveStatsPeriod.mode === 'month'}
+                >
+                  Month
+                </button>
+              </div>
+
+              {effectiveStatsPeriod.mode !== 'all' && (
+                <div className={styles.periodSelectGroup}>
+                  <label className={styles.periodSelectLabel}>
+                    <span>Year</span>
+                    <select
+                      className={styles.periodSelect}
+                      value={effectiveStatsPeriod.year}
+                      onChange={(event) =>
+                        setStatsPeriod((prev) => ({
+                          ...prev,
+                          year: event.target.value,
+                          month: '',
+                        }))
+                      }
+                    >
+                      {availableYears.map((year) => (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  {effectiveStatsPeriod.mode === 'month' && (
+                    <label className={styles.periodSelectLabel}>
+                      <span>Month</span>
+                      <select
+                        className={styles.periodSelect}
+                        value={effectiveStatsPeriod.month}
+                        onChange={(event) =>
+                          setStatsPeriod((prev) => ({ ...prev, month: event.target.value }))
+                        }
+                      >
+                        {availableMonths.map((month) => (
+                          <option key={month} value={month}>
+                            {new Intl.DateTimeFormat('en-US', { month: 'long' }).format(
+                              new Date(Number(month.slice(0, 4)), Number(month.slice(5)) - 1, 1),
+                            )}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
+                </div>
+              )}
+
+              <p className={styles.periodHelperText}>Showing win rates for {statsPeriodLabel}.</p>
+            </div>
+          )}
 
           {loading && <p className={styles.emptyText}>Loading decks...</p>}
 

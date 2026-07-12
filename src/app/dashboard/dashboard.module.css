@@ -56,6 +56,94 @@
   margin-bottom: 1rem;
 }
 
+.periodPanel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border: 1px solid #d7e5f8;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+}
+
+.periodHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  gap: 1rem;
+  min-width: min(100%, 520px);
+}
+
+.periodHeader h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 1.15rem;
+  line-height: 1.2;
+}
+
+.segmentedControl,
+.periodSelectGroup {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.choiceButton {
+  min-height: 38px;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #374151;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.choiceButton:hover {
+  background: #f8fbff;
+}
+
+.choiceButtonActive {
+  border-color: #2563eb;
+  background: #eef6ff;
+  color: #205493;
+}
+
+.periodSelectLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #374151;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.periodSelect {
+  min-height: 38px;
+  padding: 0.45rem 2rem 0.45rem 0.65rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #111827;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.periodSelect:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+}
+
 .twoColumnGrid {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   margin-top: 1rem;
@@ -310,7 +398,8 @@
 
 @media (max-width: 800px) {
   .hero,
-  .nextActionPanel {
+  .nextActionPanel,
+  .periodHeader {
     flex-direction: column;
     align-items: stretch;
   }
@@ -319,6 +408,18 @@
   .twoColumnGrid,
   .quickActions {
     grid-template-columns: 1fr;
+  }
+
+  .segmentedControl {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .periodSelectGroup,
+  .periodSelectLabel,
+  .periodSelect {
+    width: 100%;
   }
 }
 
