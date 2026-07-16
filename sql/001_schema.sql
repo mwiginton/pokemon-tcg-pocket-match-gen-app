@@ -38,6 +38,7 @@ create table if not exists public.deck_games (
   user_id uuid not null,
   result text not null check (result in ('win', 'loss', 'tie')),
   match_type text not null default 'pvp' check (match_type in ('solo', 'pvp')),
+  solo_difficulty text,
   opponent_archetype text,
   player_order text check (player_order in ('first', 'second')),
   turns_played integer check (turns_played is null or turns_played > 0),
@@ -74,6 +75,9 @@ create index if not exists deck_games_opponent_archetype_idx
 
 create index if not exists deck_games_match_type_idx
   on public.deck_games(match_type);
+
+create index if not exists deck_games_solo_difficulty_idx
+  on public.deck_games(solo_difficulty);
 
 create index if not exists cards_name_idx
   on public.cards(name);

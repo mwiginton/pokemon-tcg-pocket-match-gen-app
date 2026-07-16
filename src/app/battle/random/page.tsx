@@ -34,10 +34,17 @@ type DeckStats = {
   pvp_games: number
   pvp_wins: number
   pvp_ties: number
+  by_difficulty: Record<string, DifficultyStats>
 }
 type DeckGameRow = {
   result: GameResult
   match_type: MatchType | null
+  solo_difficulty: string | null
+}
+type DifficultyStats = {
+  games: number
+  wins: number
+  ties: number
 }
 
 const getWinRate = (wins: number, totalGames: number) =>
@@ -98,7 +105,7 @@ export default function RandomBattlePage() {
   const refreshDeckStats = async (deckId: string) => {
     const { data, error } = await client
       .from('deck_games')
-      .select('result, match_type')
+      .select('result, match_type, solo_difficulty')
       .eq('deck_id', deckId)
 
     if (error) {
@@ -116,9 +123,10 @@ export default function RandomBattlePage() {
       pvp_games: 0,
       pvp_wins: 0,
       pvp_ties: 0,
+      by_difficulty: {},
     }
 
-    ;((data ?? []) as DeckGameRow[]).forEach(({ result, match_type }) => {
+    ;((data ?? []) as DeckGameRow[]).forEach(({ result, match_type, solo_difficulty }) => {
       stats.total_games++
       if (result === 'win') stats.wins++
       if (result === 'tie') stats.ties++
@@ -126,6 +134,13 @@ export default function RandomBattlePage() {
         stats.solo_games++
         if (result === 'win') stats.solo_wins++
         if (result === 'tie') stats.solo_ties++
+        const difficulty = solo_difficulty ?? 'Untracked'
+        if (!stats.by_difficulty[difficulty]) {
+          stats.by_difficulty[difficulty] = { games: 0, wins: 0, ties: 0 }
+        }
+        stats.by_difficulty[difficulty].games++
+        if (result === 'win') stats.by_difficulty[difficulty].wins++
+        if (result === 'tie') stats.by_difficulty[difficulty].ties++
       } else {
         stats.pvp_games++
         if (result === 'win') stats.pvp_wins++
@@ -189,6 +204,7 @@ export default function RandomBattlePage() {
         result: details.result,
         user_id: user.id,
         match_type: details.match_type,
+        solo_difficulty: details.solo_difficulty,
         opponent_archetype: details.opponent_archetype,
         player_order: details.player_order,
         turns_played: details.turns_played,
@@ -256,6 +272,11 @@ export default function RandomBattlePage() {
   const winRate = currentStats ? getWinRate(currentStats.wins, currentStats.total_games) : 0
   const soloWinRate = currentStats ? getWinRate(currentStats.solo_wins, currentStats.solo_games) : 0
   const pvpWinRate = currentStats ? getWinRate(currentStats.pvp_wins, currentStats.pvp_games) : 0
+  const currentDifficultyStats =
+    match && currentStats ? currentStats.by_difficulty[match.solo_battle.difficulty] : null
+  const currentDifficultyWinRate = currentDifficultyStats
+    ? getWinRate(currentDifficultyStats.wins, currentDifficultyStats.games)
+    : 0
 
   return (
     <div className={styles.page}>
@@ -385,6 +406,12 @@ export default function RandomBattlePage() {
                     <span className={styles.statMiniLabel}>Solo win rate</span>
                   </div>
                   <div className={styles.statMini}>
+                    <span className={styles.statMiniValue}>{currentDifficultyWinRate}%</span>
+                    <span className={styles.statMiniLabel}>
+                      {match.solo_battle.difficulty} rate
+                    </span>
+                  </div>
+                  <div className={styles.statMini}>
                     <span className={styles.statMiniValue}>{pvpWinRate}%</span>
                     <span className={styles.statMiniLabel}>PvP win rate</span>
                   </div>
@@ -427,7 +454,10 @@ export default function RandomBattlePage() {
           <GameLogDialog
             deckName={match.player_deck.deck_name}
             result={gameLogResult}
+            defaultMatchType="solo"
+            defaultSoloDifficulty={match.solo_battle.difficulty}
             defaultOpponent={match.solo_battle.deck}
+            soloDifficultyOptions={Object.keys(soloBattles)}
             cardOptions={deckCards.map((card) => card.name).filter(Boolean)}
             isSaving={isRecording}
             onClose={() => setGameLogResult(null)}

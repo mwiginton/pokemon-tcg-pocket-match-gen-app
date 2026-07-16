@@ -8,6 +8,7 @@ import {
   CircleEqual,
   Clock3,
   Flag,
+  Gauge,
   NotebookPen,
   Shield,
   Sparkles,
@@ -25,6 +26,7 @@ export type SetupStatus = 'turn_2' | 'turn_3' | 'missed' | 'unknown'
 export type GameLogDetails = {
   result: GameResult
   match_type: MatchType
+  solo_difficulty: string | null
   opponent_archetype: string | null
   player_order: PlayerOrder | null
   turns_played: number | null
@@ -38,7 +40,9 @@ type GameLogDialogProps = {
   deckName: string
   result: GameResult
   defaultMatchType?: MatchType
+  defaultSoloDifficulty?: string
   defaultOpponent?: string
+  soloDifficultyOptions?: string[]
   cardOptions?: string[]
   isSaving?: boolean
   onClose: () => void
@@ -67,6 +71,17 @@ const setupOptions: { value: SetupStatus; label: string }[] = [
   { value: 'unknown', label: 'Unsure' },
 ]
 
+const defaultDifficultyOptions = ['Beginner', 'Intermediate', 'Advanced', 'Expert']
+
+const sortDifficultyLabel = (a: string, b: string) => {
+  const aIndex = defaultDifficultyOptions.indexOf(a)
+  const bIndex = defaultDifficultyOptions.indexOf(b)
+  if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex
+  if (aIndex !== -1) return -1
+  if (bIndex !== -1) return 1
+  return a.localeCompare(b)
+}
+
 const cleanText = (value: string) => {
   const trimmed = value.trim()
   return trimmed.length > 0 ? trimmed : null
@@ -82,7 +97,9 @@ export default function GameLogDialog({
   deckName,
   result,
   defaultMatchType,
+  defaultSoloDifficulty = '',
   defaultOpponent = '',
+  soloDifficultyOptions = defaultDifficultyOptions,
   cardOptions = [],
   isSaving = false,
   onClose,
@@ -90,6 +107,7 @@ export default function GameLogDialog({
 }: GameLogDialogProps) {
   const ResultIcon = resultMeta[result].icon
   const [matchType, setMatchType] = useState<MatchType | null>(defaultMatchType ?? null)
+  const [soloDifficulty, setSoloDifficulty] = useState(defaultSoloDifficulty)
   const [opponentArchetype, setOpponentArchetype] = useState(defaultOpponent)
   const [playerOrder, setPlayerOrder] = useState<PlayerOrder | null>(null)
   const [turnsPlayed, setTurnsPlayed] = useState('')
@@ -102,6 +120,13 @@ export default function GameLogDialog({
     () => Array.from(new Set(cardOptions.filter(Boolean))).sort((a, b) => a.localeCompare(b)),
     [cardOptions],
   )
+  const uniqueDifficultyOptions = useMemo(
+    () =>
+      Array.from(new Set([...soloDifficultyOptions, defaultSoloDifficulty].filter(Boolean))).sort(
+        sortDifficultyLabel,
+      ),
+    [defaultSoloDifficulty, soloDifficultyOptions],
+  )
 
   useEffect(() => {
     setOpponentArchetype(defaultOpponent)
@@ -110,6 +135,10 @@ export default function GameLogDialog({
   useEffect(() => {
     setMatchType(defaultMatchType ?? null)
   }, [defaultMatchType])
+
+  useEffect(() => {
+    setSoloDifficulty(defaultSoloDifficulty)
+  }, [defaultSoloDifficulty])
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -125,6 +154,7 @@ export default function GameLogDialog({
       return {
         result,
         match_type: selectedMatchType,
+        solo_difficulty: selectedMatchType === 'solo' ? cleanText(soloDifficulty) : null,
         opponent_archetype: null,
         player_order: null,
         turns_played: null,
@@ -140,6 +170,7 @@ export default function GameLogDialog({
     return {
       result,
       match_type: selectedMatchType,
+      solo_difficulty: selectedMatchType === 'solo' ? cleanText(soloDifficulty) : null,
       opponent_archetype: cleanText(opponentArchetype),
       player_order: playerOrder,
       turns_played: Number.isFinite(parsedTurns) && parsedTurns > 0 ? parsedTurns : null,
@@ -158,7 +189,7 @@ export default function GameLogDialog({
     if (!matchType) return
     onSubmit(buildPayload(false, matchType))
   }
-  const disableSubmit = isSaving || !matchType
+  const disableSubmit = isSaving || !matchType || (matchType === 'solo' && !cleanText(soloDifficulty))
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
@@ -213,6 +244,32 @@ export default function GameLogDialog({
             </button>
           </div>
         </div>
+
+        {matchType === 'solo' && (
+          <div className={styles.fieldBlock}>
+            <span className={styles.labelWithIcon}>
+              <Gauge size={16} />
+              Difficulty
+              <span className={styles.requiredText}>Required for solo</span>
+            </span>
+            <div className={styles.segmentedControl} role="radiogroup" aria-label="Solo difficulty">
+              {uniqueDifficultyOptions.map((difficulty) => (
+                <button
+                  key={difficulty}
+                  type="button"
+                  role="radio"
+                  aria-checked={soloDifficulty === difficulty}
+                  className={`${styles.choiceButton} ${
+                    soloDifficulty === difficulty ? styles.choiceButtonActive : ''
+                  }`}
+                  onClick={() => setSoloDifficulty(difficulty)}
+                >
+                  {difficulty}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className={styles.formGrid}>
           <label className={styles.fieldBlock}>

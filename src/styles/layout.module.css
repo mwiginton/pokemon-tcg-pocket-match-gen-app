@@ -742,6 +742,52 @@
   gap: 0.65rem;
 }
 
+.difficultyPanel {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.difficultyHeader,
+.difficultyRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.45rem 0.75rem;
+}
+
+.difficultyHeader {
+  color: #6b7280;
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.difficultyRow {
+  padding-top: 0.55rem;
+  border-top: 1px solid #eef2f7;
+}
+
+.difficultyName,
+.difficultyRate {
+  color: #111827;
+  font-weight: 800;
+}
+
+.difficultyRate {
+  font-size: 1rem;
+}
+
+.difficultyMeta {
+  grid-column: 1 / -1;
+  color: #6b7280;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
 .insightMini {
   min-width: 0;
   padding: 0.65rem;

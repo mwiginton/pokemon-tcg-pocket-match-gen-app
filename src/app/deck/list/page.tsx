@@ -69,18 +69,27 @@ type DeckStats = {
   second_games: number
   second_wins: number
   top_opponent: string | null
+  by_difficulty: Record<string, DifficultyStats>
 }
 
 type DeckGameRow = {
   deck_id: string
   result: GameResult
   match_type: MatchType | null
+  solo_difficulty: string | null
   opponent_archetype: string | null
   player_order: PlayerOrder | null
   created_at: string
 }
 
+type DifficultyStats = {
+  games: number
+  wins: number
+  ties: number
+}
+
 const maxDecks = 10
+const difficultyOrder = ['Beginner', 'Intermediate', 'Advanced', 'Expert']
 
 const createEmptyStats = (): DeckStats => ({
   total_games: 0,
@@ -97,6 +106,7 @@ const createEmptyStats = (): DeckStats => ({
   second_games: 0,
   second_wins: 0,
   top_opponent: null,
+  by_difficulty: {},
 })
 
 const getTopEntry = (counts: Record<string, number>) =>
@@ -104,6 +114,21 @@ const getTopEntry = (counts: Record<string, number>) =>
 
 const getWinRate = (wins: number, totalGames: number) =>
   totalGames > 0 ? `${Math.round((wins / totalGames) * 100)}%` : 'No data'
+
+const getDifficultyBreakdown = (stats: DeckStats | undefined) => {
+  if (!stats) return []
+
+  return Object.entries(stats.by_difficulty).sort(([a], [b]) => {
+    const aIndex = difficultyOrder.indexOf(a)
+    const bIndex = difficultyOrder.indexOf(b)
+    if (a === 'Untracked') return 1
+    if (b === 'Untracked') return -1
+    if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex
+    if (aIndex !== -1) return -1
+    if (bIndex !== -1) return 1
+    return a.localeCompare(b)
+  })
+}
 
 export default function DeckListPage() {
   const [decks, setDecks] = useState<Deck[]>([])
@@ -162,6 +187,13 @@ export default function DeckListPage() {
           stats.solo_games++
           if (game.result === 'win') stats.solo_wins++
           if (game.result === 'tie') stats.solo_ties++
+          const difficulty = game.solo_difficulty ?? 'Untracked'
+          if (!stats.by_difficulty[difficulty]) {
+            stats.by_difficulty[difficulty] = { games: 0, wins: 0, ties: 0 }
+          }
+          stats.by_difficulty[difficulty].games++
+          if (game.result === 'win') stats.by_difficulty[difficulty].wins++
+          if (game.result === 'tie') stats.by_difficulty[difficulty].ties++
         } else {
           stats.pvp_games++
           if (game.result === 'win') stats.pvp_wins++
@@ -231,7 +263,7 @@ export default function DeckListPage() {
 
     const { data: gamesData, error: gamesError } = await client
       .from('deck_games')
-      .select('deck_id, result, match_type, opponent_archetype, player_order, created_at')
+      .select('deck_id, result, match_type, solo_difficulty, opponent_archetype, player_order, created_at')
       .in('deck_id', deckIds)
 
     if (gamesError) {
@@ -287,6 +319,7 @@ export default function DeckListPage() {
       result: details.result,
       user_id: user.id,
       match_type: details.match_type,
+      solo_difficulty: details.solo_difficulty,
       opponent_archetype: details.opponent_archetype,
       player_order: details.player_order,
       turns_played: details.turns_played,
@@ -537,6 +570,7 @@ export default function DeckListPage() {
             const overallWinRate = getWinRate(stats?.wins ?? 0, totalGames)
             const soloWinRate = stats ? getWinRate(stats.solo_wins, stats.solo_games) : 'No data'
             const pvpWinRate = stats ? getWinRate(stats.pvp_wins, stats.pvp_games) : 'No data'
+            const difficultyBreakdown = getDifficultyBreakdown(stats)
             const isDeckExpanded = expandedDeckDetails[deck.id] ?? false
             const deckDetailsId = `deck-details-${deck.id}`
             const deckTitleId = `deck-title-${deck.id}`
@@ -650,6 +684,27 @@ export default function DeckListPage() {
                           <span className={styles.insightMiniValue}>{stats?.top_opponent ?? 'No data'}</span>
                           <span className={styles.insightMiniLabel}>Common opponent</span>
                         </div>
+                      </div>
+                    )}
+
+                    {difficultyBreakdown.length > 0 && (
+                      <div className={styles.difficultyPanel} aria-label={`${deck.deck_name} solo difficulty win rates`}>
+                        <div className={styles.difficultyHeader}>
+                          <span>Solo difficulty</span>
+                          <span>Win rate</span>
+                        </div>
+                        {difficultyBreakdown.map(([difficulty, difficultyStats]) => (
+                          <div key={difficulty} className={styles.difficultyRow}>
+                            <span className={styles.difficultyName}>{difficulty}</span>
+                            <span className={styles.difficultyRate}>
+                              {getWinRate(difficultyStats.wins, difficultyStats.games)}
+                            </span>
+                            <span className={styles.difficultyMeta}>
+                              {difficultyStats.games} {difficultyStats.games === 1 ? 'match' : 'matches'} ·{' '}
+                              {difficultyStats.wins}W / {difficultyStats.games - difficultyStats.wins - difficultyStats.ties}L / {difficultyStats.ties}T
+                            </span>
+                          </div>
+                        ))}
                       </div>
                     )}
 

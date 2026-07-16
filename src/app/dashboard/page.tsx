@@ -44,6 +44,7 @@ type DeckGame = {
   result: 'win' | 'loss' | 'tie'
   created_at: string
   match_type: 'solo' | 'pvp' | null
+  solo_difficulty: string | null
   opponent_archetype: string | null
   turns_played: number | null
   close_game: boolean | null
@@ -68,7 +69,14 @@ type NextAction = {
   icon: 'plus' | 'dice' | 'library'
 }
 
+type DifficultyStats = {
+  games: number
+  wins: number
+  ties: number
+}
+
 const maxDecks = 10
+const difficultyOrder = ['Beginner', 'Intermediate', 'Advanced', 'Expert']
 
 const formatDate = (value: string) =>
   new Intl.DateTimeFormat('en-US', {
@@ -78,6 +86,18 @@ const formatDate = (value: string) =>
 
 const getWinRate = (wins: number, totalGames: number) =>
   totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0
+
+const getDifficultyBreakdown = (stats: Record<string, DifficultyStats>) =>
+  Object.entries(stats).sort(([a], [b]) => {
+    const aIndex = difficultyOrder.indexOf(a)
+    const bIndex = difficultyOrder.indexOf(b)
+    if (a === 'Untracked') return 1
+    if (b === 'Untracked') return -1
+    if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex
+    if (aIndex !== -1) return -1
+    if (bIndex !== -1) return 1
+    return a.localeCompare(b)
+  })
 
 export default function Dashboard() {
   const [user, setUser] = useState<DashboardUser | null>(null)
@@ -123,7 +143,7 @@ export default function Dashboard() {
 
       const { data: gamesData, error: gamesError } = await client
         .from('deck_games')
-        .select('deck_id, result, created_at, match_type, opponent_archetype, turns_played, close_game, mvp_card, notes')
+        .select('deck_id, result, created_at, match_type, solo_difficulty, opponent_archetype, turns_played, close_game, mvp_card, notes')
         .eq('user_id', currentUser.id)
         .order('created_at', { ascending: false })
 
@@ -183,6 +203,15 @@ export default function Dashboard() {
   const pvpGames = scopedGames.filter((game) => (game.match_type ?? 'pvp') === 'pvp')
   const pvpWins = pvpGames.filter((game) => game.result === 'win').length
   const pvpWinRate = getWinRate(pvpWins, pvpGames.length)
+  const soloDifficultyStats = soloGames.reduce<Record<string, DifficultyStats>>((stats, game) => {
+    const difficulty = game.solo_difficulty ?? 'Untracked'
+    if (!stats[difficulty]) stats[difficulty] = { games: 0, wins: 0, ties: 0 }
+    stats[difficulty].games++
+    if (game.result === 'win') stats[difficulty].wins++
+    if (game.result === 'tie') stats[difficulty].ties++
+    return stats
+  }, {})
+  const soloDifficultyBreakdown = getDifficultyBreakdown(soloDifficultyStats)
   const allTimeGames = games.length
 
   const performanceByDeck = decks
@@ -409,6 +438,35 @@ export default function Dashboard() {
               </div>
             </section>
 
+            {soloDifficultyBreakdown.length > 0 && (
+              <section className={styles.difficultyPanel} aria-label="Solo win rates by difficulty">
+                <div className={styles.panelHeader}>
+                  <div>
+                    <p className={styles.panelKicker}>Solo difficulty</p>
+                    <h2>Win rates by difficulty</h2>
+                  </div>
+                  <span className={styles.statMeta}>{statsPeriodLabel}</span>
+                </div>
+                <div className={styles.difficultyGrid}>
+                  {soloDifficultyBreakdown.map(([difficulty, difficultyStats]) => {
+                    const losses = difficultyStats.games - difficultyStats.wins - difficultyStats.ties
+                    return (
+                      <div key={difficulty} className={styles.difficultyTile}>
+                        <span className={styles.difficultyName}>{difficulty}</span>
+                        <span className={styles.difficultyRate}>
+                          {getWinRate(difficultyStats.wins, difficultyStats.games)}%
+                        </span>
+                        <span className={styles.difficultyMeta}>
+                          {difficultyStats.games} {difficultyStats.games === 1 ? 'match' : 'matches'} ·{' '}
+                          {difficultyStats.wins}W / {losses}L / {difficultyStats.ties}T
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </section>
+            )}
+
             <section className={styles.nextActionPanel}>
               <div className={styles.nextActionCopy}>
                 <Sparkles size={20} className={styles.nextActionIcon} />
@@ -476,7 +534,11 @@ export default function Dashboard() {
                         </span>
                         <span className={styles.recentDeck}>
                           {deckNames.get(game.deck_id) ?? 'Unknown deck'}
-                          <span className={styles.recentType}> {(game.match_type ?? 'pvp') === 'solo' ? 'Solo' : 'PvP'}</span>
+                          <span className={styles.recentType}>
+                            {(game.match_type ?? 'pvp') === 'solo'
+                              ? `Solo${game.solo_difficulty ? ` · ${game.solo_difficulty}` : ''}`
+                              : 'PvP'}
+                          </span>
                           {game.opponent_archetype && (
                             <span className={styles.recentDetail}> vs {game.opponent_archetype}</span>
                           )}
