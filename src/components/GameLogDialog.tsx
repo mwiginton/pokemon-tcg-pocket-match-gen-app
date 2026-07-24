@@ -4,14 +4,10 @@ import { useEffect, useMemo, useState } from 'react'
 import styles from '@/styles/layout.module.css'
 import buttonStyles from '@/styles/button.module.css'
 import {
-  CheckCircle2,
   CircleEqual,
-  Clock3,
   Flag,
   Gauge,
-  NotebookPen,
   Shield,
-  Sparkles,
   Swords,
   Trophy,
   X,
@@ -21,7 +17,6 @@ import {
 export type GameResult = 'win' | 'loss' | 'tie'
 export type MatchType = 'solo' | 'pvp'
 export type PlayerOrder = 'first' | 'second'
-export type SetupStatus = 'turn_2' | 'turn_3' | 'missed' | 'unknown'
 
 export type GameLogDetails = {
   result: GameResult
@@ -29,11 +24,6 @@ export type GameLogDetails = {
   solo_difficulty: string | null
   opponent_archetype: string | null
   player_order: PlayerOrder | null
-  turns_played: number | null
-  close_game: boolean
-  setup_status: SetupStatus | null
-  mvp_card: string | null
-  notes: string | null
 }
 
 type GameLogDialogProps = {
@@ -43,7 +33,6 @@ type GameLogDialogProps = {
   defaultSoloDifficulty?: string
   defaultOpponent?: string
   soloDifficultyOptions?: string[]
-  cardOptions?: string[]
   isSaving?: boolean
   onClose: () => void
   onSubmit: (details: GameLogDetails) => Promise<void> | void
@@ -62,13 +51,6 @@ const commonArchetypes = [
   'Aggro',
   'Control',
   'Energy ramp',
-]
-
-const setupOptions: { value: SetupStatus; label: string }[] = [
-  { value: 'turn_2', label: 'Turn 2' },
-  { value: 'turn_3', label: 'Turn 3' },
-  { value: 'missed', label: 'Missed' },
-  { value: 'unknown', label: 'Unsure' },
 ]
 
 const defaultDifficultyOptions = ['Beginner', 'Intermediate', 'Advanced', 'Expert']
@@ -100,7 +82,6 @@ export default function GameLogDialog({
   defaultSoloDifficulty = '',
   defaultOpponent = '',
   soloDifficultyOptions = defaultDifficultyOptions,
-  cardOptions = [],
   isSaving = false,
   onClose,
   onSubmit,
@@ -110,16 +91,7 @@ export default function GameLogDialog({
   const [soloDifficulty, setSoloDifficulty] = useState(defaultSoloDifficulty)
   const [opponentArchetype, setOpponentArchetype] = useState(defaultOpponent)
   const [playerOrder, setPlayerOrder] = useState<PlayerOrder | null>(null)
-  const [turnsPlayed, setTurnsPlayed] = useState('')
-  const [closeGame, setCloseGame] = useState(false)
-  const [setupStatus, setSetupStatus] = useState<SetupStatus | null>(null)
-  const [mvpCard, setMvpCard] = useState('')
-  const [notes, setNotes] = useState('')
 
-  const uniqueCardOptions = useMemo(
-    () => Array.from(new Set(cardOptions.filter(Boolean))).sort((a, b) => a.localeCompare(b)),
-    [cardOptions],
-  )
   const uniqueDifficultyOptions = useMemo(
     () =>
       Array.from(new Set([...soloDifficultyOptions, defaultSoloDifficulty].filter(Boolean))).sort(
@@ -157,15 +129,8 @@ export default function GameLogDialog({
         solo_difficulty: selectedMatchType === 'solo' ? cleanText(soloDifficulty) : null,
         opponent_archetype: null,
         player_order: null,
-        turns_played: null,
-        close_game: false,
-        setup_status: null,
-        mvp_card: null,
-        notes: null,
       }
     }
-
-    const parsedTurns = Number.parseInt(turnsPlayed, 10)
 
     return {
       result,
@@ -173,11 +138,6 @@ export default function GameLogDialog({
       solo_difficulty: selectedMatchType === 'solo' ? cleanText(soloDifficulty) : null,
       opponent_archetype: cleanText(opponentArchetype),
       player_order: playerOrder,
-      turns_played: Number.isFinite(parsedTurns) && parsedTurns > 0 ? parsedTurns : null,
-      close_game: closeGame,
-      setup_status: setupStatus,
-      mvp_card: cleanText(mvpCard),
-      notes: cleanText(notes),
     }
   }
 
@@ -271,39 +231,20 @@ export default function GameLogDialog({
           </div>
         )}
 
-        <div className={styles.formGrid}>
-          <label className={styles.fieldBlock}>
-            <span className={styles.labelWithIcon}>
-              <Swords size={16} />
-              Opponent archetype
-            </span>
-            <input
-              className={styles.input}
-              value={opponentArchetype}
-              onChange={(event) => setOpponentArchetype(event.target.value)}
-              list="opponent-archetypes"
-              placeholder="e.g. Mewtwo ex, Blaine, aggro"
-              autoComplete="off"
-            />
-          </label>
-
-          <label className={styles.fieldBlock}>
-            <span className={styles.labelWithIcon}>
-              <Clock3 size={16} />
-              Turns played
-            </span>
-            <input
-              className={styles.input}
-              value={turnsPlayed}
-              onChange={(event) => setTurnsPlayed(event.target.value)}
-              min="1"
-              max="60"
-              inputMode="numeric"
-              type="number"
-              placeholder="Optional"
-            />
-          </label>
-        </div>
+        <label className={styles.fieldBlock}>
+          <span className={styles.labelWithIcon}>
+            <Swords size={16} />
+            Opponent archetype
+          </span>
+          <input
+            className={styles.input}
+            value={opponentArchetype}
+            onChange={(event) => setOpponentArchetype(event.target.value)}
+            list="opponent-archetypes"
+            placeholder="e.g. Mewtwo ex, Blaine, aggro"
+            autoComplete="off"
+          />
+        </label>
 
         <datalist id="opponent-archetypes">
           {commonArchetypes.map((archetype) => (
@@ -311,98 +252,28 @@ export default function GameLogDialog({
           ))}
         </datalist>
 
-        <datalist id="deck-card-options">
-          {uniqueCardOptions.map((card) => (
-            <option key={card} value={card} />
-          ))}
-        </datalist>
-
-        <div className={styles.formGrid}>
-          <div className={styles.fieldBlock}>
-            <span className={styles.labelWithIcon}>
-              <Flag size={16} />
-              Went
-            </span>
-            <div className={styles.segmentedControl}>
-              <button
-                type="button"
-                className={`${styles.choiceButton} ${playerOrder === 'first' ? styles.choiceButtonActive : ''}`}
-                onClick={() => setPlayerOrder(playerOrder === 'first' ? null : 'first')}
-              >
-                First
-              </button>
-              <button
-                type="button"
-                className={`${styles.choiceButton} ${playerOrder === 'second' ? styles.choiceButtonActive : ''}`}
-                onClick={() => setPlayerOrder(playerOrder === 'second' ? null : 'second')}
-              >
-                Second
-              </button>
-            </div>
-          </div>
-
-          <div className={styles.fieldBlock}>
-            <span className={styles.labelWithIcon}>
-              <CheckCircle2 size={16} />
-              Setup online
-            </span>
-            <div className={styles.segmentedControl}>
-              {setupOptions.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  className={`${styles.choiceButton} ${setupStatus === option.value ? styles.choiceButtonActive : ''}`}
-                  onClick={() => setSetupStatus(setupStatus === option.value ? null : option.value)}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className={styles.formGrid}>
-          <label className={styles.fieldBlock}>
-            <span className={styles.labelWithIcon}>
-              <Sparkles size={16} />
-              MVP card
-            </span>
-            <input
-              className={styles.input}
-              value={mvpCard}
-              onChange={(event) => setMvpCard(event.target.value)}
-              list="deck-card-options"
-              placeholder="Optional"
-              autoComplete="off"
-            />
-          </label>
-
-          <label className={`${styles.checkPanel} ${closeGame ? styles.checkPanelActive : ''}`}>
-            <input
-              type="checkbox"
-              checked={closeGame}
-              onChange={(event) => setCloseGame(event.target.checked)}
-            />
-            <span>
-              <strong>Close game</strong>
-              <small>Mark if it came down to the final turn or one key draw.</small>
-            </span>
-          </label>
-        </div>
-
-        <label className={styles.fieldBlock}>
+        <div className={styles.fieldBlock}>
           <span className={styles.labelWithIcon}>
-            <NotebookPen size={16} />
-            Short note
+            <Flag size={16} />
+            Went
           </span>
-          <textarea
-            className={styles.textarea}
-            value={notes}
-            onChange={(event) => setNotes(event.target.value)}
-            placeholder="Bricked early, perfect curve, bad matchup, misplay, etc."
-            rows={3}
-          />
-        </label>
+          <div className={styles.segmentedControl}>
+            <button
+              type="button"
+              className={`${styles.choiceButton} ${playerOrder === 'first' ? styles.choiceButtonActive : ''}`}
+              onClick={() => setPlayerOrder(playerOrder === 'first' ? null : 'first')}
+            >
+              First
+            </button>
+            <button
+              type="button"
+              className={`${styles.choiceButton} ${playerOrder === 'second' ? styles.choiceButtonActive : ''}`}
+              onClick={() => setPlayerOrder(playerOrder === 'second' ? null : 'second')}
+            >
+              Second
+            </button>
+          </div>
+        </div>
 
         <div className={styles.modalActions}>
           <button

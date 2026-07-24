@@ -150,7 +150,6 @@ export default function DeckListPage() {
     deckName: string
     result: GameResult
   } | null>(null)
-  const [gameLogCardOptions, setGameLogCardOptions] = useState<string[]>([])
   const [isRecordingGame, setIsRecordingGame] = useState(false)
 
   const availableYears = useMemo(() => getAvailableYears(deckGames), [deckGames])
@@ -277,32 +276,8 @@ export default function DeckListPage() {
     }
   }
 
-  const loadDeckCardNames = async (deckId: string) => {
-    const { data, error } = await client
-      .from('deck_cards')
-      .select('cards(name)')
-      .eq('deck_id', deckId)
-      .order('card_index', { ascending: true })
-
-    if (error) {
-      setGameLogCardOptions([])
-      return
-    }
-
-    const names = ((data || []) as { cards: { name?: string | null } | { name?: string | null }[] | null }[])
-      .map((entry) => {
-        const card = Array.isArray(entry.cards) ? entry.cards[0] : entry.cards
-        return card?.name ?? ''
-      })
-      .filter(Boolean)
-
-    setGameLogCardOptions(names)
-  }
-
-  const openGameLogger = async (deck: Deck, result: GameResult) => {
+  const openGameLogger = (deck: Deck, result: GameResult) => {
     setGameLogTarget({ deckId: deck.id, deckName: deck.deck_name, result })
-    setGameLogCardOptions([])
-    await loadDeckCardNames(deck.id)
   }
 
   const recordGame = async (details: GameLogDetails) => {
@@ -322,11 +297,6 @@ export default function DeckListPage() {
       solo_difficulty: details.solo_difficulty,
       opponent_archetype: details.opponent_archetype,
       player_order: details.player_order,
-      turns_played: details.turns_played,
-      close_game: details.close_game,
-      setup_status: details.setup_status,
-      mvp_card: details.mvp_card,
-      notes: details.notes,
     })
     setIsRecordingGame(false)
 
@@ -818,7 +788,6 @@ export default function DeckListPage() {
           <GameLogDialog
             deckName={gameLogTarget.deckName}
             result={gameLogTarget.result}
-            cardOptions={gameLogCardOptions}
             isSaving={isRecordingGame}
             onClose={() => setGameLogTarget(null)}
             onSubmit={recordGame}

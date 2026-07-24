@@ -183,10 +183,9 @@ export default function RandomBattlePage() {
     return formatted
   }
 
-  const openGameLogger = async (result: GameResult) => {
+  const openGameLogger = (result: GameResult) => {
     if (!match) return
     setGameLogResult(result)
-    await loadDeckCards(match.player_deck.id, false)
   }
 
   const recordGame = async (details: GameLogDetails) => {
@@ -207,11 +206,6 @@ export default function RandomBattlePage() {
         solo_difficulty: details.solo_difficulty,
         opponent_archetype: details.opponent_archetype,
         player_order: details.player_order,
-        turns_played: details.turns_played,
-        close_game: details.close_game,
-        setup_status: details.setup_status,
-        mvp_card: details.mvp_card,
-        notes: details.notes,
       })
 
       if (error) {
@@ -458,7 +452,6 @@ export default function RandomBattlePage() {
             defaultSoloDifficulty={match.solo_battle.difficulty}
             defaultOpponent={match.solo_battle.deck}
             soloDifficultyOptions={Object.keys(soloBattles)}
-            cardOptions={deckCards.map((card) => card.name).filter(Boolean)}
             isSaving={isRecording}
             onClose={() => setGameLogResult(null)}
             onSubmit={recordGame}
