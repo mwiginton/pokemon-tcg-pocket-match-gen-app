@@ -124,8 +124,7 @@
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.input:focus,
-.importTextarea:focus {
+.input:focus {
   outline: none;
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
@@ -247,7 +246,6 @@
 
 .cardGroup,
 .deckProgressPanel,
-.importPanel,
 .softPanel,
 .matchSection,
 .statMini {
@@ -258,7 +256,6 @@
 
 .cardGroup,
 .deckProgressPanel,
-.importPanel,
 .softPanel,
 .matchSection {
   padding: 1rem;
@@ -314,41 +311,6 @@
   border-radius: inherit;
   background: linear-gradient(90deg, #2563eb, #7c3aed);
   transition: width 0.2s ease;
-}
-
-.importTextarea {
-  width: 100%;
-  min-height: 8rem;
-  resize: vertical;
-  padding: 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  background: #fff;
-  color: #333;
-  font: inherit;
-  line-height: 1.4;
-}
-
-.importActions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.75rem;
-}
-
-.importMessage {
-  margin-top: 0.75rem;
-  margin-bottom: 0;
-  color: #205493;
-  font-size: 0.9rem;
-  font-weight: 700;
-}
-
-.importIssues {
-  margin: 0.75rem 0 0;
-  padding-left: 1.1rem;
-  color: #b45309;
-  font-size: 0.85rem;
 }
 
 .cardSlotHeader {
