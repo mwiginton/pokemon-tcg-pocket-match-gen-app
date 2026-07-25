@@ -713,6 +713,57 @@
   white-space: nowrap;
 }
 
+.deckQuickRecord {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid #eef2f7;
+}
+
+.deckQuickRecordLabel {
+  flex-shrink: 0;
+  color: #4b5563;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.deckQuickRecordActions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.deckQuickRecordActions .iconButton {
+  min-height: 40px;
+}
+
+.deckQuickRecordActions .win {
+  border-color: #b7e4c7;
+}
+
+.deckQuickRecordActions .win:hover {
+  background: #d5f3df;
+}
+
+.deckQuickRecordActions .loss {
+  border-color: #f5baba;
+}
+
+.deckQuickRecordActions .loss:hover {
+  background: #ffdada;
+}
+
+.deckQuickRecordActions .tie {
+  border-color: #efd78e;
+}
+
+.deckQuickRecordActions .tie:hover {
+  background: #ffefb9;
+}
+
 .chevronIcon {
   transition: transform 0.18s ease;
 }
@@ -1363,6 +1414,24 @@
   .deckSummaryToggle {
     align-self: center;
     font-size: 0.78rem;
+  }
+
+  .deckQuickRecord {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.45rem;
+    margin-top: 0.7rem;
+    padding-top: 0.7rem;
+  }
+
+  .deckQuickRecordActions {
+    gap: 0.4rem;
+  }
+
+  .deckQuickRecordActions .iconButton {
+    min-height: 42px;
+    padding: 0.45rem 0.35rem;
+    font-size: 0.82rem;
   }
 
   .deckDetailsPanel {

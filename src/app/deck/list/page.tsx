@@ -594,6 +594,43 @@ export default function DeckListPage() {
                   </span>
                 </button>
 
+                <div
+                  className={styles.deckQuickRecord}
+                  role="group"
+                  aria-label={`Record a match result for ${deck.deck_name}`}
+                >
+                  <span className={styles.deckQuickRecordLabel}>Record result</span>
+                  <div className={styles.deckQuickRecordActions}>
+                    <button
+                      type="button"
+                      onClick={() => openGameLogger(deck, 'win')}
+                      className={`${styles.iconButton} ${styles.win}`}
+                      aria-label={`Record a win for ${deck.deck_name}`}
+                    >
+                      <Trophy size={16} />
+                      Win
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => openGameLogger(deck, 'loss')}
+                      className={`${styles.iconButton} ${styles.loss}`}
+                      aria-label={`Record a loss for ${deck.deck_name}`}
+                    >
+                      <XCircle size={16} />
+                      Loss
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => openGameLogger(deck, 'tie')}
+                      className={`${styles.iconButton} ${styles.tie}`}
+                      aria-label={`Record a tie for ${deck.deck_name}`}
+                    >
+                      <CircleEqual size={16} />
+                      Tie
+                    </button>
+                  </div>
+                </div>
+
                 {isDeckExpanded && (
                   <div id={deckDetailsId} className={styles.deckDetailsPanel}>
                     <div className={styles.buttonGroup}>
@@ -680,27 +717,7 @@ export default function DeckListPage() {
 
                     <div className={styles.cardActions}>
                       <button
-                        onClick={() => openGameLogger(deck, 'win')}
-                        className={`${styles.iconButton} ${styles.win}`}
-                      >
-                        <Trophy size={16} />
-                        Record Win
-                      </button>
-                      <button
-                        onClick={() => openGameLogger(deck, 'loss')}
-                        className={`${styles.iconButton} ${styles.loss}`}
-                      >
-                        <XCircle size={16} />
-                        Record Loss
-                      </button>
-                      <button
-                        onClick={() => openGameLogger(deck, 'tie')}
-                        className={`${styles.iconButton} ${styles.tie}`}
-                      >
-                        <CircleEqual size={16} />
-                        Record Tie
-                      </button>
-                      <button
+                        type="button"
                         onClick={() => setConfirmResetId(deck.id)}
                         className={styles.backLink}
                       >
@@ -708,6 +725,7 @@ export default function DeckListPage() {
                         Reset Stats
                       </button>
                       <button
+                        type="button"
                         onClick={() => toggleDeckCards(deck.id)}
                         className={styles.backLink}
                       >
