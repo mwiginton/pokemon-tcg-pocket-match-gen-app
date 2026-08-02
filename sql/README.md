@@ -47,6 +47,7 @@ Run these files in order from the Neon SQL Editor:
 43. `043_ensure_deck_game_logging_columns.sql`
 44. `044_allow_tie_game_results.sql`
 45. `045_add_deck_game_solo_difficulty.sql`
+46. `046_seed_cards_ruler_of_the_skies.sql`
 
 The schema script creates the application tables and indexes. The RLS script enables row-level security, grants Data API roles access, and adds policies for Neon Auth users.
 
@@ -85,6 +86,8 @@ The Pulsing Aura seed script inserts or updates the `cards` lookup rows for all 
 The Paradox Drive seed script inserts or updates the `cards` lookup rows for all 109 Paradox Drive (`B3a`) cards.
 
 The Everyday Wonders seed script inserts or updates the `cards` lookup rows for all 106 Everyday Wonders (`B3b`) cards.
+
+The Ruler of the Skies seed script inserts or updates the `cards` lookup rows for all 233 Ruler of the Skies (`B4`) cards.
 
 The Genetic Apex solo battles seed script replaces the `solo_battles` lookup rows for all 27 permanent Genetic Apex solo battles.
 
